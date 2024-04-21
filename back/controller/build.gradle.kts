@@ -9,7 +9,7 @@ application {
 
 
 dependencies {
-    project(":service")
+    project(":back:service")
 
     implementation("org.springframework.boot:spring-boot-starter-web:3.2.4")
 }
