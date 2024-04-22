@@ -1,0 +1,10 @@
+description: "Человек"
+type: "object"
+properties:
+  id:
+    description: "Идентификатор"
+    type: "integer"
+    format: "int32"
+  fio:
+    description: "ФИО"
+    type: "string"

@@ -1,0 +1,10 @@
+description: "Генеологическое исследование"
+type: "object"
+properties:
+  genealogyVisualizerGraph:
+    $ref: "./genealogy-visualize-graph.yaml"
+  errors:
+    description: "Ошибки"
+    type: "array"
+    items:
+      $ref: "./../../error/error.yaml"

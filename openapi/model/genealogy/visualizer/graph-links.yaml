@@ -1,0 +1,11 @@
+description: "Связь"
+type: "object"
+properties:
+  source:
+    description: "Идентификатор источника"
+    type: "integer"
+    format: "int32"
+  target:
+    description: "Идентификатор приемника"
+    type: "integer"
+    format: "int32"

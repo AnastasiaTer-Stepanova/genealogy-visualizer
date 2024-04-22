@@ -1,0 +1,13 @@
+description: "Данные для графа визуализации генеалогического исследования"
+type: "object"
+properties:
+  persons:
+    description: "Люди"
+    type: "array"
+    items:
+      $ref: "./person.yaml"
+  links:
+    description: "Связь людей"
+    type: "array"
+    items:
+      $ref: "./graph-links.yaml"

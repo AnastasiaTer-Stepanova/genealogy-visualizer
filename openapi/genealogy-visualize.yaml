@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: API для визуализации генеалогического исследования
+  version: "1.0.1"
+tags:
+  - name: GenealogyVisualize
+    description: API для визуализации генеалогического исследования
+paths:
+  /genealogy-visualizer/graph:
+    post:
+      tags:
+        - GenealogyVisualize
+      operationId: getGenealogyVisualizeGraph
+      summary: "Запрос данных для визуализации генеологического исследования"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./model/genealogy/visualizer/genealogy-visualize-rq.yaml"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/genealogy/visualizer/genealogy-visualize-rs.yaml"

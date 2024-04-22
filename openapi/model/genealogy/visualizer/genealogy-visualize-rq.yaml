@@ -1,0 +1,7 @@
+description: "Запрос данных для визуализации генеологического исследования"
+type: "object"
+properties:
+  filter:
+    $ref: "./genealogy-visualize-filter.yaml"
+  sort:
+    $ref: "./genealogy-visualize-sort.yaml"

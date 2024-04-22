@@ -1,0 +1,13 @@
+type: object
+required:
+    - code
+    - message
+properties:
+  code:
+    description: Код ошибки
+    type: string
+    example: "1234"
+  message:
+    description: Сообщение ошибки
+    type: string
+    example: "Не удалось получить данные"
