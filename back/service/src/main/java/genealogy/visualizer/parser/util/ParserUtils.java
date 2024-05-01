@@ -28,7 +28,7 @@ import static org.apache.commons.lang3.StringUtils.contains;
 public class ParserUtils {
 
     public static final String STATUS_IMPORTED = "imported";
-    public static final String STATUS_COLUMN_NAME = "status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
+    public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
     public static final String WITHOUT_FIRST_NAME = "БФ";
     public static final Set<String> TOWN_LOCATION = Set.of("г.", "город", "города");
     public static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
@@ -96,7 +96,7 @@ public class ParserUtils {
         for (Cell cell : header) {
             String value = StringUtils.capitalize(getStringCellValue(cell));
             if (STATUS_COLUMN_NAME.equals(value)) hasStatusColumn = true;
-            headerData.put(getStringCellValue(cell), cell.getColumnIndex());
+            headerData.put(value, cell.getColumnIndex());
         }
         if (!hasStatusColumn) {
             excelSheet.shiftColumns(0, header.getLastCellNum(), 1);
