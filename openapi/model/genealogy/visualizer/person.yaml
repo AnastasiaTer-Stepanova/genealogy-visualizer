@@ -5,6 +5,6 @@ properties:
     description: "Идентификатор"
     type: "integer"
     format: "int32"
-  fio:
+  fullName:
     description: "ФИО"
     type: "string"

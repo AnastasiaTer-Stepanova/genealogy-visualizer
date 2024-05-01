@@ -64,7 +64,7 @@ sourceSets {
 }
 
 dependencies {
-    project(":back:service")
+    implementation(project(":back:service"))
 
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
     implementation("javax.annotation:javax.annotation-api:1.3.2")

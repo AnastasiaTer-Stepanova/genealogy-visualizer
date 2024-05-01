@@ -23,7 +23,7 @@ public class GenealogyVisualizeController implements GenealogyVisualizeApi {
         GenealogyVisualizeGraph visualizeGraph = new GenealogyVisualizeGraph();
         for (int i = 0; i < 10; i++) {
             Person person = new Person();
-            person.setFio(randomAlphabetic(20));
+            person.setFullName(randomAlphabetic(20));
             person.setId(Integer.valueOf(randomNumeric(3)));
             visualizeGraph.addPersonsItem(person);
         }
