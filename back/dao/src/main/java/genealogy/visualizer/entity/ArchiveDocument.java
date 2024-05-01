@@ -1,6 +1,7 @@
 package genealogy.visualizer.entity;
 
 import genealogy.visualizer.converter.ArchiveDocumentTypeConverter;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -22,17 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "CONSTRAINT_INSTANCE_IN_ARCHIVE", columnNames = {"ARCHIVE_ID", "FUND", "CATALOG", "INSTANCE", "BUNCH", "YEAR"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_INSTANCE_IN_ARCHIVE", columnNames = {"ARCHIVE_ID", "FUND", "CATALOG", "INSTANCE", "BUNCH", "YEAR", "TYPE"}))
 public class ArchiveDocument implements Serializable {
 
     @Id
     @Comment("Идентификатор записи")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ARCHIVE_DOCUMENT_SEQ")
-    @SequenceGenerator(name = "ARCHIVE_DOCUMENT_SEQ", sequenceName = "ARCHIVE_DOCUMENT_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_ARCHIVE_DOCUMENT")
+    @SequenceGenerator(name = "SEQ_ARCHIVE_DOCUMENT", sequenceName = "SEQ_ARCHIVE_DOCUMENT", allocationSize = 1)
     private Long id;
 
-    @Column(length = 10, nullable = false)
-    @Comment("Тип документа: РС - ревизская сказка, МК -метрическая книга, ИВ - исповедная ведомость")
+    @Column(length = 20, nullable = false)
+    @Comment("Тип документа: РС - ревизская сказка, МК - метрическая книга, ИВ - исповедная ведомость")
     @Convert(converter = ArchiveDocumentTypeConverter.class)
     private ArchiveDocumentType type;
 

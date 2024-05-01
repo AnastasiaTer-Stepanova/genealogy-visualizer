@@ -1,5 +1,7 @@
 package genealogy.visualizer.entity;
 
+import genealogy.visualizer.entity.model.Age;
+import genealogy.visualizer.entity.model.FullName;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -15,6 +17,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
@@ -22,11 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}))
 public class FamilyRevision implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FAMILY_REVISION_SEQ")
-    @SequenceGenerator(name = "FAMILY_REVISION_SEQ", sequenceName = "FAMILY_REVISION_SEQ", allocationSize = 20)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_FAMILY_REVISION")
+    @SequenceGenerator(name = "SEQ_FAMILY_REVISION", sequenceName = "SEQ_FAMILY_REVISION", allocationSize = 20)
     @Comment("Идентификатор записи")
     private Long id;
 
@@ -46,9 +51,6 @@ public class FamilyRevision implements Serializable {
     @Column(nullable = false)
     @Comment("Является ли главой двора")
     private Boolean isHeadOfYard = false;
-
-    @Comment("Статус человека")
-    private String status;
 
     @Embedded
     private FullName fullName;
@@ -92,14 +94,13 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, String status, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument) {
+    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument) {
         this.id = id;
         this.familyRevisionNumber = familyRevisionNumber;
         this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
         this.nextFamilyRevisionNumber = nextFamilyRevisionNumber;
         this.listNumber = listNumber;
         this.isHeadOfYard = isHeadOfYard;
-        this.status = status;
         this.fullName = fullName;
         this.age = age;
         this.ageInPreviousRevision = ageInPreviousRevision;
@@ -156,14 +157,6 @@ public class FamilyRevision implements Serializable {
 
     public void setHeadOfYard(Boolean headOfYard) {
         isHeadOfYard = headOfYard;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public FullName getFullName() {

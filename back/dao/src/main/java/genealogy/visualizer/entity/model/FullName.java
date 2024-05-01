@@ -1,4 +1,4 @@
-package genealogy.visualizer.entity;
+package genealogy.visualizer.entity.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -19,13 +19,17 @@ public class FullName implements Serializable {
     @Comment("Отчество")
     private String surname;
 
+    @Comment("Статус человека")
+    private String status;
+
     public FullName() {
     }
 
-    public FullName(String lastName, String name, String surname) {
+    public FullName(String lastName, String name, String surname, String status) {
         this.lastName = lastName;
         this.name = name;
         this.surname = surname;
+        this.status = status;
     }
 
     public String getLastName() {
@@ -52,4 +56,11 @@ public class FullName implements Serializable {
         this.surname = surname;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

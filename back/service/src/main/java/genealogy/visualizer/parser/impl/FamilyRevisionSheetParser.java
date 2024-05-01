@@ -2,9 +2,9 @@ package genealogy.visualizer.parser.impl;
 
 import genealogy.visualizer.entity.AnotherNameInRevision;
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.ArchiveDocumentType;
 import genealogy.visualizer.entity.FamilyRevision;
-import genealogy.visualizer.entity.FullName;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
+import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.ParserUtils;
 import genealogy.visualizer.service.FamilyRevisionDAO;
@@ -19,12 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static genealogy.visualizer.parser.util.ParserUtils.FIRST_NAME;
-import static genealogy.visualizer.parser.util.ParserUtils.LAST_NAME;
-import static genealogy.visualizer.parser.util.ParserUtils.PERSON_STATUS;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
-import static genealogy.visualizer.parser.util.ParserUtils.SURNAME;
 import static genealogy.visualizer.parser.util.ParserUtils.WITHOUT_FIRST_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
 import static genealogy.visualizer.parser.util.ParserUtils.getShortCellValue;
@@ -41,19 +37,19 @@ public class FamilyRevisionSheetParser implements SheetParser {
 
     private static final Logger LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
 
-    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "familyRevisionNumber"; //номер семьи в данной ревизии
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "previousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
-    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "nextFamilyRevisionNumber"; //номер семьи в следующей ревизии
-    private static final String LIST_NUMBER_COLUMN_NAME = "listNumber"; //номер страницы в деле на котором указана семья
-    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "headOfYardLastName"; //фамилия главы дома
-    private static final String LAST_NAME_COLUMN_NAME = "lastName"; //фамилия
-    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "lastNameAnother"; //другие возможные фамилиии
-    private static final String FULL_NAME_COLUMN_NAME = "fullName"; //ФИО
-    private static final String AGE_COLUMN_NAME = "age"; //возраст на мемент записи в ревизию
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "ageInPreviousRevision"; //возраст на момент предыдущей ревизии
-    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "ageInNextRevision"; //возраст на момент следующей ревизии
-    private static final String DEPARTED_COLUMN_NAME = "departed"; //комментарий о выбытии/смерти/рекрутинга в армию
-    private static final String ARRIVED_COLUMN_NAME = "arrived"; //комментарий о том откуда прибыли
+    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber"; //номер семьи в данной ревизии
+    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
+    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber"; //номер семьи в следующей ревизии
+    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber"; //номер страницы в деле на котором указана семья
+    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName"; //фамилия главы дома
+    private static final String LAST_NAME_COLUMN_NAME = "LastName"; //фамилия
+    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother"; //другие возможные фамилиии
+    private static final String FULL_NAME_COLUMN_NAME = "FullName"; //ФИО
+    private static final String AGE_COLUMN_NAME = "Age"; //возраст на мемент записи в ревизию
+    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision"; //возраст на момент предыдущей ревизии
+    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
+    private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
+    private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
 
     private final FamilyRevisionDAO familyRevisionDAO;
 
@@ -80,7 +76,6 @@ public class FamilyRevisionSheetParser implements SheetParser {
                 LOGGER.error("Failed to parse row because {} is blank in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
                 continue;
             }
-            Map<String, String> fullName = getFullName(row, header);
             FamilyRevision familyRevisionPerson = new FamilyRevision(
                     null,
                     currentFamilyRevisionNumber,
@@ -88,8 +83,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
                     getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
                     getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
                     getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
-                    fullName.get(PERSON_STATUS),
-                    new FullName(fullName.get(LAST_NAME), fullName.get(FIRST_NAME), fullName.get(SURNAME)),
+                    getFullName(row, header),
                     parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
                     parseAge(getStringCellValue(row, header.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))),
                     parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
@@ -126,9 +120,10 @@ public class FamilyRevisionSheetParser implements SheetParser {
         return ArchiveDocumentType.RL;
     }
 
-    private static Map<String, String> getFullName(Row row, Map<String, Integer> header) {
-        Map<String, String> fullName = parseFullNameCell(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
-        String firstNameFromFullName = fullName.get(LAST_NAME);
+    private static FullName getFullName(Row row, Map<String, Integer> header) {
+        FullName fullName = parseFullNameCell(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
+        if (fullName == null) return null;
+        String firstNameFromFullName = fullName.getLastName();
         String lastName;
         if (firstNameFromFullName != null) {
             lastName = firstNameFromFullName;
@@ -136,7 +131,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
             lastName = getStringCellValue(row, header.get(LAST_NAME_COLUMN_NAME));
             lastName = WITHOUT_FIRST_NAME.equals(lastName) ? null : lastName;
         }
-        fullName.put(LAST_NAME, StringUtils.capitalize(lastName));
+        fullName.setLastName(StringUtils.capitalize(lastName));
         return fullName;
     }
 

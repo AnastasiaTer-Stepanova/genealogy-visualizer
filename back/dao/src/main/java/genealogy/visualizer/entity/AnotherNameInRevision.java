@@ -17,12 +17,12 @@ import org.hibernate.annotations.Comment;
 import java.io.Serializable;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "CONSTRAINT_ANOTHER_NAME", columnNames = {"REVISION_PERSON_ID", "NUMBER"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_NAME", columnNames = {"REVISION_PERSON_ID", "NUMBER"}))
 public class AnotherNameInRevision implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ANOTHER_NAME_IN_REVISION_SEQ")
-    @SequenceGenerator(name = "ANOTHER_NAME_IN_REVISION_SEQ", sequenceName = "ANOTHER_NAME_IN_REVISION_SEQ", allocationSize = 5)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_ANOTHER_NAME_IN_REVISION")
+    @SequenceGenerator(name = "SEQ_ANOTHER_NAME_IN_REVISION", sequenceName = "SEQ_ANOTHER_NAME_IN_REVISION", allocationSize = 5)
     @Comment("Идентификатор записи")
     private Long id;
 

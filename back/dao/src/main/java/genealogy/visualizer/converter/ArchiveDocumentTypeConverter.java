@@ -1,6 +1,6 @@
 package genealogy.visualizer.converter;
 
-import genealogy.visualizer.entity.ArchiveDocumentType;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

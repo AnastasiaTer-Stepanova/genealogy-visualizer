@@ -1,6 +1,6 @@
 package genealogy.visualizer.randomizer;
 
-import genealogy.visualizer.entity.Age;
+import genealogy.visualizer.entity.model.Age;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.range.BigDecimalRangeRandomizer;
 

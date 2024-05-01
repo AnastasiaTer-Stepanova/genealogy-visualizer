@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "CONSTRAINT_ARCHIVE_NAME", columnNames = {"NAME"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_ARCHIVE_NAME", columnNames = {"NAME"}))
 public class Archive implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ARCHIVE_SEQ")
-    @SequenceGenerator(name = "ARCHIVE_SEQ", sequenceName = "ARCHIVE_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_ARCHIVE")
+    @SequenceGenerator(name = "SEQ_ARCHIVE", sequenceName = "SEQ_ARCHIVE", allocationSize = 1)
     @Comment("Идентификатор сущности")
     private Long id;
 

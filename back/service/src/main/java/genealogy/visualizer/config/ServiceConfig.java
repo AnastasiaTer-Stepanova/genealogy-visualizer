@@ -1,6 +1,6 @@
 package genealogy.visualizer.config;
 
-import genealogy.visualizer.entity.ArchiveDocumentType;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;

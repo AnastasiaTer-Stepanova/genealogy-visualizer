@@ -4,7 +4,7 @@ import genealogy.visualizer.entity.AnotherNameInRevision;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
-import genealogy.visualizer.entity.FullName;
+import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.poi.ss.usermodel.Row;
@@ -27,19 +27,19 @@ import static org.mockito.Mockito.doThrow;
 class FamilyRevisionSheetParserTest extends AbstractTest {
 
     private static final String sheetName = "FamilyRevision";
-    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "familyRevisionNumber"; //номер семьи в данной ревизии
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "previousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
-    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "nextFamilyRevisionNumber"; //номер семьи в следующей ревизии
-    private static final String LIST_NUMBER_COLUMN_NAME = "listNumber"; //номер страницы в деле на котором указана семья
-    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "headOfYardLastName"; //фамилия главы дома
-    private static final String LAST_NAME_COLUMN_NAME = "lastName"; //фамилия
-    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "lastNameAnother"; //другие возможные фамилиии
-    private static final String FULL_NAME_COLUMN_NAME = "fullName"; //ФИО
-    private static final String AGE_COLUMN_NAME = "age"; //возраст на мемент записи в ревизию
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "ageInPreviousRevision"; //возраст на момент предыдущей ревизии
-    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "ageInNextRevision"; //возраст на момент следующей ревизии
-    private static final String DEPARTED_COLUMN_NAME = "departed"; //комментарий о выбытии/смерти/рекрутинга в армию
-    private static final String ARRIVED_COLUMN_NAME = "arrived"; //комментарий о том откуда прибыли
+    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber"; //номер семьи в данной ревизии
+    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
+    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber"; //номер семьи в следующей ревизии
+    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber"; //номер страницы в деле на котором указана семья
+    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName"; //фамилия главы дома
+    private static final String LAST_NAME_COLUMN_NAME = "LastName"; //фамилия
+    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother"; //другие возможные фамилиии
+    private static final String FULL_NAME_COLUMN_NAME = "FullName"; //ФИО
+    private static final String AGE_COLUMN_NAME = "Age"; //возраст на мемент записи в ревизию
+    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision"; //возраст на момент предыдущей ревизии
+    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
+    private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
+    private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
 
     private static Map<String, Integer> headers;
 
@@ -145,7 +145,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
 
     private static String getFullName(FamilyRevision familyRevision) {
         FullName fullName = familyRevision.getFullName();
-        return familyRevision.getStatus() + " " +
+        return fullName.getStatus() + " " +
                 fullName.getName() + " " +
                 fullName.getSurname() + " " +
                 fullName.getLastName() + " ";

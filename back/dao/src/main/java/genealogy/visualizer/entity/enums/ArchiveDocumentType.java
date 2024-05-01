@@ -1,10 +1,12 @@
-package genealogy.visualizer.entity;
+package genealogy.visualizer.entity.enums;
 
 import java.util.stream.Stream;
 
 public enum ArchiveDocumentType {
     RL("РС", "Ревизская сказка"), //Revision legend
-    PR("РС", "Ревизская сказка"), //Parish register
+    PR_CHR("МК крещение", "Метрическая книга о крещении"), //Parish register christening
+    PR_MRG("МК брак", "Метрическая книга о браке"), //Parish register marriage
+    PR_DTH("МК смерть", "Метрическая книга о смерти"), //Parish register death
     CS("ИВ", "Исповедная ведомость"), //confession sheet
     ANOTHER("Другое", "Другое");
 

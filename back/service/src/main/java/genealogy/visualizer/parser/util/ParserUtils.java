@@ -1,7 +1,10 @@
 package genealogy.visualizer.parser.util;
 
-import genealogy.visualizer.entity.Age;
+import genealogy.visualizer.entity.model.Age;
+import genealogy.visualizer.entity.model.FullName;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -9,12 +12,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.apache.commons.lang3.StringUtils.contains;
 
 /**
  * Утилитарный класс для вспомогательных методов необходимых для парсинга excel файлов
@@ -23,40 +29,56 @@ public class ParserUtils {
 
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
-    public static final String FIRST_NAME = "firstName";
-    public static final String LAST_NAME = "lastName";
-    public static final String SURNAME = "surname";
-    public static final String PERSON_STATUS = "person_status";
     public static final String WITHOUT_FIRST_NAME = "БФ";
+    public static final Set<String> TOWN_LOCATION = Set.of("г.", "город", "города");
+    public static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
+    public static final Set<String> HAMLET_LOCATION = Set.of("д.", "деревня", "деревни");
+    public static final String LOCATION_EXCLUDE = "того села";
+    public static final String HYPHEN = "-";
+
+    public static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");
+
+    private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
 
     private static final String TWIN = "близнец";
-    private static final List<String> RELATIONSHIPS = List.of(
+    private static final Set<String> RELATIONSHIPS = Set.of(
             "жена", "брат", "сестра", "племянник", "сноха", "двоюродный", "двоюродная", "свекровь",
             "теща", "троюродный", "троюродная", "другая жена", "дочь", "сын", "пассынок", "внук", "внучка",
-            "тесть", "вдова", "второбрачная", "зять", "тетя", "мачеха", "тетка");
-    private static final List<String> ARRANGED_MARRIAGE = List.of("от 1бр", "от 2бр", "от 3бр", "от 4бр", "от 5бр",
+            "тесть", "второбрачная", "зять", "тетя", "мачеха", "тетка", "девица");
+    private static final Set<String> ARRANGED_MARRIAGE = Set.of("от 1бр", "от 2бр", "от 3бр", "от 4бр", "от 5бр",
             "от 1 бр", "от 2 бр", "от 3 бр", "от 4 бр", "от 5 бр", "от1бр", "от2бр", "от3бр", "от4бр", "от5бр");
-    private static final List<String> ARRANGED_WIFE = List.of("1-я жена", "2-я жена", "3-я жена", "4-я жена", "5-я жена");
-    private static final List<String> WIDOWS = List.of("вд1", "вд2", "вд3", "вд4", "вд5");
-    private static final List<String> FEMININE_COUNTER = List.of("другая", "первая", "вторая", "третья", "четвертая",
+    private static final Set<String> ARRANGED_WIFE = Set.of("1-я жена", "2-я жена", "3-я жена", "4-я жена", "5-я жена");
+    private static final Set<String> WIDOWS = Set.of("вд1", "вд2", "вд3", "вд4", "вд5", "водва(ец)", "вдова", "вдовец");
+    private static final Set<String> FEMININE_COUNTER = Set.of("другая", "первая", "вторая", "третья", "четвертая",
             "пятая", "шестая", "седьмая", "восьмая", "девятая", "десятая");
-    private static final List<String> MASCULINE_COUNTER = List.of("другой", "первый", "второй", "третий", "четвертый",
+    private static final Set<String> MASCULINE_COUNTER = Set.of("другой", "первый", "второй", "третий", "четвертый",
             "пятый", "шестой", "седьмой", "восьмой", "девятый", "десятый");
-    private static final List<String> ANOTHER = List.of("умер", "не указан", "умерший", "солдатка", "незаконнорожденый",
-            "незаконнорожденая");
-    private static final List<String> OBSCURE_DATA = List.of("?", "-", ",", ".");
+    private static final Set<String> ANOTHER = Set.of("умер", "не указан", "умерший", "солдатка", "солдатки", "незаконнорожденый",
+            "незаконнорожденая", "пономарь", "дьякон", "солдат", "пахотный солдат", "иерей", "того округа", "церковника дочь",
+            "церковник", "мещанин", "дьячек", "дьяконица", "дьякононица", "церковникова", "протопица", "того града",
+            "кр-нин", "мещанка", "дьяконщица", "нижнего земского суда", "попадья", "прапорщик", "живущая крестьянка", "живущая",
+            "крестьянка", "скопинский", "купчиха", "купец", "дьячиха", "пятницкий", "из стрельцов", "государственный",
+            "священник", "пономариха", "мещанская", "священницкая", "девка", "крестьянин", "отставной", "дьяконова", "капитан",
+            "служитель", "конюх");
+    private static final Set<String> OBSCURE_DATA = Set.of("?", "-", ",", ".");
     private static final String NEWBORN = "н/р";
+    private static final String HUSBAND = "муж";
 
-    private static final List<String> CHEK_LIST = new ArrayList<>();
+    private static final Set<String> CHECK_LIST = new HashSet<>();
+    private static final Set<String> LOCATION = new HashSet<>();
 
     static {
-        CHEK_LIST.addAll(RELATIONSHIPS);
-        CHEK_LIST.addAll(ARRANGED_MARRIAGE);
-        CHEK_LIST.addAll(ARRANGED_WIFE);
-        CHEK_LIST.addAll(WIDOWS);
-        CHEK_LIST.addAll(FEMININE_COUNTER);
-        CHEK_LIST.addAll(MASCULINE_COUNTER);
-        CHEK_LIST.addAll(ANOTHER);
+        CHECK_LIST.addAll(RELATIONSHIPS);
+        CHECK_LIST.addAll(ARRANGED_MARRIAGE);
+        CHECK_LIST.addAll(ARRANGED_WIFE);
+        CHECK_LIST.addAll(WIDOWS);
+        CHECK_LIST.addAll(FEMININE_COUNTER);
+        CHECK_LIST.addAll(MASCULINE_COUNTER);
+        CHECK_LIST.addAll(ANOTHER);
+        CHECK_LIST.add(LOCATION_EXCLUDE);
+        LOCATION.addAll(TOWN_LOCATION);
+        LOCATION.addAll(VILLAGE_LOCATION);
+        LOCATION.addAll(HAMLET_LOCATION);
     }
 
     /**
@@ -72,7 +94,7 @@ public class ParserUtils {
         Map<String, Integer> headerData = new HashMap<>();
         boolean hasStatusColumn = false;
         for (Cell cell : header) {
-            String value = getStringCellValue(cell);
+            String value = StringUtils.capitalize(getStringCellValue(cell));
             if (STATUS_COLUMN_NAME.equals(value)) hasStatusColumn = true;
             headerData.put(getStringCellValue(cell), cell.getColumnIndex());
         }
@@ -192,32 +214,58 @@ public class ParserUtils {
      * @param notParsingFullName string for parsing
      * @return map with full name and status
      */
-    public static Map<String, String> parseFullNameCell(String notParsingFullName) {
-        Map<String, String> fullName = new HashMap<>();
-        if (notParsingFullName == null || notParsingFullName.isEmpty()) return fullName;
+    public static FullName parseFullNameCell(String notParsingFullName) {
+        if (StringUtils.isEmpty(notParsingFullName)) return null;
+        if (HYPHEN.equals(notParsingFullName)) return null;
+        FullName fullName = new FullName();
         notParsingFullName = notParsingFullName.replaceAll("его|^|\\(|\\)$", "");
-        if (StringUtils.contains(notParsingFullName, TWIN)) {
+        if (contains(notParsingFullName, TWIN)) {
             String twinName = StringUtils.substringAfter(notParsingFullName, TWIN);
             notParsingFullName = StringUtils.substringBefore(notParsingFullName, TWIN);
-            fullName.put(PERSON_STATUS, TWIN + " " + twinName);
+            fullName.setStatus(TWIN + " " + twinName);
         }
-        notParsingFullName = removeSubstringAndUpdateStatus(fullName, CHEK_LIST, notParsingFullName);
+        if (contains(notParsingFullName, HUSBAND)) {
+            String husbandName = StringUtils.substringAfter(notParsingFullName, HUSBAND);
+            notParsingFullName = StringUtils.substringBefore(notParsingFullName, HUSBAND);
+            fullName.setStatus(HUSBAND + " " + husbandName);
+        }
+        notParsingFullName = removeSubstringAndUpdateStatus(fullName, CHECK_LIST, notParsingFullName);
+        for (String settlement : SETTLEMENT) {
+            if (contains(notParsingFullName, settlement)) {
+                String subString = StringUtils.substringBetween(" ", " " + settlement);
+                String status = fullName.getStatus();
+                subString = subString + " " + settlement;
+                status = status != null ? status + ", " + subString : subString;
+                fullName.setStatus(status);
+                notParsingFullName = notParsingFullName.replaceAll(subString, "");
+            }
+        }
+        for (String locate : LOCATION) {
+            if (notParsingFullName.contains(locate)) {
+                String status = fullName.getStatus();
+                String location = locate + " " + StringUtils.substringBetween(locate + " ", " ");
+                status = status != null ? status + ", " + location : location;
+                fullName.setStatus(status);
+                notParsingFullName = notParsingFullName.replaceAll(location, "");
+                break;
+            }
+        }
         String[] separateFullName = StringUtils.split(notParsingFullName.replaceAll("\\s+", " ").trim(), " ");
         Iterator<String> iterator = Arrays.stream(separateFullName).iterator();
         if (iterator.hasNext()) {
-            fullName.put(FIRST_NAME, StringUtils.capitalize(iterator.next()));
+            fullName.setName(StringUtils.capitalize(iterator.next()));
         }
         if (iterator.hasNext()) {
-            fullName.put(SURNAME, StringUtils.capitalize(iterator.next()));
+            fullName.setSurname(StringUtils.capitalize(iterator.next()));
         }
         if (iterator.hasNext()) {
-            fullName.put(LAST_NAME, StringUtils.capitalize(iterator.next()));
+            fullName.setLastName(StringUtils.capitalize(iterator.next()));
         }
         if (iterator.hasNext()) {
-            String status = fullName.get(PERSON_STATUS);
+            String status = fullName.getStatus();
             String remaining = iterator.next();
             status = status != null ? status + ", " + remaining : remaining;
-            fullName.put(PERSON_STATUS, status);
+            fullName.setStatus(status);
         }
         return fullName;
     }
@@ -244,13 +292,13 @@ public class ParserUtils {
         }
     }
 
-    private static String removeSubstringAndUpdateStatus(Map<String, String> fullName, List<String> subStrings, String notParsingFullName) {
+    private static String removeSubstringAndUpdateStatus(FullName fullName, Set<String> subStrings, String notParsingFullName) {
         for (String subString : subStrings) {
-            if (StringUtils.contains(notParsingFullName.toLowerCase(), subString)) {
+            if (contains(notParsingFullName.toLowerCase(), subString)) {
                 notParsingFullName = StringUtils.remove(notParsingFullName, subString);
-                String status = fullName.get(PERSON_STATUS);
+                String status = fullName.getStatus();
                 status = status != null ? status + ", " + subString : subString;
-                fullName.put(PERSON_STATUS, status);
+                fullName.setStatus(status);
             }
         }
         return notParsingFullName.trim();

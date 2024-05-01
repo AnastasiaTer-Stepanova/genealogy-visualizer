@@ -1,7 +1,7 @@
 package genealogy.visualizer.parser.impl;
 
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.ArchiveDocumentType;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
@@ -34,7 +34,7 @@ public class ArchiveDocumentExcelParser implements FileParser {
 
     private static final Logger LOGGER = LogManager.getLogger(ArchiveDocumentExcelParser.class);
     private static final String LIST_NUMBER_PARAM_NAME = "ListNumber";
-    private static final String LIST_WITH_PARAMS_NAME = "parsingSettings";
+    private static final String LIST_WITH_PARAMS_NAME = "ParsingSettings";
     private static final String FOLDER_OUTPUT_FILE = "/result/";
     private final Map<ArchiveDocumentType, SheetParser> parserMap;
     private final ArchiveDocumentDAO archiveDocumentDAO;

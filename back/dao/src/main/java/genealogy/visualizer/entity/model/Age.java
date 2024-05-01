@@ -1,4 +1,4 @@
-package genealogy.visualizer.entity;
+package genealogy.visualizer.entity.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class Age implements Serializable {
 
     @Comment("Возраст")
-    @Column(precision = 5, scale = 2)
+    @Column(precision = 5, scale = 1)
     private BigDecimal age;
 
     @Comment("Тип возраста")

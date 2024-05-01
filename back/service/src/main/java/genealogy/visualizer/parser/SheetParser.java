@@ -1,7 +1,7 @@
 package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.ArchiveDocumentType;
+import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import org.apache.poi.ss.usermodel.Sheet;
 
 /**
