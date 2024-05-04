@@ -4,8 +4,10 @@ import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
+import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
+import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,11 @@ public class ServiceConfig {
     @Bean
     public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO) {
         return new FamilyRevisionSheetParser(familyRevisionDAO);
+    }
+
+    @Bean
+    public SheetParser christeningSheetParser(ChristeningDAO christeningDAO) {
+        return new ChristeningSheetParser(christeningDAO);
     }
 
     @Bean

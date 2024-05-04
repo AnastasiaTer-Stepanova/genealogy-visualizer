@@ -90,7 +90,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
                     getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
                     getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
                     getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
-                    archive
+                    archive,
+                    null
             );
             familyRevision.add(familyRevisionPerson);
             rowNumbers.add(rowNum);

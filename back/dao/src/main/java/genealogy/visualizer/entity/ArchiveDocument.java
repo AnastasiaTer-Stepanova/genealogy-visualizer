@@ -60,6 +60,9 @@ public class ArchiveDocument implements Serializable {
     @OneToMany(mappedBy = "archiveDocument", fetch = FetchType.LAZY)
     private List<FamilyRevision> familyRevisions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "archiveDocument", fetch = FetchType.LAZY)
+    private List<Christening> christenings = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ARCHIVE_ID",
             referencedColumnName = "ID",
@@ -79,7 +82,7 @@ public class ArchiveDocument implements Serializable {
         this.archive = archive;
     }
 
-    public ArchiveDocument(Long id, ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, Archive archive) {
+    public ArchiveDocument(Long id, ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, List<Christening> christenings, Archive archive) {
         this.id = id;
         this.type = type;
         this.year = year;
@@ -88,6 +91,7 @@ public class ArchiveDocument implements Serializable {
         this.instance = instance;
         this.bunch = bunch;
         this.familyRevisions = familyRevisions;
+        this.christenings = christenings;
         this.archive = archive;
     }
 
@@ -148,11 +152,25 @@ public class ArchiveDocument implements Serializable {
     }
 
     public List<FamilyRevision> getFamilyRevisions() {
+        if (familyRevisions == null) {
+            return new ArrayList<>();
+        }
         return familyRevisions;
     }
 
     public void setFamilyRevisions(List<FamilyRevision> familyRevisions) {
         this.familyRevisions = familyRevisions;
+    }
+
+    public List<Christening> getChristenings() {
+        if (christenings == null) {
+            return new ArrayList<>();
+        }
+        return christenings;
+    }
+
+    public void setChristenings(List<Christening> christenings) {
+        this.christenings = christenings;
     }
 
     public Archive getArchive() {

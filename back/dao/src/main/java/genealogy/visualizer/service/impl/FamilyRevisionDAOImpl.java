@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Transactional(isolation = Isolation.SERIALIZABLE)
 public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
     private final FamilyRevisionRepository familyRevisionRepository;
@@ -18,6 +17,7 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void saveBatch(List<FamilyRevision> familyRevisions) {
         familyRevisionRepository.saveAll(familyRevisions);
     }

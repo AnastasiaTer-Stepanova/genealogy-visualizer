@@ -1,8 +1,11 @@
 package genealogy.visualizer.parser.util;
 
+import genealogy.visualizer.entity.Locality;
+import genealogy.visualizer.entity.enums.LocalityType;
 import genealogy.visualizer.entity.model.Age;
 import genealogy.visualizer.entity.model.FullName;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -12,13 +15,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.contains;
 
@@ -30,17 +36,22 @@ public class ParserUtils {
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
     public static final String WITHOUT_FIRST_NAME = "БФ";
-    public static final Set<String> TOWN_LOCATION = Set.of("г.", "город", "города");
-    public static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
-    public static final Set<String> HAMLET_LOCATION = Set.of("д.", "деревня", "деревни");
-    public static final String LOCATION_EXCLUDE = "того села";
-    public static final String HYPHEN = "-";
-
-    public static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");
 
     private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
 
+    private static final String LOCATION_EXCLUDE = "того села";
+    private static final String HYPHEN = "-";
     private static final String TWIN = "близнец";
+    private static final String NEWBORN = "н/р";
+    private static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");
+    private static final Set<String> TOWN_LOCATION = Set.of("г.", "города", "городя");
+    private static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
+    private static final Set<String> HAMLET_LOCATION = Set.of("д.", "деревня", "деревни");
+    private static final Set<String> PHRASES = Set.of("не указан", "церковника дочь", "церковникова дочь", "незаконнорожденные близнецы",
+            "того града", "того округа", "нижнего земского суда", "из стрельцов", "живущая крестьянка", "незаконнорожденный сын",
+            "у солдатки", "у нее", "незаконнорожденый сын", "у пашенного солдата", "водва(ец)", "церковникова жена",
+            "дьякона жена", "дьячкова дочь", "государственный мещанин", "отставной солдат", "отставной конюх", "ученик философии",
+            "отставной пономарь", "священницкая девка", "пахотный солдат");
     private static final Set<String> RELATIONSHIPS = Set.of(
             "жена", "брат", "сестра", "племянник", "сноха", "двоюродный", "двоюродная", "свекровь",
             "теща", "троюродный", "троюродная", "другая жена", "дочь", "сын", "пассынок", "внук", "внучка",
@@ -53,19 +64,18 @@ public class ParserUtils {
             "пятая", "шестая", "седьмая", "восьмая", "девятая", "десятая");
     private static final Set<String> MASCULINE_COUNTER = Set.of("другой", "первый", "второй", "третий", "четвертый",
             "пятый", "шестой", "седьмой", "восьмой", "девятый", "десятый");
-    private static final Set<String> ANOTHER = Set.of("умер", "не указан", "умерший", "солдатка", "солдатки", "незаконнорожденый",
-            "незаконнорожденая", "пономарь", "дьякон", "солдат", "пахотный солдат", "иерей", "того округа", "церковника дочь",
-            "церковник", "мещанин", "дьячек", "дьяконица", "дьякононица", "церковникова", "протопица", "того града",
-            "кр-нин", "мещанка", "дьяконщица", "нижнего земского суда", "попадья", "прапорщик", "живущая крестьянка", "живущая",
-            "крестьянка", "скопинский", "купчиха", "купец", "дьячиха", "пятницкий", "из стрельцов", "государственный",
-            "священник", "пономариха", "мещанская", "священницкая", "девка", "крестьянин", "отставной", "дьяконова", "капитан",
-            "служитель", "конюх");
+    private static final Set<String> ANOTHER = Set.of("умер", "дьякон ", "солдат", "пономарь", "иерей", "церковник", "мещанин",
+            "дьячек", "прапорщик", "купец", "кр-нин", "священник", "крестьянин", "служитель", "конюх", "капитан");
+    private static final Set<String> ANOTHER_WITH_SUFFIX = Set.of("умерший", "солдатка", "солдатки", "незаконнорожденый",
+            "незаконнорожденая", "дьяконица", "дьякононица", "протопица", "мещанка", "дьяконщица", "попадья", "живущая",
+            "крестьянка", "скопинский", "купчиха", "дьячиха", "пятницкий", "государственный", "пономариха", "мещанская",
+            "священницкая", "девка", "отставной", "дьяконова", "капитан", "вознесенский", "незаконнорожденный",
+            "незаконнорожденная", "пападья", "дьяек");
     private static final Set<String> OBSCURE_DATA = Set.of("?", "-", ",", ".");
-    private static final String NEWBORN = "н/р";
-    private static final String HUSBAND = "муж";
+    private static final Set<String> TRUSTEE = Set.of("муж", "отец");
+    private static final Set<String> EXCLUDE_STATUS = Set.of("его ", "\\...", "\\(", "\\)");
 
     private static final Set<String> CHECK_LIST = new HashSet<>();
-    private static final Set<String> LOCATION = new HashSet<>();
 
     static {
         CHECK_LIST.addAll(RELATIONSHIPS);
@@ -74,11 +84,8 @@ public class ParserUtils {
         CHECK_LIST.addAll(WIDOWS);
         CHECK_LIST.addAll(FEMININE_COUNTER);
         CHECK_LIST.addAll(MASCULINE_COUNTER);
-        CHECK_LIST.addAll(ANOTHER);
+        CHECK_LIST.addAll(ANOTHER_WITH_SUFFIX);
         CHECK_LIST.add(LOCATION_EXCLUDE);
-        LOCATION.addAll(TOWN_LOCATION);
-        LOCATION.addAll(VILLAGE_LOCATION);
-        LOCATION.addAll(HAMLET_LOCATION);
     }
 
     /**
@@ -138,6 +145,36 @@ public class ParserUtils {
             return new Age(formatAge, "месяцы");
         }
         return new Age(new BigDecimal(age), "года");
+    }
+
+    /**
+     * Get short cell value
+     *
+     * @param row     row
+     * @param cellNum header params
+     * @return short value
+     */
+    public static Date getDateCellValue(Row row, Integer cellNum) {
+        Cell cell = checkAndReturnFromRow(row, cellNum);
+        return getDateCellValue(cell);
+    }
+
+    public static Date getDateCellValue(Cell cell) {
+        if (cell == null) return null;
+        return switch (cell.getCellType()) {
+            case CellType.NUMERIC, CellType.BLANK -> null;
+            case CellType.STRING -> {
+                try {
+                    String cellValue = cell.getStringCellValue();
+                    if (HYPHEN.equals(cellValue)) yield null;
+                    yield DateUtils.parseDate(cellValue, "dd.MM.yyyy");
+                } catch (ParseException e) {
+                    LOGGER.error(String.format("Error parsing date %s", cell.getStringCellValue()), e);
+                    yield null;
+                }
+            }
+            default -> throw new IllegalArgumentException("Параметр в excel задан в неверном формате");
+        };
     }
 
     /**
@@ -209,47 +246,88 @@ public class ParserUtils {
     }
 
     /**
-     * Parse string to map with full name and status
+     * Get {@link Locality} from string
      *
      * @param notParsingFullName string for parsing
-     * @return map with full name and status
+     * @return locality
      */
-    public static FullName parseFullNameCell(String notParsingFullName) {
+    public static String parseLocality(Locality locality, String notParsingFullName) {
         if (StringUtils.isEmpty(notParsingFullName)) return null;
         if (HYPHEN.equals(notParsingFullName)) return null;
+        for (String settlement : SETTLEMENT) {
+            if (contains(notParsingFullName, settlement)) {
+                String subString = StringUtils.substringBetween(notParsingFullName, " ", " " + settlement);
+                if (subString == null) {
+                    subString = StringUtils.substringBefore(notParsingFullName, " " + settlement);
+                }
+                subString = subString + " " + settlement;
+                if (locality != null) {
+                    String address = locality.getAddress();
+                    locality.setAddress(address != null ? address + StringUtils.capitalize(subString) : StringUtils.capitalize(subString));
+                }
+                notParsingFullName = notParsingFullName.replaceAll(subString, "");
+            }
+        }
+        for (String location : TOWN_LOCATION) {
+            notParsingFullName = updateFullNameStringAndLocality(notParsingFullName, location, locality, LocalityType.TOWN);
+        }
+        for (String location : VILLAGE_LOCATION) {
+            notParsingFullName = updateFullNameStringAndLocality(notParsingFullName, location, locality, LocalityType.VILLAGE);
+        }
+        for (String location : HAMLET_LOCATION) {
+            notParsingFullName = updateFullNameStringAndLocality(notParsingFullName, location, locality, LocalityType.HAMLET);
+        }
+        return notParsingFullName;
+    }
+
+    private static String updateFullNameStringAndLocality(String notParsingFullName, String locate, Locality locality, LocalityType localityType) {
+        if (notParsingFullName.toLowerCase().contains(locate) && !notParsingFullName.toLowerCase().contains(LOCATION_EXCLUDE)) {
+            String location = StringUtils.substringBetween(notParsingFullName, locate + " ", " ");
+            if (location == null) {
+                location = StringUtils.substringAfter(notParsingFullName, locate + " ");
+            }
+            if (locality != null) {
+                locality.setName(StringUtils.capitalize(location));
+                locality.setType(localityType);
+            }
+            location = locate + " " + location;
+            notParsingFullName = notParsingFullName.replaceAll(location, "").trim();
+        }
+        return notParsingFullName;
+    }
+
+    /**
+     * Parse string to {@link FullName} if string has locality info delete this
+     *
+     * @param notParsingFullName string for parsing
+     * @return full name
+     */
+    public static FullName parseFullNameCell(String notParsingFullName) {
+        if (notParsingFullName == null || StringUtils.isEmpty(notParsingFullName)) return null;
+        if (HYPHEN.equals(notParsingFullName)) return null;
+        notParsingFullName = notParsingFullName.toLowerCase();
+        notParsingFullName = parseLocality(null, notParsingFullName); //ignore result, need only delete location info from string
+        if (notParsingFullName == null) return null;
         FullName fullName = new FullName();
-        notParsingFullName = notParsingFullName.replaceAll("его|^|\\(|\\)$", "");
+        notParsingFullName = notParsingFullName.replaceAll("\\(|\\)$", "");
+        notParsingFullName = removeSubstringAndUpdateStatus(fullName, PHRASES, notParsingFullName);
+        for (String exclude : EXCLUDE_STATUS) {
+            notParsingFullName = notParsingFullName.replaceAll(exclude, "");
+        }
         if (contains(notParsingFullName, TWIN)) {
             String twinName = StringUtils.substringAfter(notParsingFullName, TWIN);
             notParsingFullName = StringUtils.substringBefore(notParsingFullName, TWIN);
             fullName.setStatus(TWIN + " " + twinName);
         }
-        if (contains(notParsingFullName, HUSBAND)) {
-            String husbandName = StringUtils.substringAfter(notParsingFullName, HUSBAND);
-            notParsingFullName = StringUtils.substringBefore(notParsingFullName, HUSBAND);
-            fullName.setStatus(HUSBAND + " " + husbandName);
+        for (String trustee : TRUSTEE) {
+            if (contains(notParsingFullName, trustee)) {
+                String trusteeName = capitalizeAllWord(StringUtils.substringAfter(notParsingFullName, trustee).trim());
+                notParsingFullName = StringUtils.substringBefore(notParsingFullName, trustee);
+                fullName.setStatus(trustee + " " + trusteeName);
+            }
         }
         notParsingFullName = removeSubstringAndUpdateStatus(fullName, CHECK_LIST, notParsingFullName);
-        for (String settlement : SETTLEMENT) {
-            if (contains(notParsingFullName, settlement)) {
-                String subString = StringUtils.substringBetween(" ", " " + settlement);
-                String status = fullName.getStatus();
-                subString = subString + " " + settlement;
-                status = status != null ? status + ", " + subString : subString;
-                fullName.setStatus(status);
-                notParsingFullName = notParsingFullName.replaceAll(subString, "");
-            }
-        }
-        for (String locate : LOCATION) {
-            if (notParsingFullName.contains(locate)) {
-                String status = fullName.getStatus();
-                String location = locate + " " + StringUtils.substringBetween(locate + " ", " ");
-                status = status != null ? status + ", " + location : location;
-                fullName.setStatus(status);
-                notParsingFullName = notParsingFullName.replaceAll(location, "");
-                break;
-            }
-        }
+        notParsingFullName = removeSubstringAndUpdateStatus(fullName, ANOTHER, notParsingFullName);
         String[] separateFullName = StringUtils.split(notParsingFullName.replaceAll("\\s+", " ").trim(), " ");
         Iterator<String> iterator = Arrays.stream(separateFullName).iterator();
         if (iterator.hasNext()) {
@@ -292,9 +370,15 @@ public class ParserUtils {
         }
     }
 
+    private static String capitalizeAllWord(String input) {
+        return Arrays.stream(input.split("\\s+"))
+                .map(StringUtils::capitalize)
+                .collect(Collectors.joining(" "));
+    }
+
     private static String removeSubstringAndUpdateStatus(FullName fullName, Set<String> subStrings, String notParsingFullName) {
         for (String subString : subStrings) {
-            if (contains(notParsingFullName.toLowerCase(), subString)) {
+            if (contains(notParsingFullName, subString)) {
                 notParsingFullName = StringUtils.remove(notParsingFullName, subString);
                 String status = fullName.getStatus();
                 status = status != null ? status + ", " + subString : subString;

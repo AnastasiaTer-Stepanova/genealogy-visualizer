@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -91,10 +92,13 @@ public class FamilyRevision implements Serializable {
             foreignKey = @ForeignKey(name = "FK_ARCHIVE_DOCUMENT"))
     private ArchiveDocument archiveDocument;
 
+    @OneToOne(mappedBy = "familyRevision", fetch = FetchType.LAZY, optional = false)
+    private Person person;
+
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument) {
+    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.familyRevisionNumber = familyRevisionNumber;
         this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
@@ -109,6 +113,7 @@ public class FamilyRevision implements Serializable {
         this.arrived = arrived;
         this.anotherNames = anotherNames;
         this.archiveDocument = archiveDocument;
+        this.person = person;
     }
 
     public Long getId() {
@@ -208,6 +213,9 @@ public class FamilyRevision implements Serializable {
     }
 
     public List<AnotherNameInRevision> getAnotherNames() {
+        if (anotherNames == null) {
+            return new ArrayList<>();
+        }
         return anotherNames;
     }
 
@@ -221,5 +229,13 @@ public class FamilyRevision implements Serializable {
 
     public void setArchiveDocument(ArchiveDocument archiveDocument) {
         this.archiveDocument = archiveDocument;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
     }
 }

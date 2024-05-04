@@ -1,6 +1,7 @@
 package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.ArchiveDocument;
+import genealogy.visualizer.entity.model.FullName;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -19,10 +20,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static genealogy.visualizer.config.EasyRandomParamsBuilder.getGeneratorParams;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,9 +41,11 @@ abstract class AbstractTest {
     static final String YEAR_PARAM_NAME = "YearOfDocument";
     static final String LIST_NUMBER_PARAM_NAME = "ListNumber";
     static final String ARCHIVE_PARAM_NAME = "Archive";
-    static final String LIST_WITH_PARAMS_NAME = "parsingSettings";
-    static final String STATUS_COLUMN_NAME = "status";
+    static final String LIST_WITH_PARAMS_NAME = "ParsingSettings";
+    static final String STATUS_COLUMN_NAME = "Status";
     static final String STATUS_IMPORTED = "imported";
+
+    static final String DATE_PATTERN = "dd.MM.yyyy";
 
     static EasyRandom generator;
 
@@ -88,9 +93,17 @@ abstract class AbstractTest {
                     }
                     assertEquals(firstRow.getCell(i).getStringCellValue(), STATUS_IMPORTED);
                 }
-                assertCell(firstRow.getCell(i + 1), secondRow.getCell(i));
+                if (firstRow.getCell(i + 1) == null) {
+                    assertNull(secondRow.getCell(i));
+                } else {
+                    assertCell(firstRow.getCell(i + 1), secondRow.getCell(i));
+                }
             } else {
-                assertCell(firstRow.getCell(i), secondRow.getCell(i));
+                if (firstRow.getCell(i) == null) {
+                    assertNull(secondRow.getCell(i));
+                } else {
+                    assertCell(firstRow.getCell(i), secondRow.getCell(i));
+                }
             }
         }
     }
@@ -177,6 +190,24 @@ abstract class AbstractTest {
                 sheet.shiftRows(rowIndex + 1, sheet.getLastRowNum(), -1);
             }
         }
+    }
+
+    static Sheet createXSSFWorkbook(Map<String, Integer> headers, String sheetName) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        workbook.close();
+        Sheet sheet = workbook.createSheet(sheetName);
+        Row row = sheet.createRow(0);
+        for (Map.Entry<String, Integer> entry : headers.entrySet()) {
+            row.createCell(entry.getValue()).setCellValue(entry.getKey());
+        }
+        return sheet;
+    }
+
+    static String getFullName(FullName fullName) {
+        return fullName.getStatus() + " " +
+                fullName.getName() + " " +
+                fullName.getSurname() + " " +
+                fullName.getLastName() + " ";
     }
 
     static boolean isBlank(Row row) {

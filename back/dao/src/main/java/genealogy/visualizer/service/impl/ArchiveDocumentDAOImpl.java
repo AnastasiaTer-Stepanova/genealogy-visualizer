@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@Transactional(isolation = Isolation.SERIALIZABLE)
 public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     private final ArchiveDocumentRepository archiveDocumentRepository;
@@ -23,6 +22,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ArchiveDocument saveOrFindIfExistDocument(ArchiveDocument archiveDocument) {
         Archive archive = archiveDocument.getArchive();
         if (archive == null) throw new NullPointerException("ArchiveDocument does not contains archive");

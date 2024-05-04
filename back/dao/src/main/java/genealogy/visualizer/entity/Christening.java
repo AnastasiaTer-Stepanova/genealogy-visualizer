@@ -1,0 +1,222 @@
+package genealogy.visualizer.entity;
+
+import genealogy.visualizer.converter.SexConverter;
+import genealogy.visualizer.entity.enums.Sex;
+import genealogy.visualizer.entity.model.FullName;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.Comment;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Entity
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_CHRISTENING_PERSON_ID", columnNames = {"PERSON_ID"}))
+public class Christening implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_CHRISTENING")
+    @SequenceGenerator(name = "SEQ_CHRISTENING", sequenceName = "SEQ_CHRISTENING", allocationSize = 1)
+    @Comment("Идентификатор записи")
+    private Long id;
+
+    @Column(columnDefinition = "DATE", nullable = false)
+    @Comment("Дата рождения")
+    private Date birthDate;
+
+    @Column(columnDefinition = "DATE")
+    @Comment("Дата крещения")
+    private Date christeningDate;
+
+    @Column(length = 1, nullable = false)
+    @Comment("Пол: Ж - женщина, М - мужчина")
+    @Convert(converter = SexConverter.class)
+    private Sex sex;
+
+    @Column(length = 50, nullable = false)
+    @Comment("Имя при крещении")
+    private String name;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lastName", column = @Column(name = "FATHER_LAST_NAME")),
+            @AttributeOverride(name = "name", column = @Column(name = "FATHER_NAME")),
+            @AttributeOverride(name = "surname", column = @Column(name = "FATHER_SURNAME")),
+            @AttributeOverride(name = "status", column = @Column(name = "FATHER_STATUS"))
+    })
+    @Comment(value = "Имя отца", on = "FATHER_LAST_NAME")
+    @Comment(value = "Фамилия отца", on = "FATHER_NAME")
+    @Comment(value = "Отчество отца", on = "FATHER_SURNAME")
+    @Comment(value = "Статус отца", on = "FATHER_STATUS")
+    private FullName father;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lastName", column = @Column(name = "MOTHER_LAST_NAME")),
+            @AttributeOverride(name = "name", column = @Column(name = "MOTHER_NAME")),
+            @AttributeOverride(name = "surname", column = @Column(name = "MOTHER_SURNAME")),
+            @AttributeOverride(name = "status", column = @Column(name = "MOTHER_STATUS"))
+    })
+    @Comment(value = "Имя матери", on = "MOTHER_LAST_NAME")
+    @Comment(value = "Фамилия матери", on = "MOTHER_NAME")
+    @Comment(value = "Отчество матери", on = "MOTHER_SURNAME")
+    @Comment(value = "Статус матери", on = "MOTHER_STATUS")
+    private FullName mother;
+
+    @Comment("Комментарий")
+    private String comment;
+
+    @Comment("Город, село, деревня и т.д.")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "LOCALITY_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_LOCALITY"))
+    private Locality locality;
+
+    @OneToMany(mappedBy = "christening", orphanRemoval = true)
+    private List<GodParent> godParents = new ArrayList<>();
+
+    @OneToOne(mappedBy = "christening", fetch = FetchType.LAZY, optional = false)
+    private Person person;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ARCHIVE_DOCUMENT_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_ARCHIVE_DOCUMENT"))
+    private ArchiveDocument archiveDocument;
+
+    public Christening() {
+    }
+
+    public Christening(Long id, Date birthDate, Date christeningDate, Sex sex, String name, FullName father, FullName mother, String comment, Locality locality, List<GodParent> godParents, Person person, ArchiveDocument archiveDocument) {
+        this.id = id;
+        this.birthDate = birthDate;
+        this.christeningDate = christeningDate;
+        this.sex = sex;
+        this.name = name;
+        this.father = father;
+        this.mother = mother;
+        this.comment = comment;
+        this.locality = locality;
+        this.godParents = godParents;
+        this.person = person;
+        this.archiveDocument = archiveDocument;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(Date birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public Date getChristeningDate() {
+        return christeningDate;
+    }
+
+    public void setChristeningDate(Date christeningDate) {
+        this.christeningDate = christeningDate;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public FullName getFather() {
+        return father;
+    }
+
+    public void setFather(FullName father) {
+        this.father = father;
+    }
+
+    public FullName getMother() {
+        return mother;
+    }
+
+    public void setMother(FullName mother) {
+        this.mother = mother;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Locality getLocality() {
+        return locality;
+    }
+
+    public void setLocality(Locality locality) {
+        this.locality = locality;
+    }
+
+    public List<GodParent> getGodParents() {
+        if (godParents == null) {
+            return new ArrayList<>();
+        }
+        return godParents;
+    }
+
+    public void setGodParents(List<GodParent> godParents) {
+        this.godParents = godParents;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public ArchiveDocument getArchiveDocument() {
+        return archiveDocument;
+    }
+
+    public void setArchiveDocument(ArchiveDocument archiveDocument) {
+        this.archiveDocument = archiveDocument;
+    }
+}

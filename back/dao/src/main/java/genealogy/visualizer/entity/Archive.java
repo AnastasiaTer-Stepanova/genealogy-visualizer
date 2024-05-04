@@ -85,6 +85,9 @@ public class Archive implements Serializable {
     }
 
     public List<ArchiveDocument> getArchiveDocuments() {
+        if (archiveDocuments == null) {
+            return new ArrayList<>();
+        }
         return archiveDocuments;
     }
 
