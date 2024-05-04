@@ -98,7 +98,11 @@ public class FamilyRevision implements Serializable {
             foreignKey = @ForeignKey(name = "FK_ARCHIVE_DOCUMENT"))
     private ArchiveDocument archiveDocument;
 
-    @OneToOne(mappedBy = "familyRevision", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PERSON_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PERSON"),
+            unique = true)
     private Person person;
 
     public FamilyRevision() {

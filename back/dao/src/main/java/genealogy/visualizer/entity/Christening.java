@@ -106,7 +106,11 @@ public class Christening implements Serializable {
     })
     private List<GodParent> godParents = new ArrayList<>();
 
-    @OneToOne(mappedBy = "christening", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PERSON_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_CHRISTENING_PERSON"),
+            unique = true)
     private Person person;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -2,11 +2,9 @@ package genealogy.visualizer.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -27,18 +25,10 @@ public class Person implements Serializable {
     @Comment("Идентификатор записи")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "CHRISTENING_ID",
-            referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_CHRISTENING"),
-            unique = true)
+    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
     private Christening christening;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "FAMILY_REVISION_ID",
-            referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION"),
-            unique = true)
+    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
     private FamilyRevision familyRevision;
 
     public Person() {
