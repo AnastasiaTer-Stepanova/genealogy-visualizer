@@ -1,9 +1,9 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.AnotherNameInRevision;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
+import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.poi.ss.usermodel.Row;

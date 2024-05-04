@@ -6,6 +6,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -17,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Embeddable
 @Table(indexes = {@Index(name = "IDX_LOCALITY_NAME", columnList = "NAME")})
 public class Locality implements Serializable {
 
@@ -46,16 +49,15 @@ public class Locality implements Serializable {
     private String address;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "ANOTHER_LOCALITY_NAMES",
-            joinColumns = @JoinColumn(name = "ANOTHER_NAME_ID",
-                    foreignKey = @ForeignKey(name = "FK_ANOTHER_LOCALITY_NAMES")))
+    @CollectionTable(name = "ANOTHER_LOCALITY_NAME",
+            joinColumns = @JoinColumn(name = "LOCALITY_ID",
+                    foreignKey = @ForeignKey(name = "FK_ANOTHER_LOCALITY_NAME")),
+            uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_LOCALITY_NAME",
+                    columnNames = {"LOCALITY_ID", "ANOTHER_NAMES"}))
     private List<String> anotherNames = new ArrayList<>();
 
     @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
     private List<Christening> christenings = new ArrayList<>();
-
-    @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
-    private List<GodParent> godParents = new ArrayList<>();
 
     public Locality() {
     }
@@ -65,14 +67,13 @@ public class Locality implements Serializable {
         this.type = type;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<GodParent> godParents) {
+    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.address = address;
         this.anotherNames = anotherNames;
         this.christenings = christenings;
-        this.godParents = godParents;
     }
 
     public Long getId() {
@@ -127,16 +128,5 @@ public class Locality implements Serializable {
 
     public void setChristenings(List<Christening> christenings) {
         this.christenings = christenings;
-    }
-
-    public List<GodParent> getGodParents() {
-        if (godParents == null) {
-            return new ArrayList<>();
-        }
-        return godParents;
-    }
-
-    public void setGodParents(List<GodParent> godParents) {
-        this.godParents = godParents;
     }
 }

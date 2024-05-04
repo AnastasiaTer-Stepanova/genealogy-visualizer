@@ -2,11 +2,11 @@ package genealogy.visualizer.parser.impl;
 
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
-import genealogy.visualizer.entity.GodParent;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.FullName;
+import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.service.ChristeningDAO;
 import org.apache.logging.log4j.LogManager;
@@ -114,11 +114,13 @@ public class ChristeningSheetParser implements SheetParser {
         String secondGodParent = getStringCellValue(row.getCell(header.get(SECOND_GOD_PARENT_COLUMN_NAME)));
         if (firstGodParent != null) {
             GodParent godParent = getGodParent(firstGodParent);
-            if (godParent != null) godParents.add(godParent);
+            if (godParent != null && godParent.getFullName() != null && godParent.getFullName().getName() != null)
+                godParents.add(godParent);
         }
         if (secondGodParent != null) {
             GodParent godParent = getGodParent(secondGodParent);
-            if (godParent != null) godParents.add(godParent);
+            if (godParent != null && godParent.getFullName() != null && godParent.getFullName().getName() != null)
+                godParents.add(godParent);
         }
         return godParents;
     }

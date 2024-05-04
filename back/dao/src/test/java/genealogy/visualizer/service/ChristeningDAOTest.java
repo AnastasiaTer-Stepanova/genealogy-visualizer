@@ -4,8 +4,8 @@ import genealogy.visualizer.JpaAbstractTest;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
-import genealogy.visualizer.entity.GodParent;
 import genealogy.visualizer.entity.Locality;
+import genealogy.visualizer.entity.model.GodParent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,6 @@ class ChristeningDAOTest extends JpaAbstractTest {
         locality = generator.nextObject(Locality.class);
         locality.setId(null);
         locality.setChristenings(Collections.emptyList());
-        locality.setGodParents(Collections.emptyList());
         int count = generator.nextInt(3);
         if (count == 0) {
             locality.setAnotherNames(Collections.emptyList());
@@ -77,7 +76,6 @@ class ChristeningDAOTest extends JpaAbstractTest {
             } else {
                 List<GodParent> godParents = generator.objects(GodParent.class, generator.nextInt(count)).toList();
                 godParents.forEach(godParent -> {
-                    godParent.setId(null);
                     if (generator.nextBoolean()) {
                         godParent.setLocality(getLocalityForSave());
                     }
@@ -100,7 +98,6 @@ class ChristeningDAOTest extends JpaAbstractTest {
                 locality.getType(),
                 locality.getAddress(),
                 locality.getAnotherNames(),
-                Collections.emptyList(),
                 Collections.emptyList());
     }
 

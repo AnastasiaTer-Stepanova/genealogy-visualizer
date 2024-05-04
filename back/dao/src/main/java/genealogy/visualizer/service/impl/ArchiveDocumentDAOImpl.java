@@ -37,7 +37,8 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                         archiveDocument.getCatalog(),
                         archiveDocument.getInstance(),
                         archiveDocument.getBunch(),
-                        archiveDocument.getYear())
+                        archiveDocument.getYear(),
+                        archiveDocument.getType())
                 .or(() -> Optional.of(archiveDocumentRepository.save(archiveDocument)))
                 .orElseThrow();
     }

@@ -4,17 +4,14 @@ import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
-import genealogy.visualizer.repository.GodParentRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
-import genealogy.visualizer.service.GodParentDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.impl.ArchiveDocumentDAOImpl;
 import genealogy.visualizer.service.impl.ChristeningDAOImpl;
 import genealogy.visualizer.service.impl.FamilyRevisionDAOImpl;
-import genealogy.visualizer.service.impl.GodParentDAOImpl;
 import genealogy.visualizer.service.impl.LocalityDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -43,24 +40,16 @@ public class DaoConfig {
     }
 
     @Bean
-    public GodParentDAO godParentDAO(@Autowired GodParentRepository godParentRepository,
-                                     LocalityDAO localityDAO) {
-        return new GodParentDAOImpl(godParentRepository, localityDAO);
-    }
-
-    @Bean
     public ChristeningDAO christeningDAO(@Autowired ChristeningRepository christeningRepository,
                                          LocalityDAO localityDAO,
-                                         ArchiveDocumentDAO archiveDocumentDAO,
-                                         GodParentDAO godParentDAO) {
-        return new ChristeningDAOImpl(christeningRepository, localityDAO, archiveDocumentDAO, godParentDAO);
+                                         ArchiveDocumentDAO archiveDocumentDAO) {
+        return new ChristeningDAOImpl(christeningRepository, localityDAO, archiveDocumentDAO);
     }
 
     @Bean
     public LocalityDAO localityDAO(@Autowired LocalityRepository localityRepository) {
         return new LocalityDAOImpl(localityRepository);
     }
-
 
 //    @Bean
 //    public DataSource getDataSource() {

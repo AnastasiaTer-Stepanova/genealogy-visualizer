@@ -1,7 +1,7 @@
 package genealogy.visualizer.config;
 
 import genealogy.visualizer.entity.model.Age;
-import genealogy.visualizer.entity.AnotherNameInRevision;
+import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.randomizer.AgeRandomizer;
 import genealogy.visualizer.randomizer.AnotherNameInRevisionRandomizer;
 import genealogy.visualizer.randomizer.PersonStatusRandomizer;

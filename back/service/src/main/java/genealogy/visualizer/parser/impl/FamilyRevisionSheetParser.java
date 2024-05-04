@@ -1,9 +1,9 @@
 package genealogy.visualizer.parser.impl;
 
-import genealogy.visualizer.entity.AnotherNameInRevision;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
+import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.ParserUtils;
@@ -99,7 +99,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
             if (lastRowNum != rowNum) {
                 Short nextFamilyRevisionNumber = getShortCellValue(
                         excelSheet.getRow(rowNum + 1), header.get(FAMILY_REVISION_NUMBER_COLUMN_NAME));
-                if (nextFamilyRevisionNumber.equals(currentFamilyRevisionNumber)) {
+                if (nextFamilyRevisionNumber != null && nextFamilyRevisionNumber.equals(currentFamilyRevisionNumber)) {
                     continue;
                 }
             }
@@ -142,7 +142,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
         if (isNotBlank(anotherNameString)) {
             String[] names = split(anotherNameString, " /");
             for (byte i = 0; i < names.length; i++) {
-                anotherNames.add(new AnotherNameInRevision(null, (byte) (i + 1), StringUtils.capitalize(names[i].replaceAll("^\\(|\\)$", "").trim()), null));
+                anotherNames.add(new AnotherNameInRevision((byte) (i + 1), StringUtils.capitalize(names[i].replaceAll("^\\(|\\)$", "").trim())));
             }
         }
         return anotherNames;
