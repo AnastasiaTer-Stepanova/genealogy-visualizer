@@ -5,20 +5,21 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(name = "UK_CHRISTENING_IN_PERSON", columnNames = {"CHRISTENING_ID"}),
-        @UniqueConstraint(name = "UK_FAMILY_REVISION_IN_PERSON", columnNames = {"FAMILY_REVISION_ID"}),
-})
 public class Person implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PERSON")
     @SequenceGenerator(name = "SEQ_PERSON", sequenceName = "SEQ_PERSON", allocationSize = 1)
@@ -31,13 +32,20 @@ public class Person implements Serializable {
     @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
     private FamilyRevision familyRevision;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "person_marriage",
+            joinColumns = @JoinColumn(name = "marriage_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"))
+    private List<Marriage> marriages = new ArrayList<>();
+
     public Person() {
     }
 
-    public Person(Long id, Christening christening, FamilyRevision familyRevision) {
+    public Person(Long id, Christening christening, FamilyRevision familyRevision, List<Marriage> marriages) {
         this.id = id;
         this.christening = christening;
         this.familyRevision = familyRevision;
+        this.marriages = marriages;
     }
 
     public Long getId() {
@@ -62,5 +70,13 @@ public class Person implements Serializable {
 
     public void setFamilyRevision(FamilyRevision familyRevision) {
         this.familyRevision = familyRevision;
+    }
+
+    public List<Marriage> getMarriages() {
+        return marriages;
+    }
+
+    public void setMarriages(List<Marriage> marriages) {
+        this.marriages = marriages;
     }
 }

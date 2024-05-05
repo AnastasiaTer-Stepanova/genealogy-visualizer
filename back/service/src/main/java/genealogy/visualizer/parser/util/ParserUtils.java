@@ -51,7 +51,7 @@ public class ParserUtils {
             "того града", "того округа", "нижнего земского суда", "из стрельцов", "живущая крестьянка", "незаконнорожденный сын",
             "у солдатки", "у нее", "незаконнорожденый сын", "у пашенного солдата", "водва(ец)", "церковникова жена",
             "дьякона жена", "дьячкова дочь", "государственный мещанин", "отставной солдат", "отставной конюх", "ученик философии",
-            "отставной пономарь", "священницкая девка", "пахотный солдат");
+            "отставной пономарь", "священницкая девка", "пахотный солдат", "не разборчиво", "скопинский мещанин", "скопинская мещанка");
     private static final Set<String> RELATIONSHIPS = Set.of(
             "жена", "брат", "сестра", "племянник", "сноха", "двоюродный", "двоюродная", "свекровь",
             "теща", "троюродный", "троюродная", "другая жена", "дочь", "сын", "пассынок", "внук", "внучка",
@@ -68,9 +68,9 @@ public class ParserUtils {
             "дьячек", "прапорщик", "купец", "кр-нин", "священник", "крестьянин", "служитель", "конюх", "капитан");
     private static final Set<String> ANOTHER_WITH_SUFFIX = Set.of("умерший", "солдатка", "солдатки", "незаконнорожденый",
             "незаконнорожденая", "дьяконица", "дьякононица", "протопица", "мещанка", "дьяконщица", "попадья", "живущая",
-            "крестьянка", "скопинский", "купчиха", "дьячиха", "пятницкий", "государственный", "пономариха", "мещанская",
+            "крестьянка", "скопинский", "скопинская", "купчиха", "дьячиха", "пятницкий", "государственный", "пономариха", "мещанская",
             "священницкая", "девка", "отставной", "дьяконова", "капитан", "вознесенский", "незаконнорожденный",
-            "незаконнорожденная", "пападья", "дьяек");
+            "незаконнорожденная", "пападья", "дьяек", "помещик");
     private static final Set<String> OBSCURE_DATA = Set.of("?", "-", ",", ".");
     private static final Set<String> TRUSTEE = Set.of("муж", "отец");
     private static final Set<String> EXCLUDE_STATUS = Set.of("его ", "\\...", "\\(", "\\)");
@@ -80,7 +80,6 @@ public class ParserUtils {
     static {
         CHECK_LIST.addAll(RELATIONSHIPS);
         CHECK_LIST.addAll(ARRANGED_MARRIAGE);
-        CHECK_LIST.addAll(ARRANGED_WIFE);
         CHECK_LIST.addAll(WIDOWS);
         CHECK_LIST.addAll(FEMININE_COUNTER);
         CHECK_LIST.addAll(MASCULINE_COUNTER);
@@ -237,6 +236,7 @@ public class ParserUtils {
                 if (value.endsWith(".0")) {
                     yield value.substring(0, value.length() - 2);
                 }
+                if (HYPHEN.equals(value)) yield null;
                 yield value;
             }
             case CellType.BLANK -> null;
@@ -326,6 +326,7 @@ public class ParserUtils {
                 fullName.setStatus(trustee + " " + trusteeName);
             }
         }
+        notParsingFullName = removeSubstringAndUpdateStatus(fullName, ARRANGED_WIFE, notParsingFullName);
         notParsingFullName = removeSubstringAndUpdateStatus(fullName, CHECK_LIST, notParsingFullName);
         notParsingFullName = removeSubstringAndUpdateStatus(fullName, ANOTHER, notParsingFullName);
         String[] separateFullName = StringUtils.split(notParsingFullName.replaceAll("\\s+", " ").trim(), " ");
@@ -368,6 +369,17 @@ public class ParserUtils {
                 cell.setCellValue(STATUS_IMPORTED);
             }
         }
+    }
+
+    public static Locality getLocality(Cell cell) {
+        String localityString = getStringCellValue(cell);
+        if (localityString == null || StringUtils.isEmpty(localityString) || HYPHEN.equals(localityString)) return null;
+        Locality locality = new Locality();
+        parseLocality(locality, localityString);
+        if (locality.getName() == null) {
+            locality.setName(localityString);
+        }
+        return locality;
     }
 
     private static String capitalizeAllWord(String input) {

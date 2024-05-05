@@ -5,14 +5,17 @@ import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.repository.LocalityRepository;
+import genealogy.visualizer.repository.MarriageRepository;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
+import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.impl.ArchiveDocumentDAOImpl;
 import genealogy.visualizer.service.impl.ChristeningDAOImpl;
 import genealogy.visualizer.service.impl.FamilyRevisionDAOImpl;
 import genealogy.visualizer.service.impl.LocalityDAOImpl;
+import genealogy.visualizer.service.impl.MarriageDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -49,6 +52,13 @@ public class DaoConfig {
     @Bean
     public LocalityDAO localityDAO(@Autowired LocalityRepository localityRepository) {
         return new LocalityDAOImpl(localityRepository);
+    }
+
+    @Bean
+    public MarriageDAO marriageDAO(@Autowired MarriageRepository marriageRepository,
+                                   LocalityDAO localityDAO,
+                                   ArchiveDocumentDAO archiveDocumentDAO) {
+        return new MarriageDAOImpl(marriageRepository, localityDAO, archiveDocumentDAO);
     }
 
 //    @Bean

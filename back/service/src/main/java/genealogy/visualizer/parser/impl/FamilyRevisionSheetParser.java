@@ -76,23 +76,28 @@ public class FamilyRevisionSheetParser implements SheetParser {
                 LOGGER.error("Failed to parse row because {} is blank in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
                 continue;
             }
-            FamilyRevision familyRevisionPerson = new FamilyRevision(
-                    null,
-                    currentFamilyRevisionNumber,
-                    getShortCellValue(row, header.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
-                    getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
-                    getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
-                    getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
-                    getFullName(row, header),
-                    parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
-                    parseAge(getStringCellValue(row, header.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))),
-                    parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
-                    getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
-                    getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
-                    getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
-                    archive,
-                    null
-            );
+            FamilyRevision familyRevisionPerson;
+            try {
+                familyRevisionPerson = new FamilyRevision(
+                        null,
+                        currentFamilyRevisionNumber,
+                        getShortCellValue(row, header.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
+                        getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
+                        getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
+                        getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
+                        getFullName(row, header),
+                        parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
+                        parseAge(getStringCellValue(row, header.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))),
+                        parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
+                        getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
+                        getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
+                        getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
+                        archive,
+                        null);
+            } catch (Exception e) {
+                LOGGER.error("Failed to parse row because {}", row.getRowNum(), e);
+                continue;
+            }
             familyRevision.add(familyRevisionPerson);
             rowNumbers.add(rowNum);
 

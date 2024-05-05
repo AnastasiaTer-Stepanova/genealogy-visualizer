@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,7 @@ class ChristeningSheetParserTest extends AbstractTest {
     private static final String FATHER_COLUMN_NAME = "Father";
     private static final String MOTHER_COLUMN_NAME = "Mather";
     private static final String FIRST_GOD_PARENT_COLUMN_NAME = "GodParent1";
-    private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParen2";
+    private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";
 
     private static Map<String, Integer> headers;
@@ -125,7 +123,6 @@ class ChristeningSheetParserTest extends AbstractTest {
             row.createCell(headers.get(MALE_COLUMN_NAME)).setCellValue("");
             row.createCell(headers.get(FEMALE_COLUMN_NAME)).setCellValue("*");
         }
-        DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
         row.createCell(headers.get(BIRTH_COLUMN_NAME)).setCellValue(dateFormat.format(christening.getBirthDate()));
         row.createCell(headers.get(CHRISTENING_COLUMN_NAME)).setCellValue(dateFormat.format(christening.getChristeningDate()));
         row.createCell(headers.get(LOCALITY_COLUMN_NAME)).setCellValue(christening.getLocality().getName());

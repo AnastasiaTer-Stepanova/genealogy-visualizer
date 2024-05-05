@@ -1,6 +1,8 @@
 package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.ArchiveDocument;
+import genealogy.visualizer.entity.Locality;
+import genealogy.visualizer.entity.enums.LocalityType;
 import genealogy.visualizer.entity.model.FullName;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +21,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +50,8 @@ abstract class AbstractTest {
     static final String STATUS_IMPORTED = "imported";
 
     static final String DATE_PATTERN = "dd.MM.yyyy";
+
+    static final DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
 
     static EasyRandom generator;
 
@@ -209,6 +215,14 @@ abstract class AbstractTest {
                 fullName.getSurname() + " " +
                 fullName.getLastName() + " ";
     }
+
+    static String getLocality(Locality locality) {
+        String type = LocalityType.TOWN.equals(locality.getType()) ? "г. " : locality.getType().getName();
+        return "слободы " + locality.getAddress() + " " +
+                type + " " +
+                locality.getName();
+    }
+
 
     static boolean isBlank(Row row) {
         boolean isBlank = true;

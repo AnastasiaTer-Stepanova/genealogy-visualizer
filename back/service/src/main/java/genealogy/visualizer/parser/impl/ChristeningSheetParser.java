@@ -23,6 +23,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
+import static genealogy.visualizer.parser.util.ParserUtils.getLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseFullNameCell;
 import static genealogy.visualizer.parser.util.ParserUtils.parseLocality;
@@ -40,7 +41,7 @@ public class ChristeningSheetParser implements SheetParser {
     private static final String FATHER_COLUMN_NAME = "Father";
     private static final String MOTHER_COLUMN_NAME = "Mather";
     private static final String FIRST_GOD_PARENT_COLUMN_NAME = "GodParent1";
-    private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParen2";
+    private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";
 
     private final ChristeningDAO christeningDAO;
@@ -65,20 +66,25 @@ public class ChristeningSheetParser implements SheetParser {
                 LOGGER.error("Birth date is null for row {}", rowNum);
                 continue;
             }
-
-            Christening christening = new Christening(
-                    null,
-                    getDateCellValue(row, header.get(BIRTH_COLUMN_NAME)),
-                    getDateCellValue(row, header.get(CHRISTENING_COLUMN_NAME)),
-                    getSex(row, header),
-                    getStringCellValue(row, header.get(NAME_COLUMN_NAME)),
-                    parseFullNameCell(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))),
-                    parseFullNameCell(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))),
-                    getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
-                    getLocality(row, header),
-                    getGodParents(row, header),
-                    null,
-                    archive);
+            Christening christening;
+            try {
+                christening = new Christening(
+                        null,
+                        getDateCellValue(row, header.get(BIRTH_COLUMN_NAME)),
+                        getDateCellValue(row, header.get(CHRISTENING_COLUMN_NAME)),
+                        getSex(row, header),
+                        getStringCellValue(row, header.get(NAME_COLUMN_NAME)),
+                        parseFullNameCell(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))),
+                        parseFullNameCell(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))),
+                        getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
+                        getLocality(row.getCell(header.get(LOCALITY_COLUMN_NAME))),
+                        getGodParents(row, header),
+                        null,
+                        archive);
+            } catch (Exception e) {
+                LOGGER.error(String.format("Failed to create christening entity from row: %s", rowNum), e);
+                continue;
+            }
             try {
                 christeningDAO.save(christening);
                 successParsingRowNumbers.add(rowNum);
@@ -92,20 +98,6 @@ public class ChristeningSheetParser implements SheetParser {
     @Override
     public ArchiveDocumentType type() {
         return ArchiveDocumentType.PR_CHR;
-    }
-
-    private Locality getLocality(Row row, Map<String, Integer> header) {
-        String localityString = getStringCellValue(row, header.get(LOCALITY_COLUMN_NAME));
-        Locality locality = new Locality();
-        if (localityString != null) {
-            parseLocality(locality, localityString);
-            if (locality.getName() == null) {
-                locality.setName(localityString);
-            }
-        } else {
-            locality = null;
-        }
-        return locality;
     }
 
     private List<GodParent> getGodParents(Row row, Map<String, Integer> header) {

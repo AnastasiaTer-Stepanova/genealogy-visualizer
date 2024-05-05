@@ -19,7 +19,7 @@ public class LocalityDAOImpl implements LocalityDAO {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Locality saveOrFindIfExist(Locality locality) {
-        if (locality == null || locality.getName() == null) return null;
+        if (locality == null || locality.getName() == null || locality.getName().isEmpty()) return null;
         if (locality.getId() == null) {
             return localityRepository.findLocality(locality.getName(), locality.getType(), locality.getAddress())
                     .or(() -> Optional.of(localityRepository.save(locality)))

@@ -54,12 +54,10 @@ class FamilyFamilyRevisionDAOTest extends JpaAbstractTest {
         List<FamilyRevision> familyRevisions = generator.objects(FamilyRevision.class, generator.nextInt(5, 15)).toList();
         for (FamilyRevision familyRevision : familyRevisions) {
             familyRevision.setId(null);
+            familyRevision.setPerson(null);
             familyRevision.setArchiveDocument(archiveDocument);
             if (generator.nextBoolean()) {
                 List<AnotherNameInRevision> anotherNamesInRevision = generator.objects(AnotherNameInRevision.class, generator.nextInt(1, 3)).toList();
-//                for (AnotherNameInRevision anotherNameInRevision : anotherNamesInRevision) {
-//                    anotherNameInRevision.setId(null);
-//                }
                 familyRevision.setAnotherNames(anotherNamesInRevision);
             }
         }
