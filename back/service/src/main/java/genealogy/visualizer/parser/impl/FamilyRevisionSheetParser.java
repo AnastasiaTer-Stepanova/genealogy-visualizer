@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
-import static genealogy.visualizer.parser.util.ParserUtils.WITHOUT_FIRST_NAME;
+import static genealogy.visualizer.parser.util.ParserUtils.WITHOUT_LAST_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
 import static genealogy.visualizer.parser.util.ParserUtils.getShortCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
@@ -73,9 +73,14 @@ public class FamilyRevisionSheetParser implements SheetParser {
             if (rowNum == 0 || STATUS_IMPORTED.equals(status)) {
                 continue;
             }
-            Short currentFamilyRevisionNumber = getShortCellValue(row, header.get(FAMILY_REVISION_NUMBER_COLUMN_NAME));
-            if (currentFamilyRevisionNumber == null) {
-                LOGGER.error("Failed to parse row because {} is blank in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
+            Short currentFamilyRevisionNumber;
+            try {
+                currentFamilyRevisionNumber = getShortCellValue(row, header.get(FAMILY_REVISION_NUMBER_COLUMN_NAME));
+                if (currentFamilyRevisionNumber == null) {
+                    throw new NullPointerException("CurrentFamilyRevisionNumber is null");
+                }
+            } catch (Exception e) {
+                LOGGER.error("Failed to parse cell {} in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
                 continue;
             }
             FamilyRevision familyRevisionPerson;
@@ -99,7 +104,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
                         archive,
                         null);
             } catch (Exception e) {
-                LOGGER.error("Failed to parse row because {}", row.getRowNum(), e);
+                LOGGER.error("Failed to parse row {}", row.getRowNum(), e);
                 continue;
             }
             familyRevision.add(familyRevisionPerson);
@@ -131,16 +136,21 @@ public class FamilyRevisionSheetParser implements SheetParser {
     }
 
     private byte getFamilyGeneration(Row row, Map<String, Integer> header) {
-        return (byte) header.entrySet().stream()
-                .filter(map -> map.getKey().matches("^" + FAMILY_GENERATION_COLUMN_NAME_PREFIX + "\\d$"))
-                .mapToInt(map -> {
-                    if (row.getCell(map.getValue()) != null && getStringCellValue(row.getCell(map.getValue())) != null) {
-                        return Integer.parseInt(StringUtils.substringAfter(map.getKey(), FAMILY_GENERATION_COLUMN_NAME_PREFIX));
-                    }
-                    return 1;
-                })
-                .max()
-                .orElse(1);
+        try {
+            return (byte) header.entrySet().stream()
+                    .filter(map -> map.getKey() != null && map.getKey().matches("^" + FAMILY_GENERATION_COLUMN_NAME_PREFIX + "\\d$"))
+                    .mapToInt(map -> {
+                        if (row.getCell(map.getValue()) != null && getStringCellValue(row.getCell(map.getValue())) != null) {
+                            return Integer.parseInt(StringUtils.substringAfter(map.getKey(), FAMILY_GENERATION_COLUMN_NAME_PREFIX));
+                        }
+                        return 1;
+                    })
+                    .max()
+                    .orElse(1);
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse family generation in row {}", row.getRowNum(), e);
+            return 1;
+        }
     }
 
     private static FullName getFullName(Row row, Map<String, Integer> header) {
@@ -152,7 +162,9 @@ public class FamilyRevisionSheetParser implements SheetParser {
             lastName = firstNameFromFullName;
         } else {
             lastName = getStringCellValue(row, header.get(LAST_NAME_COLUMN_NAME));
-            lastName = WITHOUT_FIRST_NAME.equals(lastName) ? null : lastName;
+        }
+        if (lastName != null) {
+            lastName = WITHOUT_LAST_NAME.equalsIgnoreCase(lastName) ? null : lastName;
         }
         fullName.setLastName(StringUtils.capitalize(lastName));
         return fullName;

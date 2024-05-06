@@ -4,7 +4,9 @@ import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
+import genealogy.visualizer.parser.impl.CensusBookSheetParser;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
+import genealogy.visualizer.parser.impl.ConfessionSheetParser;
 import genealogy.visualizer.parser.impl.DeathSheetParser;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
@@ -46,6 +48,16 @@ public class ServiceConfig {
     @Bean
     public SheetParser deathSheetParser(DeathDAO deathDAO) {
         return new DeathSheetParser(deathDAO);
+    }
+
+    @Bean
+    public SheetParser censusBookSheetParser(FamilyRevisionDAO familyRevisionDAO) {
+        return new CensusBookSheetParser(familyRevisionDAO);
+    }
+
+    @Bean
+    public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO) {
+        return new ConfessionSheetParser(familyRevisionDAO);
     }
 
     @Bean

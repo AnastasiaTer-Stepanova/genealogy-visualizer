@@ -35,7 +35,7 @@ public class ParserUtils {
 
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
-    public static final String WITHOUT_FIRST_NAME = "БФ";
+    public static final String WITHOUT_LAST_NAME = "БФ";
     public static final String HYPHEN = "-";
 
     private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
@@ -51,28 +51,35 @@ public class ParserUtils {
             "того града", "того округа", "нижнего земского суда", "из стрельцов", "живущая крестьянка", "незаконнорожденный сын",
             "у солдатки", "у нее", "незаконнорожденый сын", "у пашенного солдата", "водва(ец)", "церковникова жена",
             "дьякона жена", "дьячкова дочь", "государственный мещанин", "отставной солдат", "отставной конюх", "ученик философии",
-            "отставной пономарь", "священницкая девка", "пахотный солдат", "не разборчиво", "скопинский мещанин", "скопинская мещанка");
-    private static final Set<String> RELATIONSHIPS = Set.of(
-            "жена", "брат", "сестра", "племянник", "сноха", "двоюродный", "двоюродная", "свекровь",
-            "теща", "троюродный", "троюродная", "другая жена", "дочь", "сын", "пассынок", "внук", "внучка",
-            "тесть", "второбрачная", "зять", "тетя", "мачеха", "тетка", "девица");
-    private static final Set<String> ARRANGED_MARRIAGE = Set.of("от 1бр", "от 2бр", "от 3бр", "от 4бр", "от 5бр",
-            "от 1 бр", "от 2 бр", "от 3 бр", "от 4 бр", "от 5 бр", "от1бр", "от2бр", "от3бр", "от4бр", "от5бр");
-    private static final Set<String> ARRANGED_WIFE = Set.of("1-я жена", "2-я жена", "3-я жена", "4-я жена", "5-я жена");
-    private static final Set<String> WIDOWS = Set.of("вд1", "вд2", "вд3", "вд4", "вд5", "водва(ец)", "вдова", "вдовец");
+            "отставной пономарь", "священницкая девка", "пахотный солдат", "не разборчиво", "скопинский мещанин", "скопинская мещанка",
+            "крепостной работник", "первым браком", "вторым браком", "третим браком", "чертвертым браком", "сноха их",
+            "сын ее", "дочь ее", "внук ее", "внучка ее", "внук их", "внучка их", "от 1 брака", "от 2 брака", "от 3 брака", "от 4 брака", "от 5 брака",
+            "по 1 браку", "по 2 браку", "по 3 браку", "по 4 браку", "по 5 браку", "их мачеха", "от 1 мужа", "от 2 мужа", "от 3 мужа",
+            "от 4 мужа", "от 5 мужа", "от 1 жены", "от 2 жены", "от 3 жены", "от 4 жены", "от 5 жены");
+    private static final Set<String> RELATIONSHIPS = Set.of("падчерица", "племянница", "шурин", "жена", "брат", "сестра",
+            "племянник", "сноха", "двоюродный", "двоюродная", "свекровь", "приемный", "теща", "троюродный", "троюродная",
+            "другая жена", "дочь", "внук", "внучка", "тесть", "второбрачная", "зять", "тетя", "мачеха", "тетка", "девица",
+            "приемыш", "сват", "племяник");
+    private static final Set<String> ARRANGED_MARRIAGE = Set.of("по 1бр", "по 2бр", "по 3бр", "по 4бр", "по 5бр",
+            "от 1го брака", "от 2го брака", "от 3го брака", "от 4го брака", "от 5го брака", "от 1бр", "от 2бр", "от 3бр",
+            "от 4бр", "от 5бр", "от 1 бр", "от 2 бр", "от 3 бр", "от 4 бр", "от 5 бр", "от1бр", "от2бр", "от3бр", "от4бр", "от5бр");
+    private static final Set<String> ARRANGED_WIFE = Set.of("1-я жена", "2-я жена", "3-я жена", "4-я жена", "5-я жена",
+            "1 жена", "2 жена", "3 жена", "4 жена", "5 жена");
+    private static final Set<String> WIDOWS = Set.of("вд1", "вд2", "вд3", "вд4", "вд5", "водва(ец)", "вдова", "вдовец",
+            "вд 1", "вд 2", "вд 3", "вд 4", "вд 5", "вд.");
     private static final Set<String> FEMININE_COUNTER = Set.of("другая", "первая", "вторая", "третья", "четвертая",
-            "пятая", "шестая", "седьмая", "восьмая", "девятая", "десятая");
+            "пятая", "шестая", "седьмая", "восьмая", "девятая", "десятая", "старшая", "младшая");
     private static final Set<String> MASCULINE_COUNTER = Set.of("другой", "первый", "второй", "третий", "четвертый",
-            "пятый", "шестой", "седьмой", "восьмой", "девятый", "десятый");
+            "пятый", "шестой", "седьмой", "восьмой", "девятый", "десятый", "старший", "старшой", "младший", "младшой", "меньшой");
     private static final Set<String> ANOTHER = Set.of("умер", "дьякон ", "солдат", "пономарь", "иерей", "церковник", "мещанин",
-            "дьячек", "прапорщик", "купец", "кр-нин", "священник", "крестьянин", "служитель", "конюх", "капитан");
+            "дьячек", "прапорщик", "купец", "кр-нин", "священник", "крестьянин", "служитель", "конюх", "капитан", "вдов", "сын");
     private static final Set<String> ANOTHER_WITH_SUFFIX = Set.of("умерший", "солдатка", "солдатки", "незаконнорожденый",
             "незаконнорожденая", "дьяконица", "дьякононица", "протопица", "мещанка", "дьяконщица", "попадья", "живущая",
             "крестьянка", "скопинский", "скопинская", "купчиха", "дьячиха", "пятницкий", "государственный", "пономариха", "мещанская",
             "священницкая", "девка", "отставной", "дьяконова", "капитан", "вознесенский", "незаконнорожденный",
-            "незаконнорожденная", "пападья", "дьяек", "помещик");
+            "незаконнорожденная", "пападья", "дьяек", "помещик", "пасынок", "пассынок");
     private static final Set<String> OBSCURE_DATA = Set.of("?", "-", ",", ".");
-    private static final Set<String> TRUSTEE = Set.of("муж", "отец");
+    private static final Set<String> TRUSTEE = Set.of("муж", "отец", "брат");
     private static final Set<String> EXCLUDE_STATUS = Set.of("его ", "\\...", "\\(", "\\)");
 
     private static final Set<String> CHECK_LIST = new HashSet<>();
@@ -131,16 +138,17 @@ public class ParserUtils {
             if (age.contains(subString)) return null;
         }
         if (age.toLowerCase().contains(NEWBORN)) return new Age(BigDecimal.ZERO, NEWBORN);
-        if (age.endsWith("д") || age.endsWith("дней")) {
-            BigDecimal formatAge = new BigDecimal(age.replaceAll("дней|д$", "").trim());
+        String prefixRegexp = "\\d+(\\.\\d+)?\\s*";
+        if (age.matches(prefixRegexp + "(дней$|дн$|д$)")) {
+            BigDecimal formatAge = new BigDecimal(age.replaceAll("(дней$|дн$|д$)", "").trim());
             return new Age(formatAge, "дни");
         }
-        if (age.endsWith("н") || age.endsWith("недель")) {
-            BigDecimal formatAge = new BigDecimal(age.replaceAll("недель|н$", "").trim());
+        if (age.matches(prefixRegexp + "(недель$|нед$|н$)")) {
+            BigDecimal formatAge = new BigDecimal(age.replaceAll("(недель$|нед$|н$)", "").trim());
             return new Age(formatAge, "недели");
         }
-        if (age.endsWith("м") || age.endsWith("месяцев")) {
-            BigDecimal formatAge = new BigDecimal(age.replaceAll("месяцев|м$", "").trim());
+        if (age.matches(prefixRegexp + "(месяцев$|мес$|м$)")) {
+            BigDecimal formatAge = new BigDecimal(age.replaceAll("(месяцев$|мес$|м$)", "").trim());
             return new Age(formatAge, "месяцы");
         }
         return new Age(new BigDecimal(age), "года");
@@ -230,9 +238,9 @@ public class ParserUtils {
     public static String getStringCellValue(Cell cell) {
         if (cell == null) return null;
         return switch (cell.getCellType()) {
-            case CellType.STRING -> cell.getStringCellValue();
+            case CellType.STRING -> cell.getStringCellValue().trim();
             case CellType.NUMERIC -> {
-                String value = String.valueOf(cell.getNumericCellValue());
+                String value = String.valueOf(cell.getNumericCellValue()).trim();
                 if (value.endsWith(".0")) {
                     yield value.substring(0, value.length() - 2);
                 }
@@ -320,7 +328,7 @@ public class ParserUtils {
             fullName.setStatus(TWIN + " " + twinName);
         }
         for (String trustee : TRUSTEE) {
-            if (contains(notParsingFullName, trustee)) {
+            if (contains(notParsingFullName, trustee) && notParsingFullName.matches("\\s" + trustee + "\\s")) {
                 String trusteeName = capitalizeAllWord(StringUtils.substringAfter(notParsingFullName, trustee).trim());
                 notParsingFullName = StringUtils.substringBefore(notParsingFullName, trustee);
                 fullName.setStatus(trustee + " " + trusteeName);
