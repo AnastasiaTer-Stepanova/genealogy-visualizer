@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -38,6 +39,8 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
     private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
     private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
     private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
+    private static final String COMMENT_COLUMN_NAME = "Comment"; //комментарий о том откуда прибыли
+    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G"; //комментарий о том откуда прибыли
 
     private static Map<String, Integer> headers;
 
@@ -69,6 +72,12 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         headers.put(AGE_IN_NEXT_REVISION_COLUMN_NAME, 10);
         headers.put(DEPARTED_COLUMN_NAME, 11);
         headers.put(ARRIVED_COLUMN_NAME, 12);
+        headers.put(COMMENT_COLUMN_NAME, 13);
+        headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 1, 14);
+        headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 2, 15);
+        headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 3, 16);
+        headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 4, 17);
+        headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 5, 18);
         sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO);
     }
 
@@ -101,6 +110,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
                 List<AnotherNameInRevision> anotherNamesInRevision = generator.objects(AnotherNameInRevision.class, generator.nextInt(1, 3)).toList();
                 familyRevision.setAnotherNames(anotherNamesInRevision);
             }
+            familyRevision.setFamilyGeneration((byte) generator.nextInt(1, 6));
         }
         return familyRevisions;
     }
@@ -133,6 +143,13 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
                 .setCellValue(familyRevision.getAgeInNextRevision().getAge() + familyRevision.getAgeInNextRevision().getAgeType());
         row.createCell(headers.get(DEPARTED_COLUMN_NAME)).setCellValue(familyRevision.getDeparted());
         row.createCell(headers.get(ARRIVED_COLUMN_NAME)).setCellValue(familyRevision.getArrived());
+        row.createCell(headers.get(COMMENT_COLUMN_NAME)).setCellValue(familyRevision.getComment());
+        for (int i = 1; i <= 5; i++) {
+            Cell familyGenerationCell = row.createCell(headers.get(FAMILY_GENERATION_COLUMN_NAME_PREFIX + i));
+            if (familyRevision.getFamilyGeneration() == i) {
+                familyGenerationCell.setCellValue("*");
+            }
+        }
     }
 
     private static String getAnotherName(List<AnotherNameInRevision> anotherNames) {

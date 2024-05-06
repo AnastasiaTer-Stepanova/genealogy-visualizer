@@ -84,6 +84,13 @@ public class FamilyRevision implements Serializable {
     @Comment("Комментарий о том откуда прибыли")
     private String arrived;
 
+    @Comment("Поколение в семье")
+    @Column(length = 1, nullable = false)
+    private Byte familyGeneration;
+
+    @Comment("Комментарий")
+    private String comment;
+
     @ElementCollection(targetClass = AnotherNameInRevision.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "ANOTHER_NAME_IN_REVISION",
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
@@ -108,7 +115,7 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.familyRevisionNumber = familyRevisionNumber;
         this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
@@ -121,6 +128,8 @@ public class FamilyRevision implements Serializable {
         this.ageInNextRevision = ageInNextRevision;
         this.departed = departed;
         this.arrived = arrived;
+        this.familyGeneration = familyGeneration;
+        this.comment = comment;
         this.anotherNames = anotherNames;
         this.archiveDocument = archiveDocument;
         this.person = person;
@@ -222,10 +231,23 @@ public class FamilyRevision implements Serializable {
         this.arrived = arrived;
     }
 
+    public Byte getFamilyGeneration() {
+        return familyGeneration;
+    }
+
+    public void setFamilyGeneration(Byte familyGeneration) {
+        this.familyGeneration = familyGeneration;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public List<AnotherNameInRevision> getAnotherNames() {
-        if (anotherNames == null) {
-            return new ArrayList<>();
-        }
         return anotherNames;
     }
 

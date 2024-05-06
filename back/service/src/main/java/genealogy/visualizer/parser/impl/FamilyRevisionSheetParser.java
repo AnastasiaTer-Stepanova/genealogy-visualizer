@@ -50,6 +50,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
     private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
     private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
     private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
+    private static final String COMMENT_COLUMN_NAME = "Comment"; //комментарий о том откуда прибыли
+    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G"; //комментарий о том откуда прибыли
 
     private final FamilyRevisionDAO familyRevisionDAO;
 
@@ -91,6 +93,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
                         parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
                         getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
                         getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
+                        getFamilyGeneration(row, header),
+                        getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
                         getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
                         archive,
                         null);
@@ -124,6 +128,19 @@ public class FamilyRevisionSheetParser implements SheetParser {
     @Override
     public ArchiveDocumentType type() {
         return ArchiveDocumentType.RL;
+    }
+
+    private byte getFamilyGeneration(Row row, Map<String, Integer> header) {
+        return (byte) header.entrySet().stream()
+                .filter(map -> map.getKey().matches("^" + FAMILY_GENERATION_COLUMN_NAME_PREFIX + "\\d$"))
+                .mapToInt(map -> {
+                    if (row.getCell(map.getValue()) != null && getStringCellValue(row.getCell(map.getValue())) != null) {
+                        return Integer.parseInt(StringUtils.substringAfter(map.getKey(), FAMILY_GENERATION_COLUMN_NAME_PREFIX));
+                    }
+                    return 1;
+                })
+                .max()
+                .orElse(1);
     }
 
     private static FullName getFullName(Row row, Map<String, Integer> header) {

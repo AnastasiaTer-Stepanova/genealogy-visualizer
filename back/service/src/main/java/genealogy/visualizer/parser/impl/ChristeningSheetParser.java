@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static genealogy.visualizer.parser.util.ParserUtils.ILLEGITIMATE;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
@@ -43,6 +44,7 @@ public class ChristeningSheetParser implements SheetParser {
     private static final String FIRST_GOD_PARENT_COLUMN_NAME = "GodParent1";
     private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";
+    private static final String LEGITIMACY_COLUMN_NAME = "Legitimacy";
 
     private final ChristeningDAO christeningDAO;
 
@@ -77,6 +79,7 @@ public class ChristeningSheetParser implements SheetParser {
                         parseFullNameCell(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))),
                         parseFullNameCell(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
+                        getLegitimacy(getStringCellValue(row, header.get(LEGITIMACY_COLUMN_NAME))),
                         getLocality(row.getCell(header.get(LOCALITY_COLUMN_NAME))),
                         getGodParents(row, header),
                         null,
@@ -100,10 +103,17 @@ public class ChristeningSheetParser implements SheetParser {
         return ArchiveDocumentType.PR_CHR;
     }
 
+    private Boolean getLegitimacy(String value) {
+        if (ILLEGITIMATE.equals(value)) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
     private List<GodParent> getGodParents(Row row, Map<String, Integer> header) {
         List<GodParent> godParents = new ArrayList<>();
-        String firstGodParent = getStringCellValue(row.getCell(header.get(FIRST_GOD_PARENT_COLUMN_NAME)));
-        String secondGodParent = getStringCellValue(row.getCell(header.get(SECOND_GOD_PARENT_COLUMN_NAME)));
+        String firstGodParent = getStringCellValue(row, header.get(FIRST_GOD_PARENT_COLUMN_NAME));
+        String secondGodParent = getStringCellValue(row, header.get(SECOND_GOD_PARENT_COLUMN_NAME));
         if (firstGodParent != null) {
             GodParent godParent = getGodParent(firstGodParent);
             if (godParent != null && godParent.getFullName() != null && godParent.getFullName().getName() != null)
@@ -131,11 +141,11 @@ public class ChristeningSheetParser implements SheetParser {
     }
 
     private Sex getSex(Row row, Map<String, Integer> header) {
-        String male = getStringCellValue(row.getCell(header.get(MALE_COLUMN_NAME)));
+        String male = getStringCellValue(row, header.get(MALE_COLUMN_NAME));
         if (male != null) {
             return Sex.MALE;
         } else {
-            String female = getStringCellValue(row.getCell(header.get(FEMALE_COLUMN_NAME)));
+            String female = getStringCellValue(row, header.get(FEMALE_COLUMN_NAME));
             if (female != null) {
                 return Sex.FEMALE;
             }

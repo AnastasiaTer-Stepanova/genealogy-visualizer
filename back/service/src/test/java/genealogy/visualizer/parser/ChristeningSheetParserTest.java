@@ -37,6 +37,8 @@ class ChristeningSheetParserTest extends AbstractTest {
     private static final String FIRST_GOD_PARENT_COLUMN_NAME = "GodParent1";
     private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";
+    private static final String LEGITIMACY_COLUMN_NAME = "Legitimacy";
+    private static final String ILLEGITIMATE = "незаконнорожденный";
 
     private static Map<String, Integer> headers;
 
@@ -67,6 +69,7 @@ class ChristeningSheetParserTest extends AbstractTest {
         headers.put(FIRST_GOD_PARENT_COLUMN_NAME, 8);
         headers.put(SECOND_GOD_PARENT_COLUMN_NAME, 9);
         headers.put(COMMENT_COLUMN_NAME, 10);
+        headers.put(LEGITIMACY_COLUMN_NAME, 11);
         sheetParser = new ChristeningSheetParser(christeningDAO);
     }
 
@@ -143,6 +146,7 @@ class ChristeningSheetParserTest extends AbstractTest {
             }
         }
         row.createCell(headers.get(COMMENT_COLUMN_NAME)).setCellValue(christening.getComment());
+        row.createCell(headers.get(LEGITIMACY_COLUMN_NAME)).setCellValue(christening.getLegitimacy() ? "" : ILLEGITIMATE);
     }
 
 }

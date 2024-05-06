@@ -36,6 +36,7 @@ public class ParserUtils {
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
     public static final String WITHOUT_FIRST_NAME = "БФ";
+    public static final String ILLEGITIMATE = "незаконнорожденный";
 
     private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
 
@@ -356,7 +357,7 @@ public class ParserUtils {
      * @param successParsingRowNumbers success parsing row numbers
      */
     public static void updateStatus(Sheet excelSheet, List<Integer> successParsingRowNumbers, int statusColumnNumber) {
-        CellStyle cellStyle = excelSheet.getRow(0).getCell(1).getCellStyle();
+        CellStyle cellStyle = excelSheet.getRow(0).getRowStyle();
         for (Row row : excelSheet) {
             if (row.getRowNum() == 0) continue;
             Cell cell = row.getCell(statusColumnNumber);

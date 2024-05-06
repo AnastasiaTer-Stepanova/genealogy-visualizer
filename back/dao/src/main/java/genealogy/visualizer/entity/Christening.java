@@ -25,6 +25,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
@@ -88,6 +89,11 @@ public class Christening implements Serializable {
     @Comment("Комментарий")
     private String comment;
 
+    @Comment("Законнорожденность: true - законнорожденный, false - незаконнорожденные")
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private Boolean legitimacy;
+
     @Comment("Город, село, деревня и т.д.")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "LOCALITY_ID",
@@ -122,7 +128,7 @@ public class Christening implements Serializable {
     public Christening() {
     }
 
-    public Christening(Long id, Date birthDate, Date christeningDate, Sex sex, String name, FullName father, FullName mother, String comment, Locality locality, List<GodParent> godParents, Person person, ArchiveDocument archiveDocument) {
+    public Christening(Long id, Date birthDate, Date christeningDate, Sex sex, String name, FullName father, FullName mother, String comment, Boolean legitimacy, Locality locality, List<GodParent> godParents, Person person, ArchiveDocument archiveDocument) {
         this.id = id;
         this.birthDate = birthDate;
         this.christeningDate = christeningDate;
@@ -131,6 +137,7 @@ public class Christening implements Serializable {
         this.father = father;
         this.mother = mother;
         this.comment = comment;
+        this.legitimacy = legitimacy;
         this.locality = locality;
         this.godParents = godParents;
         this.person = person;
@@ -201,6 +208,14 @@ public class Christening implements Serializable {
         this.comment = comment;
     }
 
+    public Boolean getLegitimacy() {
+        return legitimacy;
+    }
+
+    public void setLegitimacy(Boolean legitimacy) {
+        this.legitimacy = legitimacy;
+    }
+
     public Locality getLocality() {
         return locality;
     }
@@ -210,9 +225,6 @@ public class Christening implements Serializable {
     }
 
     public List<GodParent> getGodParents() {
-        if (godParents == null) {
-            return new ArrayList<>();
-        }
         return godParents;
     }
 

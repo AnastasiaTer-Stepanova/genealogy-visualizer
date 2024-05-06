@@ -138,6 +138,7 @@ public class MarriageSheetParser implements SheetParser {
     }
 
     private Witness getWitness(Row row, int cellNum, WitnessType type) {
+        if (row.getCell(cellNum) == null) return null;
         String witness = getStringCellValue(row.getCell(cellNum));
         if (witness != null) {
             Witness result = getWitness(witness);

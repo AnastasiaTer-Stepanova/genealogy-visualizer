@@ -29,6 +29,9 @@ public class ArchiveDocumentUtil {
     public static Map<String, String> getArchiveParams(Sheet initSheet) {
         Map<String, String> params = new HashMap<>();
         for (Row row : initSheet) {
+            if (row.getCell(0) == null || row.getCell(1) == null) {
+                continue;
+            }
             params.put(row.getCell(0).getStringCellValue(), getStringCellValue(row.getCell(1)));
         }
         return params;
