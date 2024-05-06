@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static genealogy.visualizer.parser.util.ParserUtils.ILLEGITIMATE;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
@@ -45,6 +44,7 @@ public class ChristeningSheetParser implements SheetParser {
     private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";
     private static final String LEGITIMACY_COLUMN_NAME = "Legitimacy";
+    private static final String ILLEGITIMATE = "незаконнорожденный";
 
     private final ChristeningDAO christeningDAO;
 

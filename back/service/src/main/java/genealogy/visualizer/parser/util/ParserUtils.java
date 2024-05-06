@@ -36,7 +36,6 @@ public class ParserUtils {
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
     public static final String WITHOUT_FIRST_NAME = "БФ";
-    public static final String ILLEGITIMATE = "незаконнорожденный";
 
     private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
 
