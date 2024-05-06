@@ -92,13 +92,10 @@ class ChristeningDAOTest extends JpaAbstractTest {
     }
 
     private Locality getLocalityForSave() {
-        return new Locality(
-                null,
-                locality.getName(),
+        return new Locality(locality.getName(),
                 locality.getType(),
                 locality.getAddress(),
-                locality.getAnotherNames(),
-                Collections.emptyList());
+                locality.getAnotherNames());
     }
 
     private ArchiveDocument getArchiveDocumentForSave() {

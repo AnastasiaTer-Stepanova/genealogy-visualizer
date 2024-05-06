@@ -5,10 +5,12 @@ import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
+import genealogy.visualizer.parser.impl.DeathSheetParser;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
+import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,11 @@ public class ServiceConfig {
     @Bean
     public SheetParser marriageSheetParser(MarriageDAO marriageDAO) {
         return new MarriageSheetParser(marriageDAO);
+    }
+
+    @Bean
+    public SheetParser deathSheetParser(DeathDAO deathDAO) {
+        return new DeathSheetParser(deathDAO);
     }
 
     @Bean

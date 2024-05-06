@@ -59,6 +59,9 @@ public class Locality implements Serializable {
     @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
     private List<Christening> christenings = new ArrayList<>();
 
+    @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
+    private List<Death> deaths = new ArrayList<>();
+
     public Locality() {
     }
 
@@ -67,13 +70,21 @@ public class Locality implements Serializable {
         this.type = type;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings) {
+    public Locality(String name, LocalityType type, String address, List<String> anotherNames) {
+        this.name = name;
+        this.type = type;
+        this.address = address;
+        this.anotherNames = anotherNames;
+    }
+
+    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.address = address;
         this.anotherNames = anotherNames;
         this.christenings = christenings;
+        this.deaths = deaths;
     }
 
     public Long getId() {
@@ -109,9 +120,6 @@ public class Locality implements Serializable {
     }
 
     public List<String> getAnotherNames() {
-        if (anotherNames == null) {
-            return new ArrayList<>();
-        }
         return anotherNames;
     }
 
@@ -120,13 +128,18 @@ public class Locality implements Serializable {
     }
 
     public List<Christening> getChristenings() {
-        if (christenings == null) {
-            return new ArrayList<>();
-        }
         return christenings;
     }
 
     public void setChristenings(List<Christening> christenings) {
         this.christenings = christenings;
+    }
+
+    public List<Death> getDeaths() {
+        return deaths;
+    }
+
+    public void setDeaths(List<Death> deaths) {
+        this.deaths = deaths;
     }
 }

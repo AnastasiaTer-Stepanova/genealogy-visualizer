@@ -66,6 +66,9 @@ public class ArchiveDocument implements Serializable {
     @OneToMany(mappedBy = "archiveDocument", fetch = FetchType.LAZY)
     private List<Marriage> marriages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "archiveDocument", fetch = FetchType.LAZY)
+    private List<Death> deaths = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ARCHIVE_ID",
             referencedColumnName = "ID",
@@ -85,7 +88,7 @@ public class ArchiveDocument implements Serializable {
         this.archive = archive;
     }
 
-    public ArchiveDocument(Long id, ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, List<Christening> christenings, List<Marriage> marriages, Archive archive) {
+    public ArchiveDocument(Long id, ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, List<Christening> christenings, List<Marriage> marriages, List<Death> deaths, Archive archive) {
         this.id = id;
         this.type = type;
         this.year = year;
@@ -96,6 +99,7 @@ public class ArchiveDocument implements Serializable {
         this.familyRevisions = familyRevisions;
         this.christenings = christenings;
         this.marriages = marriages;
+        this.deaths = deaths;
         this.archive = archive;
     }
 
@@ -177,6 +181,14 @@ public class ArchiveDocument implements Serializable {
 
     public void setMarriages(List<Marriage> marriages) {
         this.marriages = marriages;
+    }
+
+    public List<Death> getDeaths() {
+        return deaths;
+    }
+
+    public void setDeaths(List<Death> deaths) {
+        this.deaths = deaths;
     }
 
     public Archive getArchive() {

@@ -36,11 +36,11 @@ public class ParserUtils {
     public static final String STATUS_IMPORTED = "imported";
     public static final String STATUS_COLUMN_NAME = "Status"; //для первой заливки эта колонка должна быть пустая, в последующем здесь будет проставлен статус imported для семей, которые сохранились в БД
     public static final String WITHOUT_FIRST_NAME = "БФ";
+    public static final String HYPHEN = "-";
 
     private static final Logger LOGGER = LogManager.getLogger(ParserUtils.class);
 
     private static final String LOCATION_EXCLUDE = "того села";
-    private static final String HYPHEN = "-";
     private static final String TWIN = "близнец";
     private static final String NEWBORN = "н/р";
     private static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");

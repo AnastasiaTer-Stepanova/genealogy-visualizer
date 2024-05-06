@@ -3,16 +3,19 @@ package genealogy.visualizer.config;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
+import genealogy.visualizer.repository.DeathRepository;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.MarriageRepository;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
+import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.impl.ArchiveDocumentDAOImpl;
 import genealogy.visualizer.service.impl.ChristeningDAOImpl;
+import genealogy.visualizer.service.impl.DeathDAOImpl;
 import genealogy.visualizer.service.impl.FamilyRevisionDAOImpl;
 import genealogy.visualizer.service.impl.LocalityDAOImpl;
 import genealogy.visualizer.service.impl.MarriageDAOImpl;
@@ -59,6 +62,13 @@ public class DaoConfig {
                                    LocalityDAO localityDAO,
                                    ArchiveDocumentDAO archiveDocumentDAO) {
         return new MarriageDAOImpl(marriageRepository, localityDAO, archiveDocumentDAO);
+    }
+
+    @Bean
+    public DeathDAO deathDAO(@Autowired DeathRepository deathRepository,
+                             ArchiveDocumentDAO archiveDocumentDAO,
+                             LocalityDAO localityDAO) {
+        return new DeathDAOImpl(deathRepository, archiveDocumentDAO, localityDAO);
     }
 
 //    @Bean
