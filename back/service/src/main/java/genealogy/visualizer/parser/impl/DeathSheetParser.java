@@ -5,6 +5,7 @@ import genealogy.visualizer.entity.Death;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
+import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.DeathDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,10 +22,8 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
-import static genealogy.visualizer.parser.util.ParserUtils.getLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseAge;
-import static genealogy.visualizer.parser.util.ParserUtils.parseFullNameCell;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class DeathSheetParser implements SheetParser {
@@ -62,7 +61,7 @@ public class DeathSheetParser implements SheetParser {
                 LOGGER.error("Death date is null for row {}", rowNum);
                 continue;
             }
-            FullName fullName = parseFullNameCell(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
+            FullName fullName = new StringParserHelper(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME))).getFullName();
             if (fullName == null) {
                 LOGGER.error("Full name is null for row {}", rowNum);
                 continue;
@@ -73,12 +72,12 @@ public class DeathSheetParser implements SheetParser {
                         null,
                         deathDate,
                         fullName,
-                        parseFullNameCell(getStringCellValue(row, header.get(RELATIVE_COLUMN_NAME))),
+                        new StringParserHelper(getStringCellValue(row, header.get(RELATIVE_COLUMN_NAME))).getFullName(),
                         parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
                         getCause(row, header),
                         getStringCellValue(row, header.get(BURIAL_PLACE_COLUMN_NAME)),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
-                        getLocality(row.getCell(header.get(LOCALITY_COLUMN_NAME))),
+                        new StringParserHelper(getStringCellValue(row.getCell(header.get(LOCALITY_COLUMN_NAME)))).getLocality(),
                         archive,
                         null);
             } catch (Exception e) {

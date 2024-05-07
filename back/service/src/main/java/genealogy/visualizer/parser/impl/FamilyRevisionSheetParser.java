@@ -7,6 +7,7 @@ import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.ParserUtils;
+import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +27,6 @@ import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusCo
 import static genealogy.visualizer.parser.util.ParserUtils.getShortCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseAge;
-import static genealogy.visualizer.parser.util.ParserUtils.parseFullNameCell;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.split;
 
@@ -154,7 +154,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
     }
 
     private static FullName getFullName(Row row, Map<String, Integer> header) {
-        FullName fullName = parseFullNameCell(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
+        FullName fullName = new StringParserHelper(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME))).getFullName();
         if (fullName == null) return null;
         String firstNameFromFullName = fullName.getLastName();
         String lastName;

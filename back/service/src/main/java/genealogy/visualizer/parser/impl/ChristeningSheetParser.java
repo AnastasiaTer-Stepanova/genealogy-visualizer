@@ -2,12 +2,11 @@ package genealogy.visualizer.parser.impl;
 
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
-import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.enums.Sex;
-import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.SheetParser;
+import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ChristeningDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,10 +22,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
-import static genealogy.visualizer.parser.util.ParserUtils.getLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
-import static genealogy.visualizer.parser.util.ParserUtils.parseFullNameCell;
-import static genealogy.visualizer.parser.util.ParserUtils.parseLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class ChristeningSheetParser implements SheetParser {
@@ -76,11 +72,11 @@ public class ChristeningSheetParser implements SheetParser {
                         getDateCellValue(row, header.get(CHRISTENING_COLUMN_NAME)),
                         getSex(row, header),
                         getStringCellValue(row, header.get(NAME_COLUMN_NAME)),
-                        parseFullNameCell(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))),
-                        parseFullNameCell(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))),
+                        new StringParserHelper(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))).getFullName(),
+                        new StringParserHelper(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))).getFullName(),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
                         getLegitimacy(getStringCellValue(row, header.get(LEGITIMACY_COLUMN_NAME))),
-                        getLocality(row.getCell(header.get(LOCALITY_COLUMN_NAME))),
+                        new StringParserHelper(getStringCellValue(row, header.get(LOCALITY_COLUMN_NAME))).getLocality(),
                         getGodParents(row, header),
                         null,
                         archive);
@@ -129,14 +125,10 @@ public class ChristeningSheetParser implements SheetParser {
 
     private GodParent getGodParent(String godParentString) {
         if (godParentString == null || godParentString.isEmpty()) return null;
-        Locality locality = new Locality();
-        godParentString = parseLocality(locality, godParentString);
-        if (locality.getName() == null || locality.getName().isEmpty()) locality = null;
-        FullName fullName = parseFullNameCell(godParentString);
-        if (fullName == null) return null;
+        StringParserHelper helper = new StringParserHelper(godParentString);
         GodParent result = new GodParent();
-        result.setLocality(locality);
-        result.setFullName(fullName);
+        result.setLocality(helper.getLocality());
+        result.setFullName(helper.getFullName());
         return result;
     }
 

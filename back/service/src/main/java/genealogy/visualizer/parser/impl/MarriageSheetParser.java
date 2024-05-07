@@ -1,13 +1,12 @@
 package genealogy.visualizer.parser.impl;
 
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.enums.WitnessType;
-import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.entity.model.Witness;
 import genealogy.visualizer.parser.SheetParser;
+import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.MarriageDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,11 +23,8 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
-import static genealogy.visualizer.parser.util.ParserUtils.getLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseAge;
-import static genealogy.visualizer.parser.util.ParserUtils.parseFullNameCell;
-import static genealogy.visualizer.parser.util.ParserUtils.parseLocality;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class MarriageSheetParser implements SheetParser {
@@ -93,14 +89,14 @@ public class MarriageSheetParser implements SheetParser {
                 marriage = new Marriage(
                         null,
                         marriageDate,
-                        getLocality(row.getCell(header.get(HUSBAND_LOCALITY_COLUMN_NAME))),
-                        parseFullNameCell(getStringCellValue(row, header.get(HUSBAND_FATHER_COLUMN_NAME))),
-                        parseFullNameCell(husband),
+                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_LOCALITY_COLUMN_NAME))).getLocality(),
+                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_FATHER_COLUMN_NAME))).getFullName(),
+                        new StringParserHelper(husband).getFullName(),
                         parseAge(getStringCellValue(row, header.get(HUSBAND_AGE_COLUMN_NAME))),
                         husbandMarriageNum != null ? Byte.parseByte(husbandMarriageNum) : null,
-                        getLocality(row.getCell(header.get(WIFE_LOCALITY_COLUMN_NAME))),
-                        parseFullNameCell(getStringCellValue(row, header.get(WIFE_FATHER_COLUMN_NAME))),
-                        parseFullNameCell(wife),
+                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_LOCALITY_COLUMN_NAME))).getLocality(),
+                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_FATHER_COLUMN_NAME))).getFullName(),
+                        new StringParserHelper(wife).getFullName(),
                         parseAge(getStringCellValue(row, header.get(WIFE_AGE_COLUMN_NAME))),
                         wifeMarriageNum != null ? Byte.parseByte(wifeMarriageNum) : null,
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
@@ -152,14 +148,10 @@ public class MarriageSheetParser implements SheetParser {
 
     private Witness getWitness(String witness) {
         if (witness == null || witness.isEmpty()) return null;
-        Locality locality = new Locality();
-        witness = parseLocality(locality, witness);
-        if (locality.getName() == null || locality.getName().isEmpty()) locality = null;
-        FullName fullName = parseFullNameCell(witness);
-        if (fullName == null) return null;
+        StringParserHelper witnessHelper = new StringParserHelper(witness);
         Witness result = new Witness();
-        result.setLocality(locality);
-        result.setFullName(fullName);
+        result.setLocality(witnessHelper.getLocality());
+        result.setFullName(witnessHelper.getFullName());
         return result;
     }
 }
