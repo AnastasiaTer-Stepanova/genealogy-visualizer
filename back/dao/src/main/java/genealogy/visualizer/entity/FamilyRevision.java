@@ -1,5 +1,7 @@
 package genealogy.visualizer.entity;
 
+import genealogy.visualizer.converter.SexConverter;
+import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.Age;
 import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
@@ -7,6 +9,7 @@ import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -91,6 +94,24 @@ public class FamilyRevision implements Serializable {
     @Comment("Комментарий")
     private String comment;
 
+    @Column(length = 1, nullable = false)
+    @Comment("Пол: Ж - женщина, М - мужчина")
+    @Convert(converter = SexConverter.class)
+    private Sex sex;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lastName", column = @Column(name = "RELATIVE_LAST_NAME")),
+            @AttributeOverride(name = "name", column = @Column(name = "RELATIVE_NAME")),
+            @AttributeOverride(name = "surname", column = @Column(name = "RELATIVE_SURNAME")),
+            @AttributeOverride(name = "status", column = @Column(name = "RELATIVE_STATUS"))
+    })
+    @Comment(value = "Имя родственника", on = "RELATIVE_LAST_NAME")
+    @Comment(value = "Фамилия родственника", on = "RELATIVE_NAME")
+    @Comment(value = "Отчество родственника", on = "RELATIVE_SURNAME")
+    @Comment(value = "Статус родственника", on = "RELATIVE_STATUS")
+    private FullName relative;
+
     @ElementCollection(targetClass = AnotherNameInRevision.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "ANOTHER_NAME_IN_REVISION",
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
@@ -115,7 +136,7 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.familyRevisionNumber = familyRevisionNumber;
         this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
@@ -130,6 +151,8 @@ public class FamilyRevision implements Serializable {
         this.arrived = arrived;
         this.familyGeneration = familyGeneration;
         this.comment = comment;
+        this.sex = sex;
+        this.relative = relative;
         this.anotherNames = anotherNames;
         this.archiveDocument = archiveDocument;
         this.person = person;
@@ -245,6 +268,22 @@ public class FamilyRevision implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
+    }
+
+    public FullName getRelative() {
+        return relative;
+    }
+
+    public void setRelative(FullName relative) {
+        this.relative = relative;
     }
 
     public List<AnotherNameInRevision> getAnotherNames() {

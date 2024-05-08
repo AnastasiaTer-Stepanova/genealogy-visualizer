@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static genealogy.visualizer.entity.enums.Sex.MALE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -26,21 +27,23 @@ import static org.mockito.Mockito.doThrow;
 class FamilyRevisionSheetParserTest extends AbstractTest {
 
     private static final String sheetName = "FamilyRevision";
-    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber"; //номер семьи в данной ревизии
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
-    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber"; //номер семьи в следующей ревизии
-    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber"; //номер страницы в деле на котором указана семья
-    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName"; //фамилия главы дома
-    private static final String LAST_NAME_COLUMN_NAME = "LastName"; //фамилия
-    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother"; //другие возможные фамилиии
-    private static final String FULL_NAME_COLUMN_NAME = "FullName"; //ФИО
-    private static final String AGE_COLUMN_NAME = "Age"; //возраст на мемент записи в ревизию
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision"; //возраст на момент предыдущей ревизии
-    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
-    private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
-    private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
-    private static final String COMMENT_COLUMN_NAME = "Comment"; //комментарий о том откуда прибыли
-    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G"; //комментарий о том откуда прибыли
+    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber";
+    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber";
+    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber";
+    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber";
+    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName";
+    private static final String LAST_NAME_COLUMN_NAME = "LastName";
+    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother";
+    private static final String FULL_NAME_COLUMN_NAME = "FullName";
+    private static final String AGE_COLUMN_NAME = "Age";
+    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision";
+    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision";
+    private static final String DEPARTED_COLUMN_NAME = "Departed";
+    private static final String ARRIVED_COLUMN_NAME = "Arrived";
+    private static final String COMMENT_COLUMN_NAME = "Comment";
+    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G";
+    private static final String MALE_COLUMN_NAME = "Male";
+    private static final String FEMALE_COLUMN_NAME = "Female";
 
     private static Map<String, Integer> headers;
 
@@ -50,6 +53,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
     private SheetParser sheetParser;
 
     private ArchiveDocument archiveDocument;
+
     private List<FamilyRevision> familyRevisions;
 
     @BeforeEach
@@ -78,6 +82,8 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 3, 16);
         headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 4, 17);
         headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 5, 18);
+        headers.put(MALE_COLUMN_NAME, 19);
+        headers.put(FEMALE_COLUMN_NAME, 20);
         sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO);
     }
 
@@ -126,6 +132,13 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
     private void addRow(Sheet sheet, FamilyRevision familyRevision) {
         if (sheet == null) throw new NullPointerException("Sheet is null, create Workbook first");
         Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+        if (MALE.equals(familyRevision.getSex())) {
+            row.createCell(headers.get(MALE_COLUMN_NAME)).setCellValue("*");
+            row.createCell(headers.get(FEMALE_COLUMN_NAME)).setCellValue("");
+        } else {
+            row.createCell(headers.get(MALE_COLUMN_NAME)).setCellValue("");
+            row.createCell(headers.get(FEMALE_COLUMN_NAME)).setCellValue("*");
+        }
         row.createCell(headers.get(FAMILY_REVISION_NUMBER_COLUMN_NAME)).setCellValue(familyRevision.getFamilyRevisionNumber());
         row.createCell(headers.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME))
                 .setCellValue(familyRevision.getPreviousFamilyRevisionNumber());
@@ -134,7 +147,8 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         row.createCell(headers.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)).setCellValue(familyRevision.getHeadOfYard());
         row.createCell(headers.get(LAST_NAME_COLUMN_NAME)).setCellValue(familyRevision.getFullName().getLastName());
         row.createCell(headers.get(LAST_NAME_ANOTHER_COLUMN_NAME)).setCellValue(getAnotherName(familyRevision.getAnotherNames()));
-        row.createCell(headers.get(FULL_NAME_COLUMN_NAME)).setCellValue(getFullName(familyRevision.getFullName()));
+        row.createCell(headers.get(FULL_NAME_COLUMN_NAME))
+                .setCellValue(getFullName(familyRevision.getFullName()) + " " + getFullName(familyRevision.getRelative()));
         row.createCell(headers.get(AGE_COLUMN_NAME))
                 .setCellValue(familyRevision.getAge().getAge() + familyRevision.getAge().getAgeType());
         row.createCell(headers.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))

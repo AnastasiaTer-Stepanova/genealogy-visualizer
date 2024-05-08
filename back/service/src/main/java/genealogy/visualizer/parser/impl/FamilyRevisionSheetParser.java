@@ -3,6 +3,7 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
+import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
@@ -37,6 +38,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
 
     private static final Logger LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
 
+    private static final String MALE_COLUMN_NAME = "Male";
+    private static final String FEMALE_COLUMN_NAME = "Female";
     private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber"; //номер семьи в данной ревизии
     private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
     private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber"; //номер семьи в следующей ревизии
@@ -83,6 +86,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
                 LOGGER.error("Failed to parse cell {} in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
                 continue;
             }
+            StringParserHelper fullNameHelper = new StringParserHelper(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
             FamilyRevision familyRevisionPerson;
             try {
                 familyRevisionPerson = new FamilyRevision(
@@ -92,7 +96,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
                         getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
                         getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
                         getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
-                        getFullName(row, header),
+                        getFullName(row, header, fullNameHelper.getFullName()),
                         parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
                         parseAge(getStringCellValue(row, header.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))),
                         parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
@@ -100,6 +104,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
                         getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
                         getFamilyGeneration(row, header),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
+                        getSex(row, header),
+                        fullNameHelper.getRelative(),
                         getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
                         archive,
                         null);
@@ -153,8 +159,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
         }
     }
 
-    private static FullName getFullName(Row row, Map<String, Integer> header) {
-        FullName fullName = new StringParserHelper(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME))).getFullName();
+    private static FullName getFullName(Row row, Map<String, Integer> header, FullName fullName) {
         if (fullName == null) return null;
         String firstNameFromFullName = fullName.getLastName();
         String lastName;
@@ -180,5 +185,18 @@ public class FamilyRevisionSheetParser implements SheetParser {
             }
         }
         return anotherNames;
+    }
+
+    private Sex getSex(Row row, Map<String, Integer> header) {
+        String male = getStringCellValue(row, header.get(MALE_COLUMN_NAME));
+        if (male != null) {
+            return Sex.MALE;
+        } else {
+            String female = getStringCellValue(row, header.get(FEMALE_COLUMN_NAME));
+            if (female != null) {
+                return Sex.FEMALE;
+            }
+        }
+        throw new IllegalArgumentException("Sex doesn't exist");
     }
 }

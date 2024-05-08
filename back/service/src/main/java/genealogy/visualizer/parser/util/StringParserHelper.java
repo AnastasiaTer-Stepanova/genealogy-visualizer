@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -21,7 +22,11 @@ import static org.apache.commons.lang3.StringUtils.contains;
 
 public class StringParserHelper {
 
-    private static final Set<String> RELATIVE = Set.of("муж", "отец", "брат");
+    private static final Set<String> RELATIVE = Set.of("брат мужа", "муж", "отец", "брат", "племянник", "дядя", "отчим", "дед", "мать",
+                    "свекр", "брат двоюродный", "брат сводный")
+            .stream()
+            .sorted(StringParserHelper::sortSet)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     private static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");
     private static final Set<String> TOWN_LOCATION = Set.of("г.", "города");
     private static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
@@ -32,13 +37,13 @@ public class StringParserHelper {
 
     private static final Set<String> PHRASES = Set.of("не указан", "церковника дочь", "церковникова дочь", "незаконнорожденные близнецы",
             "того града", "того округа", "нижнего земского суда", "из стрельцов", "живущая крестьянка", "незаконнорожденный сын",
-            "у солдатки", "у нее", "незаконнорожденый сын", "у пашенного солдата", "водва(ец)", "церковникова жена",
+            "у солдатки", "у нее", "незаконнорожденый сын", "у пашенного солдата", "церковникова жена",
             "дьякона жена", "дьячкова дочь", "государственный мещанин", "отставной солдат", "отставной конюх", "ученик философии",
             "отставной пономарь", "священницкая девка", "пахотный солдат", "не разборчиво", "скопинский мещанин", "скопинская мещанка",
             "крепостной работник", "первым браком", "вторым браком", "третим браком", "чертвертым браком", "сноха их",
             "сын ее", "дочь ее", "внук ее", "внучка ее", "внук их", "внучка их", "от 1 брака", "от 2 брака", "от 3 брака", "от 4 брака", "от 5 брака",
             "по 1 браку", "по 2 браку", "по 3 браку", "по 4 браку", "по 5 браку", "их мачеха", "от 1 мужа", "от 2 мужа", "от 3 мужа",
-            "от 4 мужа", "от 5 мужа", "от 1 жены", "от 2 жены", "от 3 жены", "от 4 жены", "от 5 жены", "сводный брат");
+            "от 4 мужа", "от 5 мужа", "от 1 жены", "от 2 жены", "от 3 жены", "от 4 жены", "от 5 жены", "сводный");
     private static final Set<String> ARRANGED_WIFE = Set.of("1-я жена", "2-я жена", "3-я жена", "4-я жена", "5-я жена",
             "1 жена", "2 жена", "3 жена", "4 жена", "5 жена");
     private static final Set<String> RELATIONSHIPS = Set.of("падчерица", "племянница", "шурин", "жена", "брат", "сестра",
@@ -63,7 +68,7 @@ public class StringParserHelper {
             "незаконнорожденная", "пападья", "дьяек", "помещик", "пасынок", "пассынок");
 
     private static final String REGULAR_TAKE_NEXT_WORD = "\\s.+?(?=\\s|$)";
-    private static final Set<String> CHECK_LIST = new HashSet<>();
+    private static Set<String> CHECK_LIST = new HashSet<>();
 
     static {
         CHECK_LIST.addAll(RELATIONSHIPS);
@@ -72,7 +77,11 @@ public class StringParserHelper {
         CHECK_LIST.addAll(FEMININE_COUNTER);
         CHECK_LIST.addAll(MASCULINE_COUNTER);
         CHECK_LIST.addAll(ANOTHER_WITH_SUFFIX);
+        CHECK_LIST.addAll(RELATIVE);
         CHECK_LIST.add(LOCATION_EXCLUDE);
+        CHECK_LIST = CHECK_LIST.stream()
+                .sorted(StringParserHelper::sortSet)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private FullName fullName = new FullName();
@@ -85,7 +94,7 @@ public class StringParserHelper {
         if (parsingString == null || parsingString.isEmpty() || HYPHEN.equals(parsingString)) return;
         String fullNameString = parsingString;
         for (String relative : RELATIVE) {
-            if (contains(parsingString, relative) && parsingString.matches("\\s" + relative + "\\s")) {
+            if (contains(parsingString, relative) && parsingString.matches("(.*)\\s" + relative + "\\s(.*)")) {
                 String relativeString = relative + " " + StringUtils.substringAfter(parsingString, relative).trim();
                 fullNameString = StringUtils.substringBefore(parsingString, relative).trim();
                 this.updateRelativeInfo(relativeString);
@@ -113,7 +122,7 @@ public class StringParserHelper {
 
     private void updateFullName(String fullNameString) {
         StringParserRecord<Locality> helperLocalityModel = parseLocality(fullNameString);
-        if (helperLocalityModel != null) {
+        if (helperLocalityModel != null && helperLocalityModel.value() != null && helperLocalityModel.value().getName() != null) {
             this.locality = helperLocalityModel.value();
             fullNameString = helperLocalityModel.fullName();
         }
@@ -127,7 +136,7 @@ public class StringParserHelper {
 
     private void updateRelativeInfo(String relativeString) {
         StringParserRecord<Locality> helperLocalityModel = parseLocality(relativeString);
-        if (helperLocalityModel != null) {
+        if (helperLocalityModel != null && helperLocalityModel.value() != null && helperLocalityModel.value().getName() != null) {
             this.relativeLocality = helperLocalityModel.value();
             relativeString = helperLocalityModel.fullName();
         }
@@ -256,5 +265,17 @@ public class StringParserHelper {
             return matcher.toMatchResult().group();
         }
         return null;
+    }
+
+    private static int sortSet(String o1, String o2) {
+        String[] o1mass = o1.split(" ");
+        String[] o2mass = o2.split(" ");
+        if (o1mass.length == o2mass.length) {
+            if (o1.length() == o2.length()) {
+                return 0;
+            }
+            return o1.length() > o2.length() ? -1 : 1;
+        }
+        return (o1mass.length > o2mass.length) ? -1 : 1;
     }
 }
