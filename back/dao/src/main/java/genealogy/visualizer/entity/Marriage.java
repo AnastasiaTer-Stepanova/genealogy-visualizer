@@ -155,9 +155,11 @@ public class Marriage implements Serializable {
     private ArchiveDocument archiveDocument;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "person_marriage",
-            joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "marriage_id", referencedColumnName = "id"))
+    @JoinTable(name = "PERSON_MARRIAGE",
+            joinColumns = @JoinColumn(name = "PERSON_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_PERSON_ID_MARRIAGE_ID")),
+            inverseJoinColumns = @JoinColumn(name = "MARRIAGE_ID", referencedColumnName = "ID"))
     private List<Person> persons;
 
     public Marriage() {

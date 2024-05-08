@@ -2,6 +2,7 @@ package genealogy.visualizer.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,9 +34,11 @@ public class Person implements Serializable {
     private FamilyRevision familyRevision;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "person_marriage",
-            joinColumns = @JoinColumn(name = "marriage_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"))
+    @JoinTable(name = "PERSON_MARRIAGE",
+            joinColumns = @JoinColumn(name = "MARRIAGE_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_MARRIAGE_ID_PERSON_ID")),
+            inverseJoinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "ID"))
     private List<Marriage> marriages = new ArrayList<>();
 
     public Person() {
