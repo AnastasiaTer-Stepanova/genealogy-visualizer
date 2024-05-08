@@ -46,7 +46,7 @@ class MarriageDAOTest extends JpaAbstractTest {
     }
 
     @Test
-    void saveNewArchDocTest() {
+    void saveNewMarriageTest() {
         List<Marriage> marriages = generateMarriage();
         marriages.forEach(marriage -> marriageDAO.save(marriage));
 

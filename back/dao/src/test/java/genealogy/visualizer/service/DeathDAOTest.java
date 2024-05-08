@@ -45,7 +45,7 @@ class DeathDAOTest extends JpaAbstractTest {
     }
 
     @Test
-    void saveNewArchDocTest() {
+    void saveNewDeathTest() {
         List<Death> deaths = generateDeath();
         deaths.forEach(death -> deathDAO.save(death));
 

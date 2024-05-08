@@ -49,7 +49,7 @@ class ChristeningDAOTest extends JpaAbstractTest {
     }
 
     @Test
-    void saveNewArchDocTest() {
+    void saveNewChristeningTest() {
         List<Christening> christenings = generateChristening();
         christenings.forEach(christening -> christeningDAO.save(christening));
 
