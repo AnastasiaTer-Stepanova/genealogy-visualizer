@@ -126,7 +126,7 @@ public class ChristeningSheetParser implements SheetParser {
     private GodParent getGodParent(String godParentString) {
         if (godParentString == null || godParentString.isEmpty()) return null;
         StringParserHelper helper = new StringParserHelper(godParentString);
-        if (helper.getFullName() == null && helper.getFullName().getName() == null) return null;
+        if (helper.getFullName() == null || helper.getFullName().getName() == null) return null;
         return new GodParent(
                 helper.getFullName(),
                 helper.getLocality(),
