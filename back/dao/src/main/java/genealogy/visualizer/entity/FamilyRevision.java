@@ -31,7 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}))
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}),
+        @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
+})
 public class FamilyRevision implements Serializable {
 
     @Id
@@ -39,6 +42,13 @@ public class FamilyRevision implements Serializable {
     @SequenceGenerator(name = "SEQ_FAMILY_REVISION", sequenceName = "SEQ_FAMILY_REVISION", allocationSize = 20)
     @Comment("Идентификатор записи")
     private Long id;
+
+    @Comment("Идентификатор записи партнера (мужа/жены) в рамках одной семьи")
+    @OneToOne
+    @JoinColumn(name = "PARTNER_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PARTNER"))
+    private FamilyRevision partner;
 
     @Column(nullable = false)
     @Comment("Номер семьи в текущей ревизии")
@@ -136,8 +146,9 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
+        this.partner = partner;
         this.familyRevisionNumber = familyRevisionNumber;
         this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
         this.nextFamilyRevisionNumber = nextFamilyRevisionNumber;
@@ -164,6 +175,14 @@ public class FamilyRevision implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public FamilyRevision getPartner() {
+        return partner;
+    }
+
+    public void setPartner(FamilyRevision partner) {
+        this.partner = partner;
     }
 
     public Short getFamilyRevisionNumber() {

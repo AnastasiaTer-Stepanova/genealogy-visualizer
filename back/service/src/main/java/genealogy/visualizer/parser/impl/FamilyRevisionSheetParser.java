@@ -3,7 +3,6 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
-import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
@@ -25,6 +24,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.WITHOUT_LAST_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
+import static genealogy.visualizer.parser.util.ParserUtils.getSex;
 import static genealogy.visualizer.parser.util.ParserUtils.getShortCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseAge;
@@ -40,21 +40,22 @@ public class FamilyRevisionSheetParser implements SheetParser {
 
     private static final String MALE_COLUMN_NAME = "Male";
     private static final String FEMALE_COLUMN_NAME = "Female";
-    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber"; //номер семьи в данной ревизии
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber"; //номер семьи в предыдущей ревизии
-    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber"; //номер семьи в следующей ревизии
-    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber"; //номер страницы в деле на котором указана семья
-    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName"; //фамилия главы дома
-    private static final String LAST_NAME_COLUMN_NAME = "LastName"; //фамилия
-    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother"; //другие возможные фамилиии
-    private static final String FULL_NAME_COLUMN_NAME = "FullName"; //ФИО
-    private static final String AGE_COLUMN_NAME = "Age"; //возраст на мемент записи в ревизию
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision"; //возраст на момент предыдущей ревизии
-    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision"; //возраст на момент следующей ревизии
-    private static final String DEPARTED_COLUMN_NAME = "Departed"; //комментарий о выбытии/смерти/рекрутинга в армию
-    private static final String ARRIVED_COLUMN_NAME = "Arrived"; //комментарий о том откуда прибыли
-    private static final String COMMENT_COLUMN_NAME = "Comment"; //комментарий о том откуда прибыли
-    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G"; //комментарий о том откуда прибыли
+    private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber";
+    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber";
+    private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber";
+    private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber";
+    private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName";
+    private static final String LAST_NAME_COLUMN_NAME = "LastName";
+    private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother";
+    private static final String FULL_NAME_COLUMN_NAME = "FullName";
+    private static final String AGE_COLUMN_NAME = "Age";
+    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision";
+    private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision";
+    private static final String DEPARTED_COLUMN_NAME = "Departed";
+    private static final String ARRIVED_COLUMN_NAME = "Arrived";
+    private static final String COMMENT_COLUMN_NAME = "Comment";
+    private static final String FAMILY_GENERATION_COLUMN_NAME_PREFIX = "G";
+    private static final String WIFE_PREFIX = "жена";
 
     private final FamilyRevisionDAO familyRevisionDAO;
 
@@ -69,6 +70,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
         List<FamilyRevision> familyRevision = new ArrayList<>();
         List<Integer> successParsingRowNumbers = new ArrayList<>();
         List<Integer> rowNumbers = new ArrayList<>();
+        FamilyRevision previousPerson = null;
         int lastRowNum = excelSheet.getLastRowNum();
         for (Row row : excelSheet) {
             String status = getStringCellValue(row, header.get(STATUS_COLUMN_NAME));
@@ -86,11 +88,22 @@ public class FamilyRevisionSheetParser implements SheetParser {
                 LOGGER.error("Failed to parse cell {} in {} row", FAMILY_REVISION_NUMBER_COLUMN_NAME, row.getRowNum());
                 continue;
             }
-            StringParserHelper fullNameHelper = new StringParserHelper(getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME)));
+            String fullName = getStringCellValue(row, header.get(FULL_NAME_COLUMN_NAME));
+            if (StringUtils.isBlank(fullName)) {
+                LOGGER.error("FullName is empty in row {}", row.getRowNum());
+                continue;
+            }
+            FamilyRevision partner = null;
+            if (previousPerson != null && fullName.startsWith(WIFE_PREFIX) &&
+                    previousPerson.getFamilyRevisionNumber().equals(currentFamilyRevisionNumber)) {
+                partner = previousPerson;
+            }
+            StringParserHelper fullNameHelper = new StringParserHelper(fullName);
             FamilyRevision familyRevisionPerson;
             try {
                 familyRevisionPerson = new FamilyRevision(
                         null,
+                        partner,
                         currentFamilyRevisionNumber,
                         getShortCellValue(row, header.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
                         getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
@@ -104,7 +117,7 @@ public class FamilyRevisionSheetParser implements SheetParser {
                         getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
                         getFamilyGeneration(row, header),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
-                        getSex(row, header),
+                        getSex(getStringCellValue(row, header.get(MALE_COLUMN_NAME)), getStringCellValue(row, header.get(FEMALE_COLUMN_NAME))),
                         fullNameHelper.getRelative(),
                         getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
                         archive,
@@ -114,7 +127,13 @@ public class FamilyRevisionSheetParser implements SheetParser {
                 continue;
             }
             familyRevision.add(familyRevisionPerson);
+            previousPerson = familyRevisionPerson;
             rowNumbers.add(rowNum);
+            if (partner != null && familyRevision.contains(partner)) {
+                familyRevision.remove(partner);
+                partner.setPartner(familyRevisionPerson);
+                familyRevision.add(partner);
+            }
 
             if (lastRowNum != rowNum) {
                 Short nextFamilyRevisionNumber = getShortCellValue(
@@ -185,18 +204,5 @@ public class FamilyRevisionSheetParser implements SheetParser {
             }
         }
         return anotherNames;
-    }
-
-    private Sex getSex(Row row, Map<String, Integer> header) {
-        String male = getStringCellValue(row, header.get(MALE_COLUMN_NAME));
-        if (male != null) {
-            return Sex.MALE;
-        } else {
-            String female = getStringCellValue(row, header.get(FEMALE_COLUMN_NAME));
-            if (female != null) {
-                return Sex.FEMALE;
-            }
-        }
-        throw new IllegalArgumentException("Sex doesn't exist");
     }
 }

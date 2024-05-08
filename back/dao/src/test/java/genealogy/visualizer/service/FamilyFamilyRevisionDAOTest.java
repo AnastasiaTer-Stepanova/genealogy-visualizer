@@ -55,12 +55,15 @@ class FamilyFamilyRevisionDAOTest extends JpaAbstractTest {
         for (FamilyRevision familyRevision : familyRevisions) {
             familyRevision.setId(null);
             familyRevision.setPerson(null);
+            familyRevision.setPartner(null);
             familyRevision.setArchiveDocument(archiveDocument);
             if (generator.nextBoolean()) {
                 List<AnotherNameInRevision> anotherNamesInRevision = generator.objects(AnotherNameInRevision.class, generator.nextInt(1, 3)).toList();
                 familyRevision.setAnotherNames(anotherNamesInRevision);
             }
         }
+        familyRevisions.getFirst().setPartner(familyRevisions.getLast());
+        familyRevisions.getLast().setPartner(familyRevisions.getFirst());
         return familyRevisions;
     }
 

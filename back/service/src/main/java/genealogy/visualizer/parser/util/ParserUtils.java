@@ -1,5 +1,6 @@
 package genealogy.visualizer.parser.util;
 
+import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.Age;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -214,6 +215,15 @@ public class ParserUtils {
                 cell.setCellValue(STATUS_IMPORTED);
             }
         }
+    }
+
+    public static Sex getSex(String maleStr, String femaleStr) {
+        if (maleStr != null) {
+            return Sex.MALE;
+        } else if (femaleStr != null) {
+            return Sex.FEMALE;
+        }
+        throw new IllegalArgumentException("Sex doesn't exist");
     }
 
     private static Cell checkAndReturnFromRow(Row row, Integer cellNum) {

@@ -3,7 +3,6 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
-import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
@@ -22,6 +21,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
 import static genealogy.visualizer.parser.util.ParserUtils.getDateCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.getHeaderWithStatusColumn;
+import static genealogy.visualizer.parser.util.ParserUtils.getSex;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
@@ -70,7 +70,7 @@ public class ChristeningSheetParser implements SheetParser {
                         null,
                         getDateCellValue(row, header.get(BIRTH_COLUMN_NAME)),
                         getDateCellValue(row, header.get(CHRISTENING_COLUMN_NAME)),
-                        getSex(row, header),
+                        getSex(getStringCellValue(row, header.get(MALE_COLUMN_NAME)), getStringCellValue(row, header.get(FEMALE_COLUMN_NAME))),
                         getStringCellValue(row, header.get(NAME_COLUMN_NAME)),
                         new StringParserHelper(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))).getFullName(),
                         new StringParserHelper(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))).getFullName(),
@@ -132,18 +132,5 @@ public class ChristeningSheetParser implements SheetParser {
                 helper.getLocality(),
                 helper.getRelative()
         );
-    }
-
-    private Sex getSex(Row row, Map<String, Integer> header) {
-        String male = getStringCellValue(row, header.get(MALE_COLUMN_NAME));
-        if (male != null) {
-            return Sex.MALE;
-        } else {
-            String female = getStringCellValue(row, header.get(FEMALE_COLUMN_NAME));
-            if (female != null) {
-                return Sex.FEMALE;
-            }
-        }
-        throw new IllegalArgumentException("Sex doesn't exist");
     }
 }
