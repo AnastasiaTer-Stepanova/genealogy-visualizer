@@ -126,10 +126,12 @@ public class ChristeningSheetParser implements SheetParser {
     private GodParent getGodParent(String godParentString) {
         if (godParentString == null || godParentString.isEmpty()) return null;
         StringParserHelper helper = new StringParserHelper(godParentString);
-        GodParent result = new GodParent();
-        result.setLocality(helper.getLocality());
-        result.setFullName(helper.getFullName());
-        return result;
+        if (helper.getFullName() == null && helper.getFullName().getName() == null) return null;
+        return new GodParent(
+                helper.getFullName(),
+                helper.getLocality(),
+                helper.getRelative()
+        );
     }
 
     private Sex getSex(Row row, Map<String, Integer> header) {

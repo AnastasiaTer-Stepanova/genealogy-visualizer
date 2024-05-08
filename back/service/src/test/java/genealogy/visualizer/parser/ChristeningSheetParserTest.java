@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.service.ChristeningDAO;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -14,9 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static genealogy.visualizer.entity.enums.Sex.MALE;
 import static org.mockito.ArgumentMatchers.any;
@@ -135,13 +138,15 @@ class ChristeningSheetParserTest extends AbstractTest {
         List<GodParent> godParents = christening.getGodParents();
         if (godParents != null && !godParents.isEmpty()) {
             GodParent firstGodParent = godParents.getFirst();
-            String firstGodParentName = getFullName(firstGodParent.getFullName());
-            firstGodParentName = firstGodParentName + " " + firstGodParent.getLocality().getType().getName() + " " + firstGodParent.getLocality().getName();
+            String firstGodParentName = getLocality(firstGodParent.getLocality()) + " " +
+                    getFullName(firstGodParent.getFullName()) + " " +
+                    getFullName(firstGodParent.getFullName());
             row.createCell(headers.get(FIRST_GOD_PARENT_COLUMN_NAME)).setCellValue(firstGodParentName);
             if (godParents.size() > 1) {
                 GodParent secondGodParent = godParents.get(1);
-                String secondGodParentName = getFullName(secondGodParent.getFullName());
-                secondGodParentName = secondGodParentName + " " + secondGodParent.getLocality().getType().getName() + " " + secondGodParent.getLocality().getName();
+                String secondGodParentName = getLocality(secondGodParent.getLocality()) + " " +
+                        getFullName(secondGodParent.getFullName()) + " " +
+                        getFullName(secondGodParent.getFullName());
                 row.createCell(headers.get(SECOND_GOD_PARENT_COLUMN_NAME)).setCellValue(secondGodParentName);
             }
         }

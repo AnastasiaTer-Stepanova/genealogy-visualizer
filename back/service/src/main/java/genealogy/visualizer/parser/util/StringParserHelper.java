@@ -149,9 +149,9 @@ public class StringParserHelper {
     }
 
     private static String capitalizeAllWord(String input) {
-        return Arrays.stream(input.split("\\s+"))
+        return Arrays.stream(input.split("/"))
                 .map(StringUtils::capitalize)
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining("/"));
     }
 
     private static StringParserRecord<Locality> parseLocality(String parsingString) {
@@ -161,7 +161,7 @@ public class StringParserHelper {
             if (contains(parsingString, settlement)) {
                 String settlementInfo = getRegexString("((^|\\s).*)\\s" + settlement, parsingString);
                 if (settlementInfo != null && !settlementInfo.isEmpty()) {
-                    locality.setAddress(StringUtils.capitalize(settlementInfo.trim()));
+                    locality.setAddress(capitalizeAllWord(settlementInfo.trim()));
                     parsingString = parsingString.replaceAll(settlementInfo, "").trim();
                 }
             }
@@ -170,7 +170,7 @@ public class StringParserHelper {
             String locationName = getLocationName(parsingString, location);
             if (locationName != null && !locationName.isEmpty()) {
                 parsingString = parsingString.replaceAll(locationName, "");
-                locality.setName(StringUtils.capitalize(locationName.replaceAll(location + " ", "")));
+                locality.setName(capitalizeAllWord(locationName.replaceAll(location + " ", "")));
                 locality.setType(LocalityType.TOWN);
             }
         }
@@ -178,7 +178,7 @@ public class StringParserHelper {
             String locationName = getLocationName(parsingString, location);
             if (locationName != null && !locationName.isEmpty()) {
                 parsingString = parsingString.replaceAll(locationName, "");
-                locality.setName(StringUtils.capitalize(locationName.replaceAll(location + " ", "")));
+                locality.setName(capitalizeAllWord(locationName.replaceAll(location + " ", "")));
                 locality.setType(LocalityType.VILLAGE);
             }
         }
@@ -186,7 +186,7 @@ public class StringParserHelper {
             String locationName = getLocationName(parsingString, location);
             if (locationName != null && !locationName.isEmpty()) {
                 parsingString = parsingString.replaceAll(locationName, "");
-                locality.setName(StringUtils.capitalize(locationName.replaceAll(location + " ", "")));
+                locality.setName(capitalizeAllWord(locationName.replaceAll(location + " ", "")));
                 locality.setType(LocalityType.HAMLET);
             }
         }
@@ -230,13 +230,13 @@ public class StringParserHelper {
         String[] separateFullName = StringUtils.split(parsingString.replaceAll("\\s+", " ").trim(), " ");
         Iterator<String> iterator = Arrays.stream(separateFullName).iterator();
         if (iterator.hasNext()) {
-            fullName.setName(StringUtils.capitalize(iterator.next()));
+            fullName.setName(capitalizeAllWord(iterator.next()));
         }
         if (iterator.hasNext()) {
-            fullName.setSurname(StringUtils.capitalize(iterator.next()));
+            fullName.setSurname(capitalizeAllWord(iterator.next()));
         }
         if (iterator.hasNext()) {
-            fullName.setLastName(StringUtils.capitalize(iterator.next()));
+            fullName.setLastName(capitalizeAllWord(iterator.next()));
         }
         if (iterator.hasNext()) {
             statuses.add(iterator.next());

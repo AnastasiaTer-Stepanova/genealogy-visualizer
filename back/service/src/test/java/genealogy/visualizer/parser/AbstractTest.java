@@ -217,10 +217,13 @@ abstract class AbstractTest {
     }
 
     static String getLocality(Locality locality) {
+        StringBuilder builder = new StringBuilder();
+        if (locality.getAddress() != null) {
+            builder.append(locality.getAddress()).append(" слободы ");
+        }
         String type = LocalityType.TOWN.equals(locality.getType()) ? "г. " : locality.getType().getName();
-        return "слободы " + locality.getAddress() + " " +
-                type + " " +
-                locality.getName();
+        builder.append(type).append(" ").append(locality.getName());
+        return builder.toString();
     }
 
 
