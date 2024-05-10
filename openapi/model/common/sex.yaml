@@ -1,4 +1,5 @@
 type: string
+description: Пол
 enum:
   - мужской
   - женский

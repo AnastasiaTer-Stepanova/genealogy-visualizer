@@ -42,4 +42,18 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 .or(() -> Optional.of(archiveDocumentRepository.save(archiveDocument)))
                 .orElseThrow();
     }
+
+    @Override
+    public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(ArchiveDocument archiveDocument, short familyNumber) {
+        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(
+                        archiveDocument.getArchive().getName(),
+                        archiveDocument.getFund(),
+                        archiveDocument.getCatalog(),
+                        archiveDocument.getInstance(),
+                        archiveDocument.getBunch(),
+                        archiveDocument.getYear(),
+                        archiveDocument.getType(),
+                        familyNumber)
+                .orElse(null);
+    }
 }

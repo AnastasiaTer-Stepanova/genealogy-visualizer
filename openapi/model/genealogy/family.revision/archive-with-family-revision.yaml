@@ -1,0 +1,13 @@
+type: object
+description: Данные архива со списком семей
+required:
+  - archive
+  - families
+properties:
+  archive:
+    $ref: "./../archive/archive-document.yaml"
+  families:
+    description: Список семей входящих в этот архив
+    type: array
+    items:
+      $ref: "family-revision.yaml"

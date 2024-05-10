@@ -30,7 +30,6 @@ properties:
     type: string
     example: "1-3о"
   type:
-    description: Тип документа РС - ревизская сказка, МК - метрическая книга, ИВ - исповедная ведомость и т.д.
     $ref: "./../../common/archive-document-type.yaml"
   year:
     description: Год написания документа
@@ -40,5 +39,4 @@ properties:
     maximum: 32767
     example: 1858
   archive:
-    description: Данные архива
     $ref: "archive.yaml"

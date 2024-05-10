@@ -61,25 +61,18 @@ properties:
     example: "переселенцы из Сибири"
   archiveDocument:
     $ref: "./../archive/archive-document.yaml"
-    description: Документ архива из которго взята запись
   sex:
     $ref: "./../../common/sex.yaml"
-    description: Пол
   fullName:
     $ref: "./../../common/full-name.yaml"
-    description: ФИО и статус
   relative:
     $ref: "./../../common/full-name.yaml"
-    description: ФИО и статус родственника
   age:
     $ref: "./../../common/age.yaml"
-    description: Возраст
   ageInPreviousRevision:
     $ref: "./../../common/age.yaml"
-    description: Возраст в предыдущую ревизию
   ageInNextRevision:
     $ref: "./../../common/age.yaml"
-    description: Возраст в следующую ревизию
   anotherNames:
     description: Другие фамилии
     type: array
@@ -89,7 +82,6 @@ properties:
       example: "Стебунов"
   partner:
     $ref: "family-revision.yaml"
-    description: Партнер, записанный в эту перепись
 #  person:
 #    description: Связь с уникальным человеком
 #    $ref: "person.yaml"

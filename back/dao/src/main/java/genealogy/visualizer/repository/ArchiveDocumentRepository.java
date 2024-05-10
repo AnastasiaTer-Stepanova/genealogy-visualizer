@@ -19,4 +19,16 @@ public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument
                                                               @Param("bunch") String bunch,
                                                               @Param("year") Short year,
                                                               @Param("type") ArchiveDocumentType type);
+
+    @Query("select ad from ArchiveDocument ad join fetch ad.archive join fetch ad.familyRevisions fs " +
+            "where ad.archive.name = :archiveName and ad.fund = :fund  and ad.catalog = :catalog and ad.instance = :instance " +
+            "and ad.bunch = :bunch and ad.year = :year and ad.type = :type and fs.familyRevisionNumber = :number")
+    Optional<ArchiveDocument> findArchiveDocumentWithFamilyRevisionByNumberFamily(@Param("archiveName") String archiveName,
+                                                                                  @Param("fund") String fund,
+                                                                                  @Param("catalog") String catalog,
+                                                                                  @Param("instance") String instance,
+                                                                                  @Param("bunch") String bunch,
+                                                                                  @Param("year") Short year,
+                                                                                  @Param("type") ArchiveDocumentType type,
+                                                                                  @Param("number") short number);
 }

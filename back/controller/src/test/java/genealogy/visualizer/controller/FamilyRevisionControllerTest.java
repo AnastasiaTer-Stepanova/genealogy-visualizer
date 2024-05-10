@@ -3,8 +3,11 @@ package genealogy.visualizer.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveDocument;
+import genealogy.visualizer.api.model.ArchiveWithFamilyRevision;
+import genealogy.visualizer.api.model.ArchiveWithFamilyRevisionList;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyRevision;
+import genealogy.visualizer.api.model.FamilyRevisionFilter;
 import genealogy.visualizer.api.model.FamilyRevisionSave;
 import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
@@ -12,6 +15,7 @@ import genealogy.visualizer.repository.FamilyRevisionRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
@@ -163,7 +167,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 .getContentAsString(StandardCharsets.UTF_8);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
-        assertEquals(response.getCode(), "not_found");
+        assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
         assertEquals(response.getMessage(), "Данные не найдены");
     }
 
@@ -214,7 +218,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 .getContentAsString(StandardCharsets.UTF_8);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
-        assertEquals(response.getCode(), "not_found");
+        assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
         assertEquals(response.getMessage(), "Данные не найдены");
     }
 
@@ -290,6 +294,97 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 .getContentAsString(StandardCharsets.UTF_8);
         System.out.println("----------------------End request------------------------");
         assertTrue(responseJson.isEmpty());
+    }
+
+    @Test
+    void findArchiveWithFamilyRevisionTest() throws Exception {
+        List<genealogy.visualizer.entity.FamilyRevision> familyRevisionList = generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList();
+        short familyRevisionNumber = (short) generator.nextInt(10000, 20000);
+        familyRevisionList = familyRevisionList.stream().peek(familyRevision -> {
+                    if (generator.nextBoolean()) {
+                        familyRevision.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+                        if (generator.nextBoolean()) {
+                            familyRevision.setFamilyRevisionNumber(familyRevisionNumber);
+                        }
+                    }
+                    if (generator.nextBoolean()) {
+                        familyRevision.setFamilyRevisionNumber(familyRevisionNumber);
+                    }
+                })
+                .toList();
+        familyRevisionList = generateFamilyRevisionList(familyRevisionList);
+        FamilyRevisionFilter filterRequest = new FamilyRevisionFilter((int) familyRevisionNumber, archiveDocumentExisting, false);
+        String objectString = objectMapper.writeValueAsString(filterRequest);
+        String responseJson = mockMvc.perform(
+                        post("/family-revision/family")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectString))
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        ArchiveWithFamilyRevisionList response = objectMapper.readValue(responseJson, ArchiveWithFamilyRevisionList.class);
+        assertNotNull(response);
+        assertNotNull(response.getData());
+        assertEquals(1, response.getData().size());
+        ArchiveWithFamilyRevision archiveWithFamilyRevision = response.getData().getFirst();
+        assertNotNull(archiveWithFamilyRevision.getArchive());
+        assertNotNull(archiveWithFamilyRevision.getFamilies());
+        assertArchiveDocument(archiveDocumentExisting, archiveWithFamilyRevision.getArchive());
+        List<genealogy.visualizer.entity.FamilyRevision> excistFamilyRevisionList = familyRevisionList.stream()
+                .filter(familyRevision -> familyRevision.getFamilyRevisionNumber().equals(familyRevisionNumber) &&
+                        familyRevision.getArchiveDocument().getId().equals(archiveDocumentExisting.getId()))
+                .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId()))
+                .toList();
+        List<FamilyRevision> responseFamilyRevisions = archiveWithFamilyRevision.getFamilies().stream().sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId())).toList();
+        assertEquals(excistFamilyRevisionList.size(), responseFamilyRevisions.size());
+        for (int i = 0; i < excistFamilyRevisionList.size(); i++) {
+            assertFamilyRevision(responseFamilyRevisions.get(i), excistFamilyRevisionList.get(i));
+        }
+    }
+
+    @Test
+    void findArchiveWithFamilyRevisionNullTest() throws Exception {
+        generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
+        FamilyRevisionFilter filterRequest = new FamilyRevisionFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting, false);
+        String objectString = objectMapper.writeValueAsString(filterRequest);
+        String responseJson = mockMvc.perform(
+                        post("/family-revision/family")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectString))
+                .andExpectAll(
+                        status().isNotFound(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
+        assertNotNull(response);
+        assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
+        assertEquals(response.getMessage(), "Данные не найдены");
+    }
+
+    @Test
+    void findArchiveWithFamilyRevisionWithFindAllTest() throws Exception {
+        generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
+        FamilyRevisionFilter filterRequest = new FamilyRevisionFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting, true);
+        String objectString = objectMapper.writeValueAsString(filterRequest);
+        String responseJson = mockMvc.perform(
+                        post("/family-revision/family")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectString))
+                .andExpectAll(
+                        status().isBadRequest(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
+        assertNotNull(response);
+        assertEquals(response.getCode(), HttpStatus.BAD_REQUEST.value());
+        assertEquals(response.getMessage(), "Переданы некорректные данные");
     }
 
     @AfterEach
@@ -392,5 +487,17 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         if (familyRevision1.getPartner() == null) {
             assertNull(familyRevision2.getPartner());
         }
+    }
+
+    private List<genealogy.visualizer.entity.FamilyRevision> generateFamilyRevisionList(List<genealogy.visualizer.entity.FamilyRevision> familyRevisionList) {
+        List<genealogy.visualizer.entity.Archive> archives = archiveRepository.saveAllAndFlush(
+                familyRevisionList.stream().map(familyRevision -> familyRevision.getArchiveDocument().getArchive()).toList());
+        archiveIds.addAll(archives.stream().map(genealogy.visualizer.entity.Archive::getId).toList());
+        List<genealogy.visualizer.entity.ArchiveDocument> archiveDocuments = archiveDocumentRepository.saveAllAndFlush(
+                familyRevisionList.stream().map(genealogy.visualizer.entity.FamilyRevision::getArchiveDocument).toList());
+        archiveDocumentIds.addAll(archiveDocuments.stream().map(genealogy.visualizer.entity.ArchiveDocument::getId).toList());
+        familyRevisionList = familyRevisionRepository.saveAllAndFlush(familyRevisionList);
+        familyRevisionIds.addAll(familyRevisionList.stream().map(genealogy.visualizer.entity.FamilyRevision::getId).toList());
+        return familyRevisionList;
     }
 }

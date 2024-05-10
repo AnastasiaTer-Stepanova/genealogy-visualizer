@@ -17,6 +17,7 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -30,10 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}),
-        @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
-})
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}),
+                @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
+        },
+        indexes = {
+                @Index(name = "IDX_FAMILY_REVISION_NUMBER", columnList = "FAMILY_REVISION_NUMBER"),
+        }
+)
 public class FamilyRevision implements Serializable {
 
     @Id

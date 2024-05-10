@@ -6,8 +6,8 @@ required:
 properties:
   code:
     description: Код ошибки
-    type: string
-    example: "1234"
+    type: integer
+    example: 404
   message:
     description: Сообщение ошибки
     type: string

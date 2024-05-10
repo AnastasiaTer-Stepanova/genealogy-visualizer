@@ -1,14 +1,19 @@
 package genealogy.visualizer.controller;
 
 import genealogy.visualizer.api.FamilyRevisionApi;
+import genealogy.visualizer.api.model.ArchiveWithFamilyRevision;
+import genealogy.visualizer.api.model.ArchiveWithFamilyRevisionList;
 import genealogy.visualizer.api.model.FamilyRevision;
+import genealogy.visualizer.api.model.FamilyRevisionFilter;
+import genealogy.visualizer.api.model.FamilyRevisionResponse;
 import genealogy.visualizer.api.model.FamilyRevisionSave;
-import genealogy.visualizer.api.model.GetById200Response;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.util.record.ResponseRecord;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class FamilyRevisionController implements FamilyRevisionApi {
@@ -26,26 +31,48 @@ public class FamilyRevisionController implements FamilyRevisionApi {
     }
 
     @Override
-    public ResponseEntity<GetById200Response> getById(Long id) {
+    public ResponseEntity<FamilyRevisionResponse> getById(Long id) {
         ResponseRecord<FamilyRevision> result = familyRevisionService.getById(id);
         if (result == null || result.error() != null) {
             return new ResponseEntity<>(result != null ? result.error() : null, HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok().body(result.value());
+        return ResponseEntity.ok(result.value());
     }
 
     @Override
-    public ResponseEntity<GetById200Response> save(FamilyRevisionSave familyRevisionSave) {
+    public ResponseEntity<FamilyRevisionResponse> save(FamilyRevisionSave familyRevisionSave) {
         ResponseRecord<FamilyRevision> result = familyRevisionService.save(familyRevisionSave);
-        return ResponseEntity.ok().body(result.value());
+        if (result == null || result.error() != null) {
+            return getErrorResponse(result);
+        }
+        return ResponseEntity.ok(result.value());
     }
 
     @Override
-    public ResponseEntity<GetById200Response> update(FamilyRevision familyRevision) {
+    public ResponseEntity<FamilyRevisionResponse> update(FamilyRevision familyRevision) {
         ResponseRecord<FamilyRevision> result = familyRevisionService.update(familyRevision);
         if (result == null || result.error() != null) {
-            return new ResponseEntity<>(result != null ? result.error() : null, HttpStatus.NOT_FOUND);
+            return getErrorResponse(result);
         }
-        return ResponseEntity.ok().body(result.value());
+        return ResponseEntity.ok(result.value());
     }
+
+    @Override
+    public ResponseEntity<FamilyRevisionResponse> getFamilyRevisionByNum(FamilyRevisionFilter familyRevisionFilter) {
+        ResponseRecord<List<ArchiveWithFamilyRevision>> result = familyRevisionService.getArchivesWithFamilyRevision(familyRevisionFilter);
+        if (result == null || result.error() != null) {
+            return getErrorResponse(result);
+        }
+        return ResponseEntity.ok(new ArchiveWithFamilyRevisionList().data(result.value()));
+    }
+
+    private ResponseEntity<FamilyRevisionResponse> getErrorResponse(ResponseRecord<?> result) {
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        if (result == null || result.error() == null) {
+            return new ResponseEntity<>(null, httpStatus);
+        }
+        httpStatus = HttpStatus.valueOf(result.error().getCode());
+        return new ResponseEntity<>(result.error(), httpStatus);
+    }
+
 }

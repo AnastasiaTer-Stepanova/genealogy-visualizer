@@ -25,15 +25,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
-                  - $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/FamilyRevisionResponse"
         404:
           description: "Data not found"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
         - FamilyRevision
@@ -67,15 +65,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
-                  - $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/FamilyRevisionResponse"
         404:
           description: "Failed to save data"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
     put:
       tags:
         - FamilyRevision
@@ -93,13 +89,55 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
-                  - $ref: "./model/common/error-response.yaml"
-
+                $ref: "#/components/schemas/FamilyRevisionResponse"
         404:
           description: "Failed to update data"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
+  /family-revision/family:
+    post:
+      tags:
+        - FamilyRevision
+      operationId: getFamilyRevisionByNum
+      summary: "Family revision filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./model/genealogy/family.revision/family-revision-filter.yaml"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyRevisionResponse"
+        404:
+          description: "Failed to find data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    FamilyRevisionResponse:
+      type: object
+      oneOf:
+        - $ref: "./model/genealogy/family.revision/family-revision.yaml"
+        - $ref: "#/components/schemas/ErrorResponse"
+        - $ref: "#/components/schemas/ArchiveWithFamilyRevisionList"
+    ArchiveWithFamilyRevisionList:
+      type: object
+      description: Список архивов с вложенным списком ревизий
+      properties:
+        data:
+          description: Список архивов с вложенным списком ревизий
+          type: array
+          items:
+            $ref: "./model/genealogy/family.revision/archive-with-family-revision.yaml"
+    ErrorResponse:
+      $ref: "./model/common/error-response.yaml"

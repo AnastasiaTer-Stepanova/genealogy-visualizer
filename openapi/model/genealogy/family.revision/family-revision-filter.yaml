@@ -1,0 +1,21 @@
+description: Фильтр для поиска данных по номеру семьи в ревиизиях
+type: object
+required:
+  - familyRevisionNumber
+  - archiveDocument
+  - isFindInAllRevision
+properties:
+  familyRevisionNumber:
+    description: Номер семьи в текущей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  archiveDocument:
+    $ref: "./../archive/archive-document.yaml"
+  isFindInAllRevision:
+    description: Искать ли семью по связкам во всех ревизиях
+    type: boolean
+    default: false
+    example: true

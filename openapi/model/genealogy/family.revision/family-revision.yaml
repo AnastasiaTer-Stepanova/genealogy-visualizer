@@ -1,4 +1,5 @@
 description: Данные из переписи (РС/ИВ/ПП)
+type: object
 allOf:
   - $ref: "family-revision-save.yaml"
   - type: object

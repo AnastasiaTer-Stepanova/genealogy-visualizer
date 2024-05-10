@@ -1,6 +1,7 @@
 package genealogy.visualizer.config;
 
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
+import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
@@ -35,8 +36,10 @@ public class ServiceConfig {
 
     @Bean
     public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
-                                                       FamilyRevisionMapper familyRevisionMapper) {
-        return new FamilyRevisionServiceImpl(familyRevisionDAO, familyRevisionMapper);
+                                                       ArchiveDocumentDAO archiveDocumentDAO,
+                                                       FamilyRevisionMapper familyRevisionMapper,
+                                                       ArchiveDocumentMapper archiveDocumentMapper) {
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper, archiveDocumentMapper);
     }
 
     @Bean

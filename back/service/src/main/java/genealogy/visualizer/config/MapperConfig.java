@@ -20,16 +20,19 @@ import org.springframework.context.annotation.Primary;
 public class MapperConfig {
 
     @Bean
+    @Primary
     public AgeMapper ageMapper() {
         return new AgeMapperImpl();
     }
 
     @Bean
+    @Primary
     public ArchiveDocumentMapper archiveDocumentMapper() {
         return new ArchiveDocumentMapperImpl();
     }
 
     @Bean
+    @Primary
     public ArchiveMapper archiveMapper() {
         return new ArchiveMapperImpl();
     }
@@ -41,11 +44,13 @@ public class MapperConfig {
     }
 
     @Bean
+    @Primary
     public FullNameMapper fullNameMapper() {
         return new FullNameMapperImpl();
     }
 
     @Bean
+    @Primary
     public PersonMapper personMapper() {
         return new PersonMapperImpl();
     }
