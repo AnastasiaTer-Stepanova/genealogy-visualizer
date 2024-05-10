@@ -1,0 +1,24 @@
+description: Полное имя и статус
+type: object
+required:
+  - name
+properties:
+  name:
+    description: Имя
+    type: string
+    example: "Иван"
+  surname:
+    description: Отчество
+    type: string
+    example: "Петрович"
+  lastName:
+    description: Фамилия
+    type: string
+    example: "Сидоров"
+  statuses:
+    description: Статусы
+    type: array
+    items:
+      description: Статус
+      type: string
+      example: "дъячек"

@@ -100,7 +100,7 @@ class DeathSheetParserTest extends AbstractTest {
         row.createCell(headers.get(LOCALITY_COLUMN_NAME)).setCellValue(death.getLocality().getName());
         row.createCell(headers.get(RELATIVE_COLUMN_NAME)).setCellValue(getFullName(death.getRelative()));
         row.createCell(headers.get(FULL_NAME_COLUMN_NAME)).setCellValue(getFullName(death.getFullName()));
-        row.createCell(headers.get(AGE_COLUMN_NAME)).setCellValue(death.getAge().getAge() + death.getAge().getAgeType());
+        row.createCell(headers.get(AGE_COLUMN_NAME)).setCellValue(death.getAge().getAge() + death.getAge().getType().getName());
         row.createCell(headers.get(CAUSE_COLUMN_NAME)).setCellValue(death.getCause());
         row.createCell(headers.get(BURIAL_PLACE_COLUMN_NAME)).setCellValue(death.getBurialPlace());
         row.createCell(headers.get(COMMENT_COLUMN_NAME)).setCellValue(death.getComment());

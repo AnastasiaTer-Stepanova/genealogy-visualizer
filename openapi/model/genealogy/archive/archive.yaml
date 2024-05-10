@@ -1,0 +1,22 @@
+description: Данные архива
+type: object
+required:
+  - name
+properties:
+  id:
+    description: Идентификатор
+    type: integer
+    format: int64
+    example: 124353
+  name:
+    description: Наименование архива
+    type: string
+    example: "Российский государственный архив Рязанской области"
+  comment:
+    description: Комментарий
+    type: string
+    example: "Принимает только по четвергам"
+  address:
+    description: Адресс
+    type: string
+    example: "Россия, Рязанская область, город Рязань, улица Пушкина, дом 5"

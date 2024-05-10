@@ -1,5 +1,6 @@
 package genealogy.visualizer.parser.util;
 
+import genealogy.visualizer.entity.enums.AgeType;
 import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.Age;
 import org.apache.commons.lang3.StringUtils;
@@ -79,21 +80,21 @@ public class ParserUtils {
         for (String subString : OBSCURE_DATA) {
             if (age.contains(subString)) return null;
         }
-        if (age.toLowerCase().contains(NEWBORN)) return new Age(BigDecimal.ZERO, NEWBORN);
+        if (age.toLowerCase().contains(NEWBORN)) return new Age(BigDecimal.ZERO, AgeType.NEWBORN);
         String prefixRegexp = "\\d+(\\.\\d+)?\\s*";
         if (age.matches(prefixRegexp + "(дней$|дн$|д$)")) {
             BigDecimal formatAge = new BigDecimal(age.replaceAll("(дней$|дн$|д$)", "").trim());
-            return new Age(formatAge, "дни");
+            return new Age(formatAge, AgeType.DAY);
         }
         if (age.matches(prefixRegexp + "(недель$|нед$|н$)")) {
             BigDecimal formatAge = new BigDecimal(age.replaceAll("(недель$|нед$|н$)", "").trim());
-            return new Age(formatAge, "недели");
+            return new Age(formatAge, AgeType.WEEK);
         }
         if (age.matches(prefixRegexp + "(месяцев$|мес$|м$)")) {
             BigDecimal formatAge = new BigDecimal(age.replaceAll("(месяцев$|мес$|м$)", "").trim());
-            return new Age(formatAge, "месяцы");
+            return new Age(formatAge, AgeType.MONTH);
         }
-        return new Age(new BigDecimal(age), "года");
+        return new Age(new BigDecimal(age), AgeType.YEAR);
     }
 
     /**

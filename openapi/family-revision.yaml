@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: API для работы с данными по переписям (РС/ИВ/ПП)
+  version: "1.0.1"
+tags:
+  - name: FamilyRevision
+    description: API для работы с данными по переписям (РС/ИВ/ПП)
+paths:
+  /family-revision/{id}:
+    get:
+      tags:
+        - FamilyRevision
+      operationId: getById
+      summary: "Request data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
+                  - $ref: "./model/common/error-response.yaml"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    delete:
+      tags:
+        - FamilyRevision
+      operationId: delete
+      summary: "Delete data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: "OK"
+  /family-revision:
+    post:
+      tags:
+        - FamilyRevision
+      operationId: save
+      summary: "Saving data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./model/genealogy/family.revision/family-revision-save.yaml"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
+                  - $ref: "./model/common/error-response.yaml"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    put:
+      tags:
+        - FamilyRevision
+      operationId: update
+      summary: "Update only the FamilyRevision entity, not intended for updating other entities (like ArchiveDocument and others)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./model/genealogy/family.revision/family-revision.yaml"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "./model/genealogy/family.revision/family-revision.yaml"
+                  - $ref: "./model/common/error-response.yaml"
+
+        404:
+          description: "Failed to update data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"

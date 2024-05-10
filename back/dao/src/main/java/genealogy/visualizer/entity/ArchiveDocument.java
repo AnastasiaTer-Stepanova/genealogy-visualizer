@@ -33,7 +33,7 @@ public class ArchiveDocument implements Serializable {
     private Long id;
 
     @Column(length = 20, nullable = false)
-    @Comment("Тип документа: РС - ревизская сказка, МК - метрическая книга, ИВ - исповедная ведомость")
+    @Comment("Тип документа: РС - ревизская сказка, МК - метрическая книга, ИВ - исповедная ведомость и т.д.")
     @Convert(converter = ArchiveDocumentTypeConverter.class)
     private ArchiveDocumentType type;
 
@@ -75,7 +75,7 @@ public class ArchiveDocument implements Serializable {
             foreignKey = @ForeignKey(name = "FK_ARCHIVE"))
     private Archive archive;
 
-    protected ArchiveDocument() {
+    public ArchiveDocument() {
     }
 
     public ArchiveDocument(ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, Archive archive) {

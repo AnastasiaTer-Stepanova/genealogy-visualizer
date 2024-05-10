@@ -1,0 +1,4 @@
+description: Ответ при ошибке
+type: object
+allOf:
+  - $ref: "error.yaml"

@@ -3,7 +3,6 @@ package genealogy.visualizer.parser;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
-import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.poi.ss.usermodel.Cell;
@@ -113,7 +112,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         List<FamilyRevision> familyRevisions = generator.objects(FamilyRevision.class, generator.nextInt(5, 15)).toList();
         for (FamilyRevision familyRevision : familyRevisions) {
             if (generator.nextBoolean()) {
-                List<AnotherNameInRevision> anotherNamesInRevision = generator.objects(AnotherNameInRevision.class, generator.nextInt(1, 3)).toList();
+                List<String> anotherNamesInRevision = generator.objects(String.class, generator.nextInt(1, 3)).toList();
                 familyRevision.setAnotherNames(anotherNamesInRevision);
             }
             familyRevision.setFamilyGeneration((byte) generator.nextInt(1, 6));
@@ -150,11 +149,11 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         row.createCell(headers.get(FULL_NAME_COLUMN_NAME))
                 .setCellValue(getFullName(familyRevision.getFullName()) + " " + getFullName(familyRevision.getRelative()));
         row.createCell(headers.get(AGE_COLUMN_NAME))
-                .setCellValue(familyRevision.getAge().getAge() + familyRevision.getAge().getAgeType());
+                .setCellValue(familyRevision.getAge().getAge() + familyRevision.getAge().getType().getName());
         row.createCell(headers.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))
-                .setCellValue(familyRevision.getAgeInPreviousRevision().getAge() + familyRevision.getAgeInPreviousRevision().getAgeType());
+                .setCellValue(familyRevision.getAgeInPreviousRevision().getAge() + familyRevision.getAgeInPreviousRevision().getType().getName());
         row.createCell(headers.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))
-                .setCellValue(familyRevision.getAgeInNextRevision().getAge() + familyRevision.getAgeInNextRevision().getAgeType());
+                .setCellValue(familyRevision.getAgeInNextRevision().getAge() + familyRevision.getAgeInNextRevision().getType().getName());
         row.createCell(headers.get(DEPARTED_COLUMN_NAME)).setCellValue(familyRevision.getDeparted());
         row.createCell(headers.get(ARRIVED_COLUMN_NAME)).setCellValue(familyRevision.getArrived());
         row.createCell(headers.get(COMMENT_COLUMN_NAME)).setCellValue(familyRevision.getComment());
@@ -166,10 +165,10 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         }
     }
 
-    private static String getAnotherName(List<AnotherNameInRevision> anotherNames) {
+    private static String getAnotherName(List<String> anotherNames) {
         if (anotherNames == null) return null;
         StringBuilder anotherNameString = new StringBuilder();
-        for (AnotherNameInRevision anotherNameInRevision : anotherNames) {
+        for (String anotherNameInRevision : anotherNames) {
             anotherNameString.append(anotherNameInRevision).append(", ");
         }
         return anotherNameString.toString();

@@ -1,3 +1,4 @@
+description: Ошибка
 type: object
 required:
     - code

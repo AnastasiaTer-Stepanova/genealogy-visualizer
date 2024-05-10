@@ -1,6 +1,9 @@
 package genealogy.visualizer.entity.model;
 
+import genealogy.visualizer.converter.AgeConverter;
+import genealogy.visualizer.entity.enums.AgeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
 import org.hibernate.annotations.Comment;
 
@@ -15,14 +18,15 @@ public class Age implements Serializable {
     private BigDecimal age;
 
     @Comment("Тип возраста")
-    private String ageType;
+    @Convert(converter = AgeConverter.class)
+    private AgeType type;
 
     public Age() {
     }
 
-    public Age(BigDecimal age, String ageType) {
+    public Age(BigDecimal age, AgeType type) {
         this.age = age;
-        this.ageType = ageType;
+        this.type = type;
     }
 
     public BigDecimal getAge() {
@@ -33,11 +37,11 @@ public class Age implements Serializable {
         this.age = age;
     }
 
-    public String getAgeType() {
-        return ageType;
+    public AgeType getType() {
+        return type;
     }
 
-    public void setAgeType(String ageType) {
-        this.ageType = ageType;
+    public void setType(AgeType type) {
+        this.type = type;
     }
 }

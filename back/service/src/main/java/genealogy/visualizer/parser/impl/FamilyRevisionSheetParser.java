@@ -3,7 +3,6 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
-import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.ParserUtils;
@@ -17,6 +16,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -194,14 +194,13 @@ public class FamilyRevisionSheetParser implements SheetParser {
         return fullName;
     }
 
-    private static List<AnotherNameInRevision> getAnotherNamesFromCell(Cell cell) {
-        List<AnotherNameInRevision> anotherNames = new ArrayList<>();
+    private static List<String> getAnotherNamesFromCell(Cell cell) {
+        List<String> anotherNames = new ArrayList<>();
         String anotherNameString = cell.getStringCellValue();
         if (isNotBlank(anotherNameString)) {
-            String[] names = split(anotherNameString, " /");
-            for (byte i = 0; i < names.length; i++) {
-                anotherNames.add(new AnotherNameInRevision((byte) (i + 1), StringUtils.capitalize(names[i].replaceAll("^\\(|\\)$", "").trim())));
-            }
+            return Arrays.stream(split(anotherNameString, " /"))
+                    .map(name -> StringUtils.capitalize(name.replaceAll("^\\(|\\)$", "").trim()))
+                    .toList();
         }
         return anotherNames;
     }

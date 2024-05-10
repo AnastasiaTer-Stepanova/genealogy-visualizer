@@ -1,6 +1,7 @@
 package genealogy.visualizer.config;
 
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
+import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
@@ -15,6 +16,8 @@ import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.MarriageDAO;
+import genealogy.visualizer.service.family.revision.FamilyRevisionService;
+import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -29,6 +32,12 @@ import static java.util.stream.Collectors.toMap;
 @Configuration
 @ComponentScan
 public class ServiceConfig {
+
+    @Bean
+    public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
+                                                       FamilyRevisionMapper familyRevisionMapper) {
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, familyRevisionMapper);
+    }
 
     @Bean
     public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO) {

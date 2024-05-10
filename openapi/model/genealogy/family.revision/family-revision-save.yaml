@@ -1,0 +1,95 @@
+description: Данные из переписи (РС/ИВ/ПП) для сохранения или обновления
+type: object
+required:
+  - fullName
+  - familyGeneration
+  - familyRevisionNumber
+  - isHeadOfYard
+  - sex
+  - archiveDocument
+properties:
+  familyRevisionNumber:
+    description: Номер семьи в текущей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  previousFamilyRevisionNumber:
+    description: Номер семьи в предыдущей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  nextFamilyRevisionNumber:
+    description: Номер семьи в следующей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  listNumber:
+    description: Номер страницы в деле, на котором указана семья
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  departed:
+    description: Комментарий о выбытии/смерти/рекрутинга в армию
+    type: string
+    example: "умер"
+  arrived:
+    description: Комментарий о том откуда прибыли
+    type: string
+    example: "из Восточной слободы"
+  isHeadOfYard:
+    description: Является ли главой семьи
+    type: boolean
+    example: true
+  familyGeneration:
+    description: Поколение в семье
+    type: integer
+    format: byte
+    minimum: 1
+    maximum: 5
+    example: 4
+  comment:
+    description: Комментарий
+    type: string
+    example: "переселенцы из Сибири"
+  archiveDocument:
+    $ref: "./../archive/archive-document.yaml"
+    description: Документ архива из которго взята запись
+  sex:
+    $ref: "./../../common/sex.yaml"
+    description: Пол
+  fullName:
+    $ref: "./../../common/full-name.yaml"
+    description: ФИО и статус
+  relative:
+    $ref: "./../../common/full-name.yaml"
+    description: ФИО и статус родственника
+  age:
+    $ref: "./../../common/age.yaml"
+    description: Возраст
+  ageInPreviousRevision:
+    $ref: "./../../common/age.yaml"
+    description: Возраст в предыдущую ревизию
+  ageInNextRevision:
+    $ref: "./../../common/age.yaml"
+    description: Возраст в следующую ревизию
+  anotherNames:
+    description: Другие фамилии
+    type: array
+    items:
+      description: Фимилия
+      type: string
+      example: "Стебунов"
+  partner:
+    $ref: "family-revision.yaml"
+    description: Партнер, записанный в эту перепись
+#  person:
+#    description: Связь с уникальным человеком
+#    $ref: "person.yaml"

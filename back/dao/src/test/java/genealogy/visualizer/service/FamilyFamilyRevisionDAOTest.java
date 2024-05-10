@@ -4,7 +4,6 @@ import genealogy.visualizer.JpaAbstractTest;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
-import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +57,7 @@ class FamilyFamilyRevisionDAOTest extends JpaAbstractTest {
             familyRevision.setPartner(null);
             familyRevision.setArchiveDocument(archiveDocument);
             if (generator.nextBoolean()) {
-                List<AnotherNameInRevision> anotherNamesInRevision = generator.objects(AnotherNameInRevision.class, generator.nextInt(1, 3)).toList();
+                List<String> anotherNamesInRevision = generator.objects(String.class, generator.nextInt(1, 3)).toList();
                 familyRevision.setAnotherNames(anotherNamesInRevision);
             }
         }

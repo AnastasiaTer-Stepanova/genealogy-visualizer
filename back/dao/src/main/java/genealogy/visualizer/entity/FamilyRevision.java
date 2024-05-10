@@ -3,7 +3,6 @@ package genealogy.visualizer.entity;
 import genealogy.visualizer.converter.SexConverter;
 import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.Age;
-import genealogy.visualizer.entity.model.AnotherNameInRevision;
 import genealogy.visualizer.entity.model.FullName;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -76,7 +75,7 @@ public class FamilyRevision implements Serializable {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_PREVIOUS_REVISION")),
-            @AttributeOverride(name = "ageType", column = @Column(name = "AGE_TYPE_IN_PREVIOUS_REVISION"))
+            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_PREVIOUS_REVISION"))
     })
     @Comment(value = "Возраст в прежней ревизии", on = "AGE_IN_PREVIOUS_REVISION")
     @Comment(value = "Тип возраста в прежней ревизии", on = "AGE_TYPE_IN_PREVIOUS_REVISION")
@@ -85,7 +84,7 @@ public class FamilyRevision implements Serializable {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_NEXT_REVISION")),
-            @AttributeOverride(name = "ageType", column = @Column(name = "AGE_TYPE_IN_NEXT_REVISION"))
+            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_NEXT_REVISION"))
     })
     @Comment(value = "Возраст в последующей ревизии", on = "AGE_IN_NEXT_REVISION")
     @Comment(value = "Тип возраста в последующей ревизии", on = "AGE_TYPE_IN_NEXT_REVISION")
@@ -122,13 +121,13 @@ public class FamilyRevision implements Serializable {
     @Comment(value = "Статус родственника", on = "RELATIVE_STATUS")
     private FullName relative;
 
-    @ElementCollection(targetClass = AnotherNameInRevision.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "ANOTHER_NAME_IN_REVISION",
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_NAME_IN_REVISION")),
             uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_NAME_IN_REVISION",
-                    columnNames = {"FAMILY_REVISION_ID", "NUMBER"}))
-    private List<AnotherNameInRevision> anotherNames = new ArrayList<>();
+                    columnNames = {"FAMILY_REVISION_ID", "ANOTHER_NAMES"}))
+    private List<String> anotherNames = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ARCHIVE_DOCUMENT_ID",
@@ -146,7 +145,7 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<AnotherNameInRevision> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.partner = partner;
         this.familyRevisionNumber = familyRevisionNumber;
@@ -305,11 +304,11 @@ public class FamilyRevision implements Serializable {
         this.relative = relative;
     }
 
-    public List<AnotherNameInRevision> getAnotherNames() {
+    public List<String> getAnotherNames() {
         return anotherNames;
     }
 
-    public void setAnotherNames(List<AnotherNameInRevision> anotherNames) {
+    public void setAnotherNames(List<String> anotherNames) {
         this.anotherNames = anotherNames;
     }
 

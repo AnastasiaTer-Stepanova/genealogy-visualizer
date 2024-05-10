@@ -7,4 +7,4 @@ properties:
     description: "Ошибки"
     type: "array"
     items:
-      $ref: "./../../error/error.yaml"
+      $ref: "./../../common/error.yaml"

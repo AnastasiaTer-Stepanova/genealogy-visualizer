@@ -1,0 +1,5 @@
+type: string
+enum:
+  - мужской
+  - женский
+x-enum-varnames: [ MALE, FEMALE ]

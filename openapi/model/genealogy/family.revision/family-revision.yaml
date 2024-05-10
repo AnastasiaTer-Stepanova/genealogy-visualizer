@@ -1,0 +1,12 @@
+description: Данные из переписи (РС/ИВ/ПП)
+allOf:
+  - $ref: "family-revision-save.yaml"
+  - type: object
+    required:
+      - id
+    properties:
+      id:
+        description: Идентификатор
+        type: integer
+        format: int64
+        example: 124353

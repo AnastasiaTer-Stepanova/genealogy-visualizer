@@ -1,0 +1,22 @@
+description: Возраст
+type: object
+required:
+  - age
+  - type
+properties:
+  age:
+    description: Возраст
+    type: number
+    format: double
+    minimum: 0
+    maximum: 150
+    example: 34.6
+  type:
+    type: string
+    enum:
+      - новорожденный
+      - дни
+      - недели
+      - месяцы
+      - года
+    x-enum-varnames: [ NEWBORN, DAY, WEEK, MONTH, YEAR ]

@@ -1,5 +1,6 @@
 package genealogy.visualizer.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,7 @@ public class Archive implements Serializable {
     private Long id;
 
     @Comment("Наименование архива")
+    @Column(nullable = false)
     private String name;
 
     @Comment("Комментарий")

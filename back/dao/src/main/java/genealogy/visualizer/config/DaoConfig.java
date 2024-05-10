@@ -41,8 +41,9 @@ public class DaoConfig {
     }
 
     @Bean
-    public FamilyRevisionDAO familyRevisionDAO(@Autowired FamilyRevisionRepository familyRevisionRepository) {
-        return new FamilyRevisionDAOImpl(familyRevisionRepository);
+    public FamilyRevisionDAO familyRevisionDAO(@Autowired FamilyRevisionRepository familyRevisionRepository,
+                                               ArchiveDocumentDAO archiveDocumentDAO) {
+        return new FamilyRevisionDAOImpl(familyRevisionRepository, archiveDocumentDAO);
     }
 
     @Bean

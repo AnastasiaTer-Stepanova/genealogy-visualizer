@@ -1,5 +1,6 @@
 package genealogy.visualizer.randomizer;
 
+import genealogy.visualizer.entity.enums.AgeType;
 import genealogy.visualizer.entity.model.Age;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.range.BigDecimalRangeRandomizer;
@@ -9,7 +10,7 @@ import java.util.Random;
 
 public class AgeRandomizer implements Randomizer<Age> {
 
-    private static final List<String> SUFFIX = List.of("д", "дней", "н", "недель", "м", "месяцев");
+    private static final List<AgeType> SUFFIX = List.of(AgeType.DAY, AgeType.WEEK, AgeType.MONTH, AgeType.YEAR);
 
     @Override
     public Age getRandomValue() {
