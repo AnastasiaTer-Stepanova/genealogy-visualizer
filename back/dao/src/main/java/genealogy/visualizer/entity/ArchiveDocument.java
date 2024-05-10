@@ -53,7 +53,7 @@ public class ArchiveDocument implements Serializable {
     @Comment("Номер дела")
     private String instance;
 
-    @Column(nullable = false)
+    @Column(length = 50, nullable = false)
     @Comment("Связка")
     private String bunch;
 

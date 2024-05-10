@@ -22,7 +22,7 @@ public class Witness implements Serializable {
     @Column(length = 10, nullable = false)
     @Comment("Тип поручителя: по жениху, по невесте")
     @Convert(converter = WitnessConverter.class)
-    public WitnessType witnessType;
+    private WitnessType witnessType;
 
     @ManyToOne
     @JoinColumn(name = "LOCALITY_ID", referencedColumnName = "id")

@@ -10,7 +10,7 @@ import java.util.List;
 public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, Long> {
 
     @Query(value = "update family_revision fs set " +
-            "age = :#{#entity.age?.age}, type = :#{#entity.age?.type?.name}, age_in_next_revision = :#{#entity.ageInNextRevision?.age}, " +
+            "age = :#{#entity.age?.age}, age_type = :#{#entity.age?.type?.name}, age_in_next_revision = :#{#entity.ageInNextRevision?.age}, " +
             "age_type_in_next_revision = :#{#entity.ageInNextRevision?.type?.name}, age_in_previous_revision = :#{#entity.ageInPreviousRevision?.age}, " +
             "age_type_in_previous_revision = :#{#entity.ageInPreviousRevision?.type?.name}, arrived = :#{#entity.arrived}, comment = :#{#entity.comment}, " +
             "departed = :#{#entity.departed}, family_generation = :#{#entity.familyGeneration}, family_revision_number = :#{#entity.familyRevisionNumber}, " +
@@ -23,7 +23,7 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     FamilyRevision update(@Param("entity") FamilyRevision entity);
 
-    @Query(value = "select anir.another_names from another_name_in_revision anir where anir.family_revision_id = :id",
+    @Query(value = "select anir.another_name from another_name_in_revision anir where anir.family_revision_id = :id",
             nativeQuery = true)
     List<String> getAnotherNames(@Param("id") Long id);
 }

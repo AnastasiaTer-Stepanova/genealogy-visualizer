@@ -19,6 +19,7 @@ public class Age implements Serializable {
 
     @Comment("Тип возраста")
     @Convert(converter = AgeConverter.class)
+    @Column(length = 15)
     private AgeType type;
 
     public Age() {

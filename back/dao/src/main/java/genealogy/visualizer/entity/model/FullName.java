@@ -9,13 +9,15 @@ import java.io.Serializable;
 @Embeddable
 public class FullName implements Serializable {
 
+    @Column(length = 50)
     @Comment("Фамилия")
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(length = 50, nullable = false)
     @Comment("Имя")
     private String name;
 
+    @Column(length = 50)
     @Comment("Отчество")
     private String surname;
 

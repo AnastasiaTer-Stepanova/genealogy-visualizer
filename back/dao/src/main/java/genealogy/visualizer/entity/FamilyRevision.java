@@ -70,12 +70,14 @@ public class FamilyRevision implements Serializable {
     private FullName fullName;
 
     @Embedded
+    @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE", length = 15))
+    @Comment(value = "Тип возраста", on = "AGE_TYPE")
     private Age age;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_PREVIOUS_REVISION")),
-            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_PREVIOUS_REVISION"))
+            @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_PREVIOUS_REVISION", precision = 5, scale = 1)),
+            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_PREVIOUS_REVISION", length = 15))
     })
     @Comment(value = "Возраст в прежней ревизии", on = "AGE_IN_PREVIOUS_REVISION")
     @Comment(value = "Тип возраста в прежней ревизии", on = "AGE_TYPE_IN_PREVIOUS_REVISION")
@@ -83,8 +85,8 @@ public class FamilyRevision implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_NEXT_REVISION")),
-            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_NEXT_REVISION"))
+            @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_NEXT_REVISION", precision = 5, scale = 1)),
+            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_NEXT_REVISION", length = 15))
     })
     @Comment(value = "Возраст в последующей ревизии", on = "AGE_IN_NEXT_REVISION")
     @Comment(value = "Тип возраста в последующей ревизии", on = "AGE_TYPE_IN_NEXT_REVISION")
@@ -110,9 +112,9 @@ public class FamilyRevision implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "RELATIVE_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "RELATIVE_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "RELATIVE_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "RELATIVE_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "RELATIVE_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "RELATIVE_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "RELATIVE_STATUS"))
     })
     @Comment(value = "Имя родственника", on = "RELATIVE_LAST_NAME")
@@ -126,7 +128,8 @@ public class FamilyRevision implements Serializable {
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_NAME_IN_REVISION")),
             uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_NAME_IN_REVISION",
-                    columnNames = {"FAMILY_REVISION_ID", "ANOTHER_NAMES"}))
+                    columnNames = {"FAMILY_REVISION_ID", "ANOTHER_NAME"}))
+    @Column(name = "ANOTHER_NAME", length = 50)
     private List<String> anotherNames = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

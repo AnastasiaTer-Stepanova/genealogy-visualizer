@@ -51,9 +51,9 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "HUSBANDS_FATHER_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "HUSBANDS_FATHER_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "HUSBANDS_FATHER_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "HUSBANDS_FATHER_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "HUSBANDS_FATHER_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "HUSBANDS_FATHER_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "HUSBANDS_FATHER_STATUS"))
     })
     @Comment(value = "Имя отца мужа", on = "HUSBANDS_FATHER_LAST_NAME")
@@ -64,9 +64,9 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "HUSBAND_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "HUSBAND_NAME", nullable = false)),
-            @AttributeOverride(name = "surname", column = @Column(name = "HUSBAND_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "HUSBAND_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "HUSBAND_NAME", length = 50, nullable = false)),
+            @AttributeOverride(name = "surname", column = @Column(name = "HUSBAND_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "HUSBAND_STATUS"))
     })
     @Comment(value = "Имя мужа", on = "HUSBAND_LAST_NAME")
@@ -77,8 +77,8 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "age", column = @Column(name = "HUSBAND_AGE")),
-            @AttributeOverride(name = "type", column = @Column(name = "HUSBAND_AGE_TYPE"))
+            @AttributeOverride(name = "age", column = @Column(name = "HUSBAND_AGE", precision = 5, scale = 1)),
+            @AttributeOverride(name = "type", column = @Column(name = "HUSBAND_AGE_TYPE", length = 15))
     })
     @Comment(value = "Возраст мужа", on = "HUSBAND_AGE")
     @Comment(value = "Тип возраста мужа", on = "HUSBAND_AGE_TYPE")
@@ -97,9 +97,9 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "WIFES_FATHER_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "WIFES_FATHER_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "WIFES_FATHER_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "WIFES_FATHER_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "WIFES_FATHER_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "WIFES_FATHER_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "WIFES_FATHER_STATUS"))
     })
     @Comment(value = "Имя отца жены", on = "WIFES_FATHER_LAST_NAME")
@@ -110,9 +110,9 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "WIFE_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "WIFE_NAME", nullable = false)),
-            @AttributeOverride(name = "surname", column = @Column(name = "WIFE_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "WIFE_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "WIFE_NAME", length = 50, nullable = false)),
+            @AttributeOverride(name = "surname", column = @Column(name = "WIFE_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "WIFE_STATUS"))
     })
     @Comment(value = "Имя жены", on = "WIFE_LAST_NAME")
@@ -123,8 +123,8 @@ public class Marriage implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "age", column = @Column(name = "WIFE_AGE")),
-            @AttributeOverride(name = "type", column = @Column(name = "WIFE_AGE_TYPE"))
+            @AttributeOverride(name = "age", column = @Column(name = "WIFE_AGE", precision = 5, scale = 1)),
+            @AttributeOverride(name = "type", column = @Column(name = "WIFE_AGE_TYPE", length = 15))
     })
     @Comment(value = "Возраст жены", on = "WIFE_AGE")
     @Comment(value = "Тип возраста жены", on = "WIFE_AGE_TYPE")

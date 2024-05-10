@@ -62,9 +62,9 @@ public class Christening implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "FATHER_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "FATHER_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "FATHER_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "FATHER_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "FATHER_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "FATHER_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "FATHER_STATUS"))
     })
     @Comment(value = "Имя отца", on = "FATHER_LAST_NAME")
@@ -75,9 +75,9 @@ public class Christening implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "MOTHER_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "MOTHER_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "MOTHER_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "MOTHER_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "MOTHER_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "MOTHER_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "MOTHER_STATUS"))
     })
     @Comment(value = "Имя матери", on = "MOTHER_LAST_NAME")

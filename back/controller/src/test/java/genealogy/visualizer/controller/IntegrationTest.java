@@ -21,7 +21,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -126,14 +125,14 @@ class IntegrationTest {
     void assertAge(Age age1, genealogy.visualizer.entity.model.Age age2) {
         assertNotNull(age1);
         assertNotNull(age2);
-        assertEquals(age1.getAge().setScale(1, RoundingMode.HALF_UP), age2.getAge().setScale(1, RoundingMode.HALF_UP));
+        assertEquals(0, age1.getAge().compareTo(age2.getAge()));
         assertEquals(age1.getType().getValue(), age2.getType().getName());
     }
 
     void assertAge(Age age1, Age age2) {
         assertNotNull(age1);
         assertNotNull(age2);
-        assertEquals(age1.getAge().setScale(1, RoundingMode.HALF_UP), age2.getAge().setScale(1, RoundingMode.HALF_UP));
+        assertEquals(0, age1.getAge().compareTo(age2.getAge()));
         assertEquals(age1.getType().getValue(), age2.getType().getValue());
     }
 }

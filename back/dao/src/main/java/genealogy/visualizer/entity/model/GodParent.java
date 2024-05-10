@@ -24,9 +24,9 @@ public class GodParent implements Serializable {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "lastName", column = @Column(name = "RELATIVE_LAST_NAME")),
-            @AttributeOverride(name = "name", column = @Column(name = "RELATIVE_NAME")),
-            @AttributeOverride(name = "surname", column = @Column(name = "RELATIVE_SURNAME")),
+            @AttributeOverride(name = "lastName", column = @Column(name = "RELATIVE_LAST_NAME", length = 50)),
+            @AttributeOverride(name = "name", column = @Column(name = "RELATIVE_NAME", length = 50)),
+            @AttributeOverride(name = "surname", column = @Column(name = "RELATIVE_SURNAME", length = 50)),
             @AttributeOverride(name = "status", column = @Column(name = "RELATIVE_STATUS"))
     })
     @Comment(value = "Имя родственника", on = "RELATIVE_LAST_NAME")
