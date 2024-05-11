@@ -1,14 +1,10 @@
 package genealogy.visualizer.service;
 
 import genealogy.visualizer.JpaAbstractTest;
-import genealogy.visualizer.entity.Archive;
-import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,21 +14,6 @@ class FamilyFamilyRevisionDAOTest extends JpaAbstractTest {
 
     @Autowired
     private FamilyRevisionDAO familyFamilyRevisionDAO;
-
-    private ArchiveDocument archiveDocument;
-
-    @BeforeEach
-    void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setId(null);
-        archiveDocument.setFamilyRevisions(Collections.emptyList());
-        archiveDocument.setArchive(archive);
-        archiveDocument.getArchive().setId(null);
-        archiveDocument.getArchive().setArchiveDocuments(Collections.emptyList());
-        entityManager.persistAndFlush(archiveDocument.getArchive());
-        entityManager.persistAndFlush(archiveDocument);
-    }
 
     @Test
     void saveBatchTest() {

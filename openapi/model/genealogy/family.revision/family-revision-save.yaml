@@ -84,4 +84,4 @@ properties:
     $ref: "family-revision.yaml"
 #  person:
 #    description: Связь с уникальным человеком
-#    $ref: "person.yaml"
+#    $ref: "easy-person.yaml"

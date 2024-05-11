@@ -3,12 +3,13 @@ package genealogy.visualizer.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import genealogy.visualizer.api.model.Age;
 import genealogy.visualizer.api.model.ArchiveDocument;
+import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyRevision;
 import genealogy.visualizer.api.model.FullName;
-import genealogy.visualizer.api.model.Person;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
+import genealogy.visualizer.repository.LocalityRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -45,21 +46,27 @@ class IntegrationTest {
     ArchiveRepository archiveRepository;
 
     @Autowired
+    LocalityRepository localityRepository;
+
+    @Autowired
     ArchiveDocumentMapper archiveDocumentMapper;
 
     ArchiveDocument archiveDocumentExisting;
+
+    genealogy.visualizer.entity.Locality localityExisting;
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
     static EasyRandom generator;
 
+    final Set<Long> localityIds = new HashSet<>();
     final Set<Long> archiveIds = new HashSet<>();
     final Set<Long> archiveDocumentIds = new HashSet<>();
 
     static {
         EasyRandomParameters parameters = getGeneratorParams()
                 .randomize(named("partner").and(ofType(FamilyRevision.class)), () -> null)
-                .randomize(named("person").and(ofType(Person.class)), () -> null)
+                .randomize(named("person").and(ofType(EasyPerson.class)), () -> null)
                 .randomize(named("name").and(ofType(String.class)), () -> new StringRandomizer().getRandomValue())
                 .randomize(Age.class, () -> new Age(new BigDecimalRangeRandomizer(Double.valueOf(0.0), Double.valueOf(99.9), Integer.valueOf(1)).getRandomValue(),
                         Age.TypeEnum.values()[new Random().nextInt(Age.TypeEnum.values().length)]));
@@ -68,6 +75,8 @@ class IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        genealogy.visualizer.entity.Locality localityExisting = localityRepository.save(generator.nextObject(genealogy.visualizer.entity.Locality.class));
+        localityIds.add(localityExisting.getId());
         genealogy.visualizer.entity.Archive archiveEntity = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveRepository.saveAndFlush(archiveEntity);
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
@@ -83,6 +92,7 @@ class IntegrationTest {
         System.out.println("----------------------End test------------------------");
         archiveDocumentRepository.deleteAllById(archiveDocumentIds);
         archiveRepository.deleteAllById(archiveIds);
+        localityRepository.deleteAllById(localityIds);
     }
 
     void assertArchiveDocument(ArchiveDocument archiveDocument1, ArchiveDocument archiveDocument2) {

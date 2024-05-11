@@ -1,0 +1,17 @@
+description: Человек
+type: object
+required:
+  - id
+  - fullName
+properties:
+  id:
+    description: Идентификатор
+    type: integer
+    format: int64
+    example: 124353
+  fullName:
+    $ref: "./../../common/full-name.yaml"
+  birthDate:
+    $ref: "./../../common/date-info.yaml"
+  deathDate:
+    $ref: "./../../common/date-info.yaml"

@@ -3,7 +3,9 @@ package genealogy.visualizer.config;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.Person;
 import genealogy.visualizer.entity.model.Age;
+import genealogy.visualizer.entity.model.DateInfo;
 import genealogy.visualizer.randomizer.AgeRandomizer;
+import genealogy.visualizer.randomizer.DateInfoRandomizer;
 import genealogy.visualizer.randomizer.PersonStatusRandomizer;
 import org.jeasy.random.EasyRandomParameters;
 import org.jeasy.random.randomizers.range.ByteRangeRandomizer;
@@ -47,6 +49,7 @@ public class EasyRandomParamsBuilder {
                         () -> new StringRandomizer(10).getRandomValue())
                 .randomize(named("partner").and(ofType(FamilyRevision.class)), () -> null)
                 .randomize(named("person").and(ofType(Person.class)), () -> null)
-                .randomize(Age.class, new AgeRandomizer());
+                .randomize(Age.class, new AgeRandomizer())
+                .randomize(DateInfo.class, new DateInfoRandomizer());
     }
 }

@@ -1,5 +1,5 @@
-description: "Запрос данных для визуализации генеологического исследования"
-type: "object"
+description: Запрос данных для визуализации генеологического исследования
+type: object
 properties:
   filter:
     $ref: "./genealogy-visualize-filter.yaml"

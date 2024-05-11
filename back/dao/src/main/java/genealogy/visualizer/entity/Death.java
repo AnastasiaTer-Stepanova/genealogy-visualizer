@@ -80,7 +80,7 @@ public class Death implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PERSON_ID",
             referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PERSON"),
+            foreignKey = @ForeignKey(name = "FK_DEATH_PERSON"),
             unique = true)
     private Person person;
 

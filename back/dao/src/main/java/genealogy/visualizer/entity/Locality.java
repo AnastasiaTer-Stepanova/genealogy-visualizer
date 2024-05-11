@@ -53,7 +53,8 @@ public class Locality implements Serializable {
             joinColumns = @JoinColumn(name = "LOCALITY_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_LOCALITY_NAME")),
             uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_LOCALITY_NAME",
-                    columnNames = {"LOCALITY_ID", "ANOTHER_NAMES"}))
+                    columnNames = {"LOCALITY_ID", "ANOTHER_NAME"}))
+    @Column(name = "ANOTHER_NAME", length = 50)
     private List<String> anotherNames = new ArrayList<>();
 
     @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)

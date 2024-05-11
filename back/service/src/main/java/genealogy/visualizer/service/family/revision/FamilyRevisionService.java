@@ -1,22 +1,19 @@
 package genealogy.visualizer.service.family.revision;
 
-import genealogy.visualizer.api.model.ArchiveWithFamilyRevision;
-import genealogy.visualizer.api.model.FamilyRevisionFilter;
-import genealogy.visualizer.api.model.FamilyRevisionSave;
 import genealogy.visualizer.api.model.FamilyRevision;
-import genealogy.visualizer.service.util.record.ResponseRecord;
-
-import java.util.List;
+import genealogy.visualizer.api.model.FamilyRevisionFilter;
+import genealogy.visualizer.api.model.FamilyRevisionResponse;
+import genealogy.visualizer.api.model.FamilyRevisionSave;
 
 public interface FamilyRevisionService {
 
     void delete(Long id);
 
-    ResponseRecord<FamilyRevision> getById(Long id);
+    FamilyRevisionResponse getById(Long id);
 
-    ResponseRecord<FamilyRevision> save(FamilyRevisionSave familyRevisionSave);
+    FamilyRevisionResponse save(FamilyRevisionSave familyRevisionSave);
 
-    ResponseRecord<FamilyRevision> update(FamilyRevision familyRevision);
+    FamilyRevisionResponse update(FamilyRevision familyRevision);
 
-    ResponseRecord<List<ArchiveWithFamilyRevision>> getArchivesWithFamilyRevision(FamilyRevisionFilter familyRevisionFilter);
+    FamilyRevisionResponse getArchivesWithFamilyRevision(FamilyRevisionFilter familyRevisionFilter);
 }

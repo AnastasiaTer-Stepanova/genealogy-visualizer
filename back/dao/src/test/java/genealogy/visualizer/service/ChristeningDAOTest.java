@@ -6,11 +6,9 @@ import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.model.GodParent;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,34 +17,6 @@ class ChristeningDAOTest extends JpaAbstractTest {
 
     @Autowired
     private ChristeningDAO christeningDAO;
-
-    private ArchiveDocument archiveDocument;
-    private Locality locality;
-
-    @BeforeEach
-    void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setId(null);
-        archiveDocument.setFamilyRevisions(Collections.emptyList());
-        archiveDocument.setChristenings(Collections.emptyList());
-        archiveDocument.setArchive(archive);
-        archiveDocument.getArchive().setId(null);
-        archiveDocument.getArchive().setArchiveDocuments(Collections.emptyList());
-        entityManager.persistAndFlush(archiveDocument.getArchive());
-        entityManager.persistAndFlush(archiveDocument);
-        locality = generator.nextObject(Locality.class);
-        locality.setId(null);
-        locality.setChristenings(Collections.emptyList());
-        int count = generator.nextInt(3);
-        if (count == 0) {
-            locality.setAnotherNames(Collections.emptyList());
-        } else {
-            List<String> anotherNames = generator.objects(String.class, 2).toList();
-            locality.setAnotherNames(anotherNames);
-        }
-        entityManager.persistAndFlush(locality);
-    }
 
     @Test
     void saveNewChristeningTest() {

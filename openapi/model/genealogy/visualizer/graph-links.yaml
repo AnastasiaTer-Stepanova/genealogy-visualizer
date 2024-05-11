@@ -1,11 +1,13 @@
-description: "Связь"
-type: "object"
+description: Связь
+type: object
 properties:
   source:
-    description: "Идентификатор источника"
-    type: "integer"
-    format: "int32"
+    description: Идентификатор источника
+    type: integer
+    format: int64
+    example: 124353
   target:
-    description: "Идентификатор приемника"
-    type: "integer"
-    format: "int32"
+    description: Идентификатор таргета
+    type: integer
+    format: int64
+    example: 124353

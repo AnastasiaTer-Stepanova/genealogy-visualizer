@@ -35,7 +35,7 @@ public class ChristeningSheetParser implements SheetParser {
     private static final String LOCALITY_COLUMN_NAME = "Locality";
     private static final String NAME_COLUMN_NAME = "Name";
     private static final String FATHER_COLUMN_NAME = "Father";
-    private static final String MOTHER_COLUMN_NAME = "Mather";
+    private static final String MOTHER_COLUMN_NAME = "Mother";
     private static final String FIRST_GOD_PARENT_COLUMN_NAME = "GodParent1";
     private static final String SECOND_GOD_PARENT_COLUMN_NAME = "GodParent2";
     private static final String COMMENT_COLUMN_NAME = "Comment";

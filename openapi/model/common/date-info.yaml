@@ -1,0 +1,20 @@
+description: Человек
+type: object
+required:
+  - date
+  - dateRangeType
+properties:
+  date:
+    description: Дата
+    type: string
+    minLength: 4
+    maxLength: 10
+    example: 01-01-1854/01-1832/1854
+  dateRangeType:
+    type: string
+    description: Пол
+    enum:
+      - ровно
+      - до
+      - после
+    x-enum-varnames: [ EXACTLY, BEFORE, AFTER ]

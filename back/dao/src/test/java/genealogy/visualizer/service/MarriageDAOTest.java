@@ -6,7 +6,6 @@ import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.model.Witness;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,31 +18,6 @@ class MarriageDAOTest extends JpaAbstractTest {
 
     @Autowired
     private MarriageDAO marriageDAO;
-
-    private ArchiveDocument archiveDocument;
-    private Locality locality;
-
-    @BeforeEach
-    void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setId(null);
-        archiveDocument.setArchive(archive);
-        archiveDocument.getArchive().setId(null);
-        archiveDocument.getArchive().setArchiveDocuments(Collections.emptyList());
-        entityManager.persistAndFlush(archiveDocument.getArchive());
-        entityManager.persistAndFlush(archiveDocument);
-        locality = generator.nextObject(Locality.class);
-        locality.setId(null);
-        int count = generator.nextInt(3);
-        if (count == 0) {
-            locality.setAnotherNames(Collections.emptyList());
-        } else {
-            List<String> anotherNames = generator.objects(String.class, 2).toList();
-            locality.setAnotherNames(anotherNames);
-        }
-        entityManager.persistAndFlush(locality);
-    }
 
     @Test
     void saveNewMarriageTest() {

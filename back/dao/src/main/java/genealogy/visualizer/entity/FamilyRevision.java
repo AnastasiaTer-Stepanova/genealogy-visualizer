@@ -144,11 +144,10 @@ public class FamilyRevision implements Serializable {
             foreignKey = @ForeignKey(name = "FK_ARCHIVE_DOCUMENT"))
     private ArchiveDocument archiveDocument;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PERSON_ID",
             referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PERSON"),
-            unique = true)
+            foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PERSON"))
     private Person person;
 
     public FamilyRevision() {

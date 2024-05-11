@@ -1,5 +1,12 @@
 package genealogy.visualizer.entity;
 
+import genealogy.visualizer.entity.model.DateInfo;
+import genealogy.visualizer.entity.model.FullName;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -9,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
@@ -18,6 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+//TODO Разобраться с графами
+//@NamedEntityGraphs(value = {
+//        @NamedEntityGraph(
+//                name = "Person.Relationships",
+//                attributeNodes = {
+//                        @NamedAttributeNode("father"),
+//                        @NamedAttributeNode(value = "deviceType", subgraph = "DeviceType.Transaction")
+//                }
+//        )
+//})
+//@EntityGraph в repository
 public class Person implements Serializable {
 
     @Id
@@ -26,11 +46,66 @@ public class Person implements Serializable {
     @Comment("Идентификатор записи")
     private Long id;
 
+    @Embedded
+    private FullName fullName;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "date", column = @Column(name = "BIRTH_DATE", length = 10)),
+            @AttributeOverride(name = "dateRangeType", column = @Column(name = "BIRTH_DATE_RANGE_TYPE", length = 20))
+    })
+    @Comment(value = "Дата рождения", on = "BIRTH_DATE")
+    @Comment(value = "Тип диапазона даты рождения", on = "BIRTH_DATE_RANGE_TYPE")
+    private DateInfo birthDate;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "date", column = @Column(name = "DEATH_DATE", length = 10)),
+            @AttributeOverride(name = "dateRangeType", column = @Column(name = "DEATH_DATE_RANGE_TYPE", length = 20))
+    })
+    @Comment(value = "Дата смерти", on = "DEATH_DATE")
+    @Comment(value = "Тип диапазона даты смерти", on = "DEATH_DATE_RANGE_TYPE")
+    private DateInfo deathDate;
+
+    @ManyToOne
+    @JoinColumn(name = "BIRTH_LOCALITY_ID", referencedColumnName = "id")
+    private Locality birthLocality;
+
+    @ManyToOne
+    @JoinColumn(name = "DEATH_LOCALITY_ID", referencedColumnName = "id")
+    private Locality deathLocality;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "PERSON_PARTNER",
+            joinColumns = @JoinColumn(name = "PARTNER_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_PARTNER_ID_PERSON_ID")),
+            inverseJoinColumns = @JoinColumn(name = "PERSON_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_PERSON_ID_PARTNER_ID")))
+    private List<Person> partners = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "PERSON_PARENT",
+            joinColumns = @JoinColumn(name = "PARENT_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_PARENT_ID_PERSON_ID")),
+            inverseJoinColumns = @JoinColumn(name = "PERSON_ID",
+                    referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "FK_PERSON_ID_PARENT_ID")))
+    private List<Person> children = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "children", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<Person> parents = new ArrayList<>();
+
     @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
     private Christening christening;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
-    private FamilyRevision familyRevision;
+    private Death death;
+
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
+    private List<FamilyRevision> revisions = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "PERSON_MARRIAGE",
@@ -43,10 +118,27 @@ public class Person implements Serializable {
     public Person() {
     }
 
-    public Person(Long id, Christening christening, FamilyRevision familyRevision, List<Marriage> marriages) {
+    public Person(FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality) {
+        this.fullName = fullName;
+        this.birthDate = birthDate;
+        this.deathDate = deathDate;
+        this.birthLocality = birthLocality;
+        this.deathLocality = deathLocality;
+    }
+
+    public Person(Long id, FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality, List<Person> partners, List<Person> children, List<Person> parents, Christening christening, Death death, List<FamilyRevision> revisions, List<Marriage> marriages) {
         this.id = id;
+        this.fullName = fullName;
+        this.birthDate = birthDate;
+        this.deathDate = deathDate;
+        this.birthLocality = birthLocality;
+        this.deathLocality = deathLocality;
+        this.partners = partners;
+        this.children = children;
+        this.parents = parents;
         this.christening = christening;
-        this.familyRevision = familyRevision;
+        this.death = death;
+        this.revisions = revisions;
         this.marriages = marriages;
     }
 
@@ -58,6 +150,70 @@ public class Person implements Serializable {
         this.id = id;
     }
 
+    public FullName getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(FullName fullName) {
+        this.fullName = fullName;
+    }
+
+    public DateInfo getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(DateInfo birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public DateInfo getDeathDate() {
+        return deathDate;
+    }
+
+    public void setDeathDate(DateInfo deathDate) {
+        this.deathDate = deathDate;
+    }
+
+    public Locality getBirthLocality() {
+        return birthLocality;
+    }
+
+    public void setBirthLocality(Locality birthLocality) {
+        this.birthLocality = birthLocality;
+    }
+
+    public Locality getDeathLocality() {
+        return deathLocality;
+    }
+
+    public void setDeathLocality(Locality deathLocality) {
+        this.deathLocality = deathLocality;
+    }
+
+    public List<Person> getPartners() {
+        return partners;
+    }
+
+    public void setPartners(List<Person> partners) {
+        this.partners = partners;
+    }
+
+    public List<Person> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Person> children) {
+        this.children = children;
+    }
+
+    public List<Person> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<Person> parents) {
+        this.parents = parents;
+    }
+
     public Christening getChristening() {
         return christening;
     }
@@ -66,12 +222,20 @@ public class Person implements Serializable {
         this.christening = christening;
     }
 
-    public FamilyRevision getFamilyRevision() {
-        return familyRevision;
+    public Death getDeath() {
+        return death;
     }
 
-    public void setFamilyRevision(FamilyRevision familyRevision) {
-        this.familyRevision = familyRevision;
+    public void setDeath(Death death) {
+        this.death = death;
+    }
+
+    public List<FamilyRevision> getRevisions() {
+        return revisions;
+    }
+
+    public void setRevisions(List<FamilyRevision> revisions) {
+        this.revisions = revisions;
     }
 
     public List<Marriage> getMarriages() {

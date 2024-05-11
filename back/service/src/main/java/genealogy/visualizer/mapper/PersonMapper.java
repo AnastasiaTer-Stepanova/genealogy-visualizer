@@ -1,22 +1,31 @@
 package genealogy.visualizer.mapper;
 
-import genealogy.visualizer.api.model.Person;
+import genealogy.visualizer.api.model.EasyPerson;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, unmappedSourcePolicy = ReportingPolicy.ERROR)
+import java.util.List;
+import java.util.Set;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, uses = {FullNameMapper.class})
 public interface PersonMapper {
 
+    @Mapping(target = "birthLocality", ignore = true)
+    @Mapping(target = "deathLocality", ignore = true)
+    @Mapping(target = "partners", ignore = true)
+    @Mapping(target = "children", ignore = true)
+    @Mapping(target = "parents", ignore = true)
     @Mapping(target = "christening", ignore = true)
-    @Mapping(target = "familyRevision", ignore = true)
+    @Mapping(target = "death", ignore = true)
+    @Mapping(target = "revisions", ignore = true)
     @Mapping(target = "marriages", ignore = true)
-    @BeanMapping(ignoreUnmappedSourceProperties = {"fullName"})
-    genealogy.visualizer.entity.Person toEntity(Person person);
+    genealogy.visualizer.entity.Person toEntity(EasyPerson person);
 
-    @Mapping(target = "fullName", ignore = true)
-    @BeanMapping(ignoreUnmappedSourceProperties = {"christening", "familyRevision", "marriages"})
-    Person toDTO(genealogy.visualizer.entity.Person person);
+    @BeanMapping(ignoreUnmappedSourceProperties = {"christening", "marriages", "partners", "parents", "death", "revisions"})
+    EasyPerson toEasyPersonDTO(genealogy.visualizer.entity.Person person);
+
+    Set<EasyPerson> toEasyPersonDTO(List<genealogy.visualizer.entity.Person> person);
 
 }

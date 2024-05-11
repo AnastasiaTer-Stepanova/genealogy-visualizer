@@ -4,11 +4,8 @@ import genealogy.visualizer.JpaAbstractTest;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -22,21 +19,6 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
 
     @Autowired
     private ArchiveDocumentRepository archiveDocumentRepository;
-
-    private ArchiveDocument archiveDocument;
-
-    @BeforeEach
-    void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setId(null);
-        archiveDocument.setFamilyRevisions(Collections.emptyList());
-        archiveDocument.setArchive(archive);
-        archiveDocument.getArchive().setId(null);
-        archiveDocument.getArchive().setArchiveDocuments(Collections.emptyList());
-        entityManager.persistAndFlush(archiveDocument.getArchive());
-        entityManager.persistAndFlush(archiveDocument);
-    }
 
     @Test
     void saveNewArchDocTest() {

@@ -1,39 +1,40 @@
 package genealogy.visualizer.controller;
 
 import genealogy.visualizer.api.GenealogyVisualizeApi;
-import genealogy.visualizer.api.model.GenealogyVisualizeRs;
+import genealogy.visualizer.api.model.GenealogyVisualizeErrorResponse;
 import genealogy.visualizer.api.model.GenealogyVisualizeGraph;
+import genealogy.visualizer.api.model.GenealogyVisualizeResponse;
 import genealogy.visualizer.api.model.GenealogyVisualizeRq;
-import genealogy.visualizer.api.model.GraphLinks;
-import genealogy.visualizer.api.model.Person;
+import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-
 @RestController
 public class GenealogyVisualizeController implements GenealogyVisualizeApi {
 
+    private final GenealogyVisualizeService genealogyVisualizeService;
+
+    public GenealogyVisualizeController(GenealogyVisualizeService genealogyVisualizeService) {
+        this.genealogyVisualizeService = genealogyVisualizeService;
+    }
+
     @Override
-    public ResponseEntity<GenealogyVisualizeRs> getGenealogyVisualizeGraph(GenealogyVisualizeRq GenealogyVisualizeRq) {
-        //TODO Временная заглушка
-        GenealogyVisualizeRs GenealogyVisualizeRs = new GenealogyVisualizeRs();
-        GenealogyVisualizeGraph visualizeGraph = new GenealogyVisualizeGraph();
-        for (int i = 0; i < 10; i++) {
-            Person person = new Person();
-            person.setFullName(randomAlphabetic(20));
-            person.setId(Integer.valueOf(randomNumeric(3)));
-            visualizeGraph.addPersonsItem(person);
+    public ResponseEntity<GenealogyVisualizeResponse> getGenealogyVisualizeGraph(GenealogyVisualizeRq genealogyVisualizeRq) {
+        GenealogyVisualizeResponse result = genealogyVisualizeService.getGenealogyVisualizeGraph(genealogyVisualizeRq);
+        return switch (result) {
+            case GenealogyVisualizeGraph g -> ResponseEntity.ok().body(g);
+            case GenealogyVisualizeErrorResponse e -> getErrorResponse(e);
+            default -> ResponseEntity.internalServerError().build();
+        };
+    }
+
+    private ResponseEntity<GenealogyVisualizeResponse> getErrorResponse(GenealogyVisualizeErrorResponse result) {
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        if (result == null || result.getCode() == null) {
+            return new ResponseEntity<>(null, httpStatus);
         }
-        for (int i = 0; i < 4; i++) {
-            GraphLinks links = new GraphLinks();
-            links.setSource(visualizeGraph.getPersons().get(i).getId());
-            links.setTarget(visualizeGraph.getPersons().get(i + 2).getId());
-            visualizeGraph.addLinksItem(links);
-        }
-        GenealogyVisualizeRs.setGenealogyVisualizerGraph(visualizeGraph);
-        return new ResponseEntity<>(GenealogyVisualizeRs, HttpStatus.OK);
+        httpStatus = HttpStatus.valueOf(result.getCode());
+        return new ResponseEntity<>(result, httpStatus);
     }
 }

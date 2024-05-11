@@ -2,7 +2,9 @@ package genealogy.visualizer.config;
 
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
+import genealogy.visualizer.mapper.ErrorMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
@@ -17,8 +19,11 @@ import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.MarriageDAO;
+import genealogy.visualizer.service.PersonDAO;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
+import genealogy.visualizer.service.graph.GenealogyVisualizeService;
+import genealogy.visualizer.service.graph.GenealogyVisualizeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -38,8 +43,10 @@ public class ServiceConfig {
     public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
                                                        ArchiveDocumentDAO archiveDocumentDAO,
                                                        FamilyRevisionMapper familyRevisionMapper,
-                                                       ArchiveDocumentMapper archiveDocumentMapper) {
-        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper, archiveDocumentMapper);
+                                                       ArchiveDocumentMapper archiveDocumentMapper,
+                                                       ErrorMapper errorMapper) {
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper,
+                archiveDocumentMapper, errorMapper);
     }
 
     @Bean
@@ -80,5 +87,10 @@ public class ServiceConfig {
     @Bean
     public FileParser archiveDocumentExcelParser(ArchiveDocumentDAO archiveDocumentDAO, Map<ArchiveDocumentType, SheetParser> parserMap) {
         return new ArchiveDocumentExcelParser(parserMap, archiveDocumentDAO);
+    }
+
+    @Bean
+    public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, PersonMapper personMapper, ErrorMapper errorMapper) {
+        return new GenealogyVisualizeServiceImpl(personDAO, personMapper, errorMapper);
     }
 }

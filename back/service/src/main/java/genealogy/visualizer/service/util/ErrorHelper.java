@@ -1,9 +1,8 @@
 package genealogy.visualizer.service.util;
 
-import genealogy.visualizer.api.model.ErrorResponse;
-import genealogy.visualizer.service.util.record.ResponseRecord;
+import genealogy.visualizer.api.model.Error;
 
-public class ErrorHelper<T> {
-    public ResponseRecord<T> NOT_FOUND_ERROR = new ResponseRecord<>(new ErrorResponse(404, "Данные не найдены"), null);
-    public ResponseRecord<T> BAD_REQUEST_ERROR = new ResponseRecord<>(new ErrorResponse(400, "Переданы некорректные данные"), null);
+public class ErrorHelper {
+    public static final Error NOT_FOUND_ERROR = new Error(404, "Данные не найдены");
+    public static final Error BAD_REQUEST_ERROR = new Error(400, "Переданы некорректные данные");
 }
