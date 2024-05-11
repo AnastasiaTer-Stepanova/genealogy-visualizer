@@ -1,6 +1,9 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     application
     id("java-conventions")
+    id("org.springframework.boot") version "3.2.4"
 }
 
 tasks.test {
@@ -16,4 +19,9 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter:3.2.5")
 
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName = "watcher.jar"
+    mainClass = "genealogy.visualizer.Application"
 }
