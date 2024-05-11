@@ -4,7 +4,7 @@ plugins {
     application
     id("java-conventions")
     id("java-test-fixtures")
-    id("org.springframework.boot") version "3.2.4"
+    id("org.springframework.boot") version "3.2.5"
 }
 
 application {
@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":back:api"))
     implementation(project(":back:service"))
 
-    implementation("org.springframework.boot:spring-boot-starter-web:3.2.4")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 
     testImplementation(project(":back:dao"))
     testImplementation(testFixtures(project(":back:dao")))
