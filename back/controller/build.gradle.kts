@@ -1,7 +1,10 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     application
     id("java-conventions")
     id("java-test-fixtures")
+    id("org.springframework.boot") version "3.2.4"
 }
 
 application {
@@ -25,4 +28,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.5")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:3.2.5")
     testImplementation("org.springframework.data:spring-data-jpa:3.2.5")
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName = "controller.jar"
+    mainClass = "genealogy.visualizer.Application"
 }
