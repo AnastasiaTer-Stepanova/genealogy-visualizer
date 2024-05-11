@@ -1,12 +1,9 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.Archive;
-import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.service.ChristeningDAO;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -15,11 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static genealogy.visualizer.entity.enums.Sex.MALE;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,15 +45,11 @@ class ChristeningSheetParserTest extends AbstractTest {
 
     private SheetParser sheetParser;
 
-    private ArchiveDocument archiveDocument;
-
     private List<Christening> christenings;
 
     @BeforeEach
     void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setArchive(archive);
+        super.setUp();
         christenings = generateChristening();
         headers = new HashMap<>();
         headers.put(MALE_COLUMN_NAME, 0);
@@ -73,7 +64,7 @@ class ChristeningSheetParserTest extends AbstractTest {
         headers.put(SECOND_GOD_PARENT_COLUMN_NAME, 9);
         headers.put(COMMENT_COLUMN_NAME, 10);
         headers.put(LEGITIMACY_COLUMN_NAME, 11);
-        sheetParser = new ChristeningSheetParser(christeningDAO);
+        sheetParser = new ChristeningSheetParser(christeningDAO, archiveDocumentDAO);
     }
 
     @Test
@@ -82,7 +73,8 @@ class ChristeningSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(christenings);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, false);
     }
@@ -93,7 +85,8 @@ class ChristeningSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(christenings);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, true);
     }

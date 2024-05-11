@@ -55,15 +55,11 @@ class MarriageSheetParserTest extends AbstractTest {
 
     private SheetParser sheetParser;
 
-    private ArchiveDocument archiveDocument;
-
     private List<Marriage> marriages;
 
     @BeforeEach
     void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setArchive(archive);
+        super.setUp();
         marriages = generateMarriages();
         headers = new HashMap<>();
         headers.put(DATE_COLUMN_NAME, 0);
@@ -84,7 +80,7 @@ class MarriageSheetParserTest extends AbstractTest {
         headers.put(SECOND_WIFE_WITNESS_COLUMN_NAME, 15);
         headers.put(THIRD_WIFE_WITNESS_COLUMN_NAME, 16);
         headers.put(COMMENT_COLUMN_NAME, 17);
-        sheetParser = new MarriageSheetParser(marriageDAO);
+        sheetParser = new MarriageSheetParser(marriageDAO, archiveDocumentDAO);
     }
 
     @Test
@@ -93,7 +89,8 @@ class MarriageSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(marriages);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, false);
     }
@@ -104,7 +101,8 @@ class MarriageSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(marriages);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, true);
     }

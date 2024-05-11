@@ -1,9 +1,7 @@
 package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
-import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
-import genealogy.visualizer.service.ArchiveDocumentDAO;
+import genealogy.visualizer.parser.impl.FileExcelParser;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -23,29 +21,24 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-class ArchiveDocumentExcelParserTest extends AbstractTest {
+class FileExcelParserTest extends AbstractTest {
 
     private static final String FOLDER_OUTPUT_FILE = "/result/";
 
     @Mock
-    private Map<ArchiveDocumentType, SheetParser> parserMap;
+    private Map<String, SheetParser> parserMap;
 
     @Mock
     private SheetParser sheetParser;
 
-    @Mock
-    private ArchiveDocumentDAO archiveDocumentDAO;
-
     @Test
     void checkParseTest(@TempDir(cleanup = CleanupMode.ALWAYS) Path tempDir) throws IOException {
         ArchiveDocument archiveDocument = generator.nextObject(ArchiveDocument.class);
-        when(parserMap.get(archiveDocument.getType())).thenReturn(sheetParser);
-        when(archiveDocumentDAO.saveOrFindIfExistDocument(any())).thenReturn(archiveDocument);
-        ArchiveDocumentExcelParser archiveDocumentExcelParser = new ArchiveDocumentExcelParser(parserMap, archiveDocumentDAO);
+        when(parserMap.get(archiveDocument.getType().getName())).thenReturn(sheetParser);
+        FileExcelParser fileExcelParser = new FileExcelParser(parserMap);
 
         int count = 10;
         int listNumberFroParsing = generator.nextInt(1, 10);
@@ -56,10 +49,10 @@ class ArchiveDocumentExcelParserTest extends AbstractTest {
         addBlankRows(workbookSheetAt, count);
         createWorkbook(tempDir, workbook);
 
-        doNothing().when(sheetParser).parse(any(XSSFSheet.class), eq(archiveDocument));
+        doNothing().when(sheetParser).parse(any(XSSFSheet.class), any(Map.class));
 
         File f = new File(tempDir + TEST_FILE_NAME);
-        archiveDocumentExcelParser.parse(f);
+        fileExcelParser.parse(f);
 
         FileInputStream fi = new FileInputStream(tempDir + FOLDER_OUTPUT_FILE + TEST_FILE_NAME);
         Workbook resultWorkbook = new XSSFWorkbook(fi);

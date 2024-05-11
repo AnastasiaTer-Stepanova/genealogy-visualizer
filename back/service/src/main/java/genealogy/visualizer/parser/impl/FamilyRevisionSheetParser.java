@@ -7,6 +7,7 @@ import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.ParserUtils;
 import genealogy.visualizer.parser.util.StringParserHelper;
+import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.split;
 /**
  * Парсер для {@link FamilyRevision}
  */
-public class FamilyRevisionSheetParser implements SheetParser {
+public class FamilyRevisionSheetParser extends AbstractSheetParser implements SheetParser {
 
     private static final Logger LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
 
@@ -59,13 +60,15 @@ public class FamilyRevisionSheetParser implements SheetParser {
 
     private final FamilyRevisionDAO familyRevisionDAO;
 
-    public FamilyRevisionSheetParser(FamilyRevisionDAO familyRevisionDAO) {
+    public FamilyRevisionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        super(archiveDocumentDAO);
         this.familyRevisionDAO = familyRevisionDAO;
     }
 
     @Override
-    public void parse(Sheet excelSheet, ArchiveDocument archive) {
+    public void parse(Sheet excelSheet, Map<String, String> parsingParams) {
         if (excelSheet == null) throw new NullPointerException("ExcelSheet is null");
+        ArchiveDocument archive = super.getArchiveDocument(parsingParams);
         Map<String, Integer> header = getHeaderWithStatusColumn(excelSheet);
         List<FamilyRevision> familyRevision = new ArrayList<>();
         List<Integer> successParsingRowNumbers = new ArrayList<>();
@@ -156,8 +159,8 @@ public class FamilyRevisionSheetParser implements SheetParser {
     }
 
     @Override
-    public ArchiveDocumentType type() {
-        return ArchiveDocumentType.RL;
+    public String type() {
+        return ArchiveDocumentType.RL.getName();
     }
 
     private byte getFamilyGeneration(Row row, Map<String, Integer> header) {

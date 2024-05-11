@@ -1,18 +1,17 @@
 package genealogy.visualizer.config;
 
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.ErrorMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
-import genealogy.visualizer.parser.impl.ArchiveDocumentExcelParser;
 import genealogy.visualizer.parser.impl.CensusBookSheetParser;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.parser.impl.ConfessionSheetParser;
 import genealogy.visualizer.parser.impl.DeathSheetParser;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
+import genealogy.visualizer.parser.impl.FileExcelParser;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
@@ -50,43 +49,39 @@ public class ServiceConfig {
     }
 
     @Bean
-    public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO) {
-        return new FamilyRevisionSheetParser(familyRevisionDAO);
+    public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public SheetParser christeningSheetParser(ChristeningDAO christeningDAO) {
-        return new ChristeningSheetParser(christeningDAO);
+    public SheetParser christeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new ChristeningSheetParser(christeningDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public SheetParser marriageSheetParser(MarriageDAO marriageDAO) {
-        return new MarriageSheetParser(marriageDAO);
+    public SheetParser marriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new MarriageSheetParser(marriageDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public SheetParser deathSheetParser(DeathDAO deathDAO) {
-        return new DeathSheetParser(deathDAO);
+    public SheetParser deathSheetParser(DeathDAO deathDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new DeathSheetParser(deathDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public SheetParser censusBookSheetParser(FamilyRevisionDAO familyRevisionDAO) {
-        return new CensusBookSheetParser(familyRevisionDAO);
+    public SheetParser censusBookSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new CensusBookSheetParser(familyRevisionDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO) {
-        return new ConfessionSheetParser(familyRevisionDAO);
+    public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new ConfessionSheetParser(familyRevisionDAO, archiveDocumentDAO);
     }
 
     @Bean
-    public Map<ArchiveDocumentType, SheetParser> parserMap(@Autowired List<SheetParser> sheetParsers) {
-        return sheetParsers.stream().collect(toMap(SheetParser::type, Function.identity()));
-    }
-
-    @Bean
-    public FileParser archiveDocumentExcelParser(ArchiveDocumentDAO archiveDocumentDAO, Map<ArchiveDocumentType, SheetParser> parserMap) {
-        return new ArchiveDocumentExcelParser(parserMap, archiveDocumentDAO);
+    public FileParser fileExcelParser(@Autowired List<SheetParser> sheetParsers) {
+        Map<String, SheetParser> parserMap = sheetParsers.stream().collect(toMap((SheetParser::type), Function.identity()));
+        return new FileExcelParser(parserMap);
     }
 
     @Bean

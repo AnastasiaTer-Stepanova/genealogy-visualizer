@@ -1,7 +1,5 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.Archive;
-import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Death;
 import genealogy.visualizer.parser.impl.DeathSheetParser;
 import genealogy.visualizer.service.impl.DeathDAOImpl;
@@ -41,15 +39,11 @@ class DeathSheetParserTest extends AbstractTest {
 
     private SheetParser sheetParser;
 
-    private ArchiveDocument archiveDocument;
-
     private List<Death> deaths;
 
     @BeforeEach
     void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setArchive(archive);
+        super.setUp();
         deaths = generator.objects(Death.class, generator.nextInt(5, 15)).toList();
         headers = new HashMap<>();
         headers.put(DATE_COLUMN_NAME, 0);
@@ -60,7 +54,7 @@ class DeathSheetParserTest extends AbstractTest {
         headers.put(CAUSE_COLUMN_NAME, 5);
         headers.put(BURIAL_PLACE_COLUMN_NAME, 6);
         headers.put(COMMENT_COLUMN_NAME, 7);
-        sheetParser = new DeathSheetParser(deathDAO);
+        sheetParser = new DeathSheetParser(deathDAO, archiveDocumentDAO);
     }
 
     @Test
@@ -69,7 +63,8 @@ class DeathSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(deaths);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, false);
     }
@@ -80,7 +75,8 @@ class DeathSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(deaths);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, true);
     }

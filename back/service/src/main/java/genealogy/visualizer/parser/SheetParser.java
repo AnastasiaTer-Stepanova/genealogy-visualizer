@@ -1,15 +1,15 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import org.apache.poi.ss.usermodel.Sheet;
+
+import java.util.Map;
 
 /**
  * Интерфейс для парсинга листов excel файла
  */
 public interface SheetParser {
 
-    void parse(Sheet excelSheet, ArchiveDocument archive);
+    void parse(Sheet excelSheet, Map<String, String> parsingParams);
 
-    ArchiveDocumentType type();
+    String type();
 }

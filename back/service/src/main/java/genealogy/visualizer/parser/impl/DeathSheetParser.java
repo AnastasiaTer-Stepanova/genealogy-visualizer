@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
+import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.DeathDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +27,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.parseAge;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
-public class DeathSheetParser implements SheetParser {
+public class DeathSheetParser extends AbstractSheetParser implements SheetParser {
 
     private static final Logger LOGGER = LogManager.getLogger(DeathSheetParser.class);
 
@@ -41,13 +42,15 @@ public class DeathSheetParser implements SheetParser {
 
     private final DeathDAO deathDAO;
 
-    public DeathSheetParser(DeathDAO deathDAO) {
+    public DeathSheetParser(DeathDAO deathDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        super(archiveDocumentDAO);
         this.deathDAO = deathDAO;
     }
 
     @Override
-    public void parse(Sheet excelSheet, ArchiveDocument archive) {
+    public void parse(Sheet excelSheet, Map<String, String> parsingParams) {
         if (excelSheet == null) throw new NullPointerException("ExcelSheet is null");
+        ArchiveDocument archive = super.getArchiveDocument(parsingParams);
         Map<String, Integer> header = getHeaderWithStatusColumn(excelSheet);
         List<Integer> successParsingRowNumbers = new ArrayList<>();
         for (Row row : excelSheet) {
@@ -95,8 +98,8 @@ public class DeathSheetParser implements SheetParser {
     }
 
     @Override
-    public ArchiveDocumentType type() {
-        return ArchiveDocumentType.PR_DTH;
+    public String type() {
+        return ArchiveDocumentType.PR_DTH.getName();
     }
 
     private String getCause(Row row, Map<String, Integer> header) {

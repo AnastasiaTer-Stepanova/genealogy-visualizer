@@ -51,15 +51,11 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
 
     private SheetParser sheetParser;
 
-    private ArchiveDocument archiveDocument;
-
     private List<FamilyRevision> familyRevisions;
 
     @BeforeEach
     void setUp() {
-        Archive archive = generator.nextObject(Archive.class);
-        archiveDocument = generator.nextObject(ArchiveDocument.class);
-        archiveDocument.setArchive(archive);
+        super.setUp();
         familyRevisions = generateFamilyRevisions();
         headers = new HashMap<>();
         headers.put(FAMILY_REVISION_NUMBER_COLUMN_NAME, 0);
@@ -83,7 +79,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 5, 18);
         headers.put(MALE_COLUMN_NAME, 19);
         headers.put(FEMALE_COLUMN_NAME, 20);
-        sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO);
+        sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO);
     }
 
     @Test
@@ -92,7 +88,8 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(familyRevisions);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, false);
     }
@@ -103,7 +100,8 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         Sheet sheet = createXSSFWorkbook(familyRevisions);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
-        sheetParser.parse(result, archiveDocument);
+        Map<String, String> parsingParams = getParsingParams();
+        sheetParser.parse(result, parsingParams);
 
         assertSheet(result, sheet, true, true);
     }

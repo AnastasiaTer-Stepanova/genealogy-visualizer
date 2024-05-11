@@ -1,9 +1,11 @@
 package genealogy.visualizer.parser;
 
+import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.enums.LocalityType;
 import genealogy.visualizer.entity.model.FullName;
+import genealogy.visualizer.service.ArchiveDocumentDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -14,7 +16,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jeasy.random.EasyRandom;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
@@ -23,10 +27,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static genealogy.visualizer.config.EasyRandomParamsBuilder.getGeneratorParams;
+import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 abstract class AbstractTest {
+
     static final Logger LOGGER = LogManager.getLogger(AbstractTest.class);
     static final String TEST_FILE_NAME = "/testFile.xlsx";
 
@@ -55,8 +62,20 @@ abstract class AbstractTest {
 
     static EasyRandom generator;
 
+    ArchiveDocument archiveDocument;
+
+    @Mock
+    ArchiveDocumentDAO archiveDocumentDAO;
+
     static {
         generator = new EasyRandom(getGeneratorParams());
+    }
+
+    @BeforeEach
+    void setUp() {
+        Archive archive = generator.nextObject(Archive.class);
+        archiveDocument = generator.nextObject(ArchiveDocument.class);
+        archiveDocument.setArchive(archive);
     }
 
     void assertSheetWithCheckBlankRows(Sheet firstSheet, Sheet secondSheetWithBlankRows, int count) {
@@ -162,6 +181,22 @@ abstract class AbstractTest {
             workbook.createSheet(randomAlphabetic(10));
         }
         return workbook;
+    }
+
+    Map<String, String> getParsingParams() {
+        int listNumberFroParsing = generator.nextInt(1, 10);
+        return getParsingParams(generateSheetWithParsingParamsList(listNumberFroParsing, this.archiveDocument).getSheet(LIST_WITH_PARAMS_NAME));
+    }
+
+    static Map<String, String> getParsingParams(Sheet initSheet) {
+        Map<String, String> params = new HashMap<>();
+        for (Row row : initSheet) {
+            if (row.getCell(0) == null || row.getCell(1) == null) {
+                continue;
+            }
+            params.put(row.getCell(0).getStringCellValue(), getStringCellValue(row.getCell(1)));
+        }
+        return params;
     }
 
     void createRow(Sheet sheet, List<CellValue> cells) {

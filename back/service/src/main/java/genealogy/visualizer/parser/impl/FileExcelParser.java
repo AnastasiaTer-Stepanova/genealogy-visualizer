@@ -1,10 +1,7 @@
 package genealogy.visualizer.parser.impl;
 
-import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
-import genealogy.visualizer.service.ArchiveDocumentDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -18,10 +15,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
-import static genealogy.visualizer.parser.util.ArchiveDocumentUtil.createArchiveDocument;
-import static genealogy.visualizer.parser.util.ArchiveDocumentUtil.getArchiveParams;
+import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.io.FileUtils.openOutputStream;
 
@@ -30,18 +27,17 @@ import static org.apache.commons.io.FileUtils.openOutputStream;
  * спарсить. Так же сохраняет данные о документе архива в БД. В методе parse так же вызывается сохрание самих данных документа
  * в зависимости от его типа.
  */
-public class ArchiveDocumentExcelParser implements FileParser {
+public class FileExcelParser implements FileParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(ArchiveDocumentExcelParser.class);
+    private static final Logger LOGGER = LogManager.getLogger(FileExcelParser.class);
+    private static final String DOCUMENT_TYPE_PARAM_NAME = "Type";
     private static final String LIST_NUMBER_PARAM_NAME = "ListNumber";
     private static final String LIST_WITH_PARAMS_NAME = "ParsingSettings";
     private static final String FOLDER_OUTPUT_FILE = "/result/";
-    private final Map<ArchiveDocumentType, SheetParser> parserMap;
-    private final ArchiveDocumentDAO archiveDocumentDAO;
+    private final Map<String, SheetParser> parserMap;
 
-    public ArchiveDocumentExcelParser(Map<ArchiveDocumentType, SheetParser> parserMap, ArchiveDocumentDAO archiveDocumentDAO) {
+    public FileExcelParser(Map<String, SheetParser> parserMap) {
         this.parserMap = parserMap;
-        this.archiveDocumentDAO = archiveDocumentDAO;
     }
 
     @Override
@@ -55,9 +51,8 @@ public class ArchiveDocumentExcelParser implements FileParser {
             throw new RuntimeException(String.format("Error reading file %s", f.getAbsolutePath()), e);
         }
 
-        Map<String, String> archiveParams = getArchiveParams(workbook.getSheet(LIST_WITH_PARAMS_NAME));
-        int numberOfSheetForSafe = parseInt(archiveParams.get(LIST_NUMBER_PARAM_NAME));
-        ArchiveDocument archiveDocument = archiveDocumentDAO.saveOrFindIfExistDocument(createArchiveDocument(archiveParams));
+        Map<String, String> parsingParams = getParsingParams(workbook.getSheet(LIST_WITH_PARAMS_NAME));
+        int numberOfSheetForSafe = parseInt(parsingParams.get(LIST_NUMBER_PARAM_NAME));
         Sheet excelSheet;
         try {
             excelSheet = workbook.getSheetAt(numberOfSheetForSafe);
@@ -69,7 +64,7 @@ public class ArchiveDocumentExcelParser implements FileParser {
         }
         deleteBlankRows(excelSheet);
         try {
-            parserMap.get(archiveDocument.getType()).parse(excelSheet, archiveDocument);
+            parserMap.get(parsingParams.get(DOCUMENT_TYPE_PARAM_NAME)).parse(excelSheet, parsingParams);
         } catch (Exception e) {
             throw new RuntimeException(String.format("Excel %s with sheet number %s couldn't parse", f.getName(), numberOfSheetForSafe), e);
         }
@@ -118,5 +113,16 @@ public class ArchiveDocumentExcelParser implements FileParser {
             if (!CellType.BLANK.equals(cellType) && !CellType.FORMULA.equals(cellType)) return false;
         }
         return isBlank;
+    }
+
+    private static Map<String, String> getParsingParams(Sheet initSheet) {
+        Map<String, String> params = new HashMap<>();
+        for (Row row : initSheet) {
+            if (row.getCell(0) == null || row.getCell(1) == null) {
+                continue;
+            }
+            params.put(row.getCell(0).getStringCellValue(), getStringCellValue(row.getCell(1)));
+        }
+        return params;
     }
 }

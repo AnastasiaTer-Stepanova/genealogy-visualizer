@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
+import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +26,7 @@ import static genealogy.visualizer.parser.util.ParserUtils.getSex;
 import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
-public class ChristeningSheetParser implements SheetParser {
+public class ChristeningSheetParser extends AbstractSheetParser implements SheetParser {
     private static final Logger LOGGER = LogManager.getLogger(ChristeningSheetParser.class);
 
     private static final String MALE_COLUMN_NAME = "Male";
@@ -44,13 +45,15 @@ public class ChristeningSheetParser implements SheetParser {
 
     private final ChristeningDAO christeningDAO;
 
-    public ChristeningSheetParser(ChristeningDAO christeningDAO) {
+    public ChristeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        super(archiveDocumentDAO);
         this.christeningDAO = christeningDAO;
     }
 
     @Override
-    public void parse(Sheet excelSheet, ArchiveDocument archive) {
+    public void parse(Sheet excelSheet, Map<String, String> parsingParams) {
         if (excelSheet == null) throw new NullPointerException("ExcelSheet is null");
+        ArchiveDocument archive = super.getArchiveDocument(parsingParams);
         Map<String, Integer> header = getHeaderWithStatusColumn(excelSheet);
         List<Integer> successParsingRowNumbers = new ArrayList<>();
         for (Row row : excelSheet) {
@@ -95,8 +98,8 @@ public class ChristeningSheetParser implements SheetParser {
     }
 
     @Override
-    public ArchiveDocumentType type() {
-        return ArchiveDocumentType.PR_CHR;
+    public String type() {
+        return ArchiveDocumentType.PR_CHR.getName();
     }
 
     private Boolean getLegitimacy(String value) {
