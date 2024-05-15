@@ -7,6 +7,7 @@ import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyRevision;
 import genealogy.visualizer.api.model.FullName;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
+import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.LocalityRepository;
@@ -56,6 +57,7 @@ class IntegrationTest {
     genealogy.visualizer.entity.Locality localityExisting;
 
     static ObjectMapper objectMapper = new ObjectMapper();
+    static CycleAvoidingMappingContext cycleAvoidingMappingContext = new CycleAvoidingMappingContext();
 
     static EasyRandom generator;
 
@@ -65,6 +67,7 @@ class IntegrationTest {
 
     static {
         EasyRandomParameters parameters = getGeneratorParams()
+                .randomize(named("nextRevision").and(ofType(ArchiveDocument.class)), () -> null)
                 .randomize(named("partner").and(ofType(FamilyRevision.class)), () -> null)
                 .randomize(named("person").and(ofType(EasyPerson.class)), () -> null)
                 .randomize(named("name").and(ofType(String.class)), () -> new StringRandomizer().getRandomValue())
@@ -81,7 +84,7 @@ class IntegrationTest {
         archiveRepository.saveAndFlush(archiveEntity);
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         archiveDocumentEntity.setArchive(archiveEntity);
-        archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity));
+        archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity), cycleAvoidingMappingContext);
         archiveIds.add(archiveDocumentExisting.getArchive().getId());
         archiveDocumentIds.add(archiveDocumentExisting.getId());
         System.out.println("----------------------Start test------------------------");

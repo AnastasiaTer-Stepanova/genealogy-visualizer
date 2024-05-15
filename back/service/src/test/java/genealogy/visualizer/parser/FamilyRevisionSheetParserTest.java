@@ -1,7 +1,5 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.Archive;
-import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.service.FamilyRevisionDAO;

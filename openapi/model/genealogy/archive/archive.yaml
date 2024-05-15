@@ -12,6 +12,11 @@ properties:
     description: Наименование архива
     type: string
     example: "Российский государственный архив Рязанской области"
+  abbreviation:
+    description: Сокращенное наименование
+    type: string
+    maxLength: 10
+    example: "ГАРО"
   comment:
     description: Комментарий
     type: string

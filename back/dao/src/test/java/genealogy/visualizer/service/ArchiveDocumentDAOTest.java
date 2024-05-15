@@ -47,13 +47,7 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
         assertNotNull(result.getId());
         assertNotNull(result.getArchive().getId());
         assertEquals(archiveDocument.getId(), result.getId());
-        assertEquals(archiveDocument.getBunch(), result.getBunch());
-        assertEquals(archiveDocument.getInstance(), result.getInstance());
-        assertEquals(archiveDocument.getFund(), result.getFund());
-        assertEquals(archiveDocument.getCatalog(), result.getCatalog());
-        assertEquals(archiveDocument.getYear(), result.getYear());
-        assertEquals(archiveDocument.getType(), result.getType());
-        assertEquals(archiveDocument.getArchive().getName(), result.getArchive().getName());
+        asserArchiveDocument(archiveDocument, result);
         assertEquals(archiveDocument.getArchive().getId(), result.getArchive().getId());
     }
 
@@ -78,6 +72,49 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
         assertEquals(catalog, result.getCatalog());
         assertEquals(archiveDocument.getYear(), result.getYear());
         assertEquals(archiveDocument.getType(), result.getType());
+    }
+
+    @Test
+    void updateNextRevisionDocumentTest() {
+        ArchiveDocument archDocForSave = getArchiveDocumentForSave();
+        String catalog = "Catalog";
+        String archName = "Archive Name";
+        archDocForSave.setCatalog(catalog);
+        archDocForSave.getArchive().setName(archName);
+        ArchiveDocument nextArchDocForSave = getArchiveDocumentForSave();
+        nextArchDocForSave.setCatalog(catalog + "1");
+        nextArchDocForSave.getArchive().setName(archName + "1");
+        archDocForSave.setNextRevision(nextArchDocForSave);
+        archiveDocumentDAO.updateNextRevisionDocument(archDocForSave);
+        ArchiveDocument savedDocument = archiveDocumentRepository.findArchiveDocumentByConstraint(archDocForSave).orElseThrow();
+        asserArchiveDocument(savedDocument, archDocForSave);
+        asserArchiveDocument(savedDocument.getNextRevision(), nextArchDocForSave);
+    }
+
+    @Test
+    void updateExistNextRevisionDocumentTest() {
+        ArchiveDocument nextArchDocForSave = getArchiveDocumentForSave();
+        String catalog = "Catalog";
+        String archName = "Archive Name";
+        nextArchDocForSave.setCatalog(catalog);
+        nextArchDocForSave.getArchive().setName(archName);
+        archiveDocument.setNextRevision(nextArchDocForSave);
+        archiveDocumentDAO.updateNextRevisionDocument(archiveDocument);
+        ArchiveDocument savedDocument = archiveDocumentRepository.findArchiveDocumentByConstraint(archiveDocument).orElseThrow();
+        asserArchiveDocument(savedDocument, archiveDocument);
+        asserArchiveDocument(savedDocument.getNextRevision(), nextArchDocForSave);
+    }
+
+    private void asserArchiveDocument(ArchiveDocument expected, ArchiveDocument actual) {
+        assertEquals(expected.getBunch(), actual.getBunch());
+        assertEquals(expected.getInstance(), actual.getInstance());
+        assertEquals(expected.getFund(), actual.getFund());
+        assertEquals(expected.getCatalog(), actual.getCatalog());
+        assertEquals(expected.getYear(), actual.getYear());
+        assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getAbbreviation(), actual.getAbbreviation());
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getArchive().getName(), actual.getArchive().getName());
     }
 
     private ArchiveDocument getArchiveDocumentForSave() {

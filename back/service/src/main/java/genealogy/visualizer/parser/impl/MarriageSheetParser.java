@@ -30,8 +30,6 @@ import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class MarriageSheetParser extends AbstractSheetParser implements SheetParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(MarriageSheetParser.class);
-
     private static final String DATE_COLUMN_NAME = "Date";
     private static final String HUSBAND_LOCALITY_COLUMN_NAME = "HusbandLocality";
     private static final String HUSBAND_FATHER_COLUMN_NAME = "HusbandFather";
@@ -56,6 +54,7 @@ public class MarriageSheetParser extends AbstractSheetParser implements SheetPar
     public MarriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO) {
         super(archiveDocumentDAO);
         this.marriageDAO = marriageDAO;
+        LOGGER = LogManager.getLogger(MarriageSheetParser.class);
     }
 
     @Override

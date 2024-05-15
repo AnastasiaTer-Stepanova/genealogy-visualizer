@@ -9,7 +9,6 @@ import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyRevision;
 import genealogy.visualizer.api.model.FamilyRevisionFilter;
 import genealogy.visualizer.api.model.FamilyRevisionSave;
-import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -139,7 +138,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
         String responseJson = mockMvc.perform(
                         get("/family-revision/" + revisionExist.getId()))
@@ -174,9 +173,9 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void updateParentExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
-        FamilyRevision revisionUpdate = familyRevisionMapper.toDTO(revisionExist, new CycleAvoidingMappingContext());
+        FamilyRevision revisionUpdate = familyRevisionMapper.toDTO(revisionExist, cycleAvoidingMappingContext);
         FamilyRevision revisionPartnerSave = generator.nextObject(FamilyRevision.class);
         revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionUpdate.setPartner(revisionPartnerSave);
@@ -225,16 +224,16 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void updateAnotherNamesExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         revisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         genealogy.visualizer.entity.FamilyRevision partnerRevisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         partnerRevisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAllAndFlush(List.of(revisionSave, partnerRevisionSave)).getFirst();
         familyRevisionIds.add(revisionExist.getPartner().getId());
-        FamilyRevision revisionUpdate = familyRevisionMapper.toDTO(revisionExist, new CycleAvoidingMappingContext());
+        FamilyRevision revisionUpdate = familyRevisionMapper.toDTO(revisionExist, cycleAvoidingMappingContext);
         revisionUpdate.setPartner(null);
         revisionUpdate.setAnotherNames(List.of(revisionUpdate.getAnotherNames().getFirst(), generator.nextObject(String.class)));
         String objectString = objectMapper.writeValueAsString(revisionUpdate);
@@ -258,10 +257,10 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void deleteExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         revisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         genealogy.visualizer.entity.FamilyRevision partnerRevisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         partnerRevisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
@@ -302,7 +301,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         short familyRevisionNumber = (short) generator.nextInt(10000, 20000);
         familyRevisionList = familyRevisionList.stream().peek(familyRevision -> {
                     if (generator.nextBoolean()) {
-                        familyRevision.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
+                        familyRevision.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
                         if (generator.nextBoolean()) {
                             familyRevision.setFamilyRevisionNumber(familyRevisionNumber);
                         }

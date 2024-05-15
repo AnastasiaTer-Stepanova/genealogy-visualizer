@@ -6,12 +6,14 @@ import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
+import genealogy.visualizer.parser.impl.ArchiveDocumentRevisionLinkSheetParser;
 import genealogy.visualizer.parser.impl.CensusBookSheetParser;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.parser.impl.ConfessionSheetParser;
 import genealogy.visualizer.parser.impl.DeathSheetParser;
 import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.parser.impl.FileExcelParser;
+import genealogy.visualizer.parser.impl.InterimCensusSheetParser;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
@@ -76,6 +78,16 @@ public class ServiceConfig {
     @Bean
     public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
         return new ConfessionSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    }
+
+    @Bean
+    public SheetParser interimCensusSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+        return new InterimCensusSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    }
+
+    @Bean
+    public SheetParser archiveDocumentConnectionSheetParser(ArchiveDocumentDAO archiveDocumentDAO) {
+        return new ArchiveDocumentRevisionLinkSheetParser(archiveDocumentDAO);
     }
 
     @Bean

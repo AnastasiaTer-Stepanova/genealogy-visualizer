@@ -7,8 +7,10 @@ public enum ArchiveDocumentType {
     PR_CHR("МК крещение", "Метрическая книга о крещении"), //Parish register christening
     PR_MRG("МК брак", "Метрическая книга о браке"), //Parish register marriage
     PR_DTH("МК смерть", "Метрическая книга о смерти"), //Parish register death
+    PR("МК", "Метрическая книга"), //Parish register
     CS("ИВ", "Исповедная ведомость"), //confession sheet
     CB("ПК", "Переписная книга"), //census book
+    IC("ПП", "Промежуточная перепись"), //interim census
     ANOTHER("Другое", "Другое");
 
     private final String name;

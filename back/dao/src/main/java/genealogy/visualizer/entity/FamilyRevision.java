@@ -37,7 +37,7 @@ import java.util.List;
                 @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
         },
         indexes = {
-                @Index(name = "IDX_FAMILY_REVISION_NUMBER", columnList = "FAMILY_REVISION_NUMBER"),
+                @Index(name = "IDX_FAMILY_REVISION_NUMBER_ARCHIVE_DOCUMENT_ID", columnList = "FAMILY_REVISION_NUMBER, ARCHIVE_DOCUMENT_ID"),
         }
 )
 public class FamilyRevision implements Serializable {

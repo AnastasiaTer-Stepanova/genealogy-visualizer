@@ -9,7 +9,6 @@ import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.DeathDAO;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -29,8 +28,6 @@ import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class DeathSheetParser extends AbstractSheetParser implements SheetParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(DeathSheetParser.class);
-
     private static final String DATE_COLUMN_NAME = "Date";
     private static final String LOCALITY_COLUMN_NAME = "Locality";
     private static final String RELATIVE_COLUMN_NAME = "Relative";
@@ -45,6 +42,7 @@ public class DeathSheetParser extends AbstractSheetParser implements SheetParser
     public DeathSheetParser(DeathDAO deathDAO, ArchiveDocumentDAO archiveDocumentDAO) {
         super(archiveDocumentDAO);
         this.deathDAO = deathDAO;
+        LOGGER = LogManager.getLogger(DeathSheetParser.class);
     }
 
     @Override

@@ -31,29 +31,44 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                     .or(() -> Optional.of(archiveRepository.save(archive)))
                     .ifPresent(archiveDocument::setArchive);
         }
-        return archiveDocumentRepository.findArchiveDocumentByConstraint(
-                        archiveDocument.getArchive().getName(),
-                        archiveDocument.getFund(),
-                        archiveDocument.getCatalog(),
-                        archiveDocument.getInstance(),
-                        archiveDocument.getBunch(),
-                        archiveDocument.getYear(),
-                        archiveDocument.getType())
-                .or(() -> Optional.of(archiveDocumentRepository.save(archiveDocument)))
+        return archiveDocumentRepository.findArchiveDocumentByConstraint(archiveDocument)
+                .or(() -> {
+                    ArchiveDocument nextRevision = archiveDocument.getNextRevision();
+                    if (nextRevision != null) {
+                        Archive nextArchive = nextRevision.getArchive();
+                        if (nextRevision.getArchive().getId() == null) {
+                            archiveRepository.findArchivedByName(nextArchive.getName())
+                                    .or(() -> Optional.of(archiveRepository.save(nextArchive)))
+                                    .ifPresent(nextRevision::setArchive);
+                        }
+                        archiveDocumentRepository.findArchiveDocumentByConstraint(nextRevision)
+                                .or(() -> Optional.of(archiveDocumentRepository.save(nextRevision)))
+                                .ifPresent(archiveDocument::setNextRevision);
+                    }
+                    return Optional.of(archiveDocumentRepository.save(archiveDocument));
+                })
                 .orElseThrow();
     }
 
     @Override
     public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(ArchiveDocument archiveDocument, short familyNumber) {
-        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(
-                        archiveDocument.getArchive().getName(),
-                        archiveDocument.getFund(),
-                        archiveDocument.getCatalog(),
-                        archiveDocument.getInstance(),
-                        archiveDocument.getBunch(),
-                        archiveDocument.getYear(),
-                        archiveDocument.getType(),
-                        familyNumber)
+        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(archiveDocument, familyNumber)
                 .orElse(null);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void updateNextRevisionDocument(ArchiveDocument archiveDocument) {
+        if (archiveDocument == null || archiveDocument.getNextRevision() == null)
+            throw new NullPointerException("Archive Document with next revision null");
+        ArchiveDocument nextRevisionDocument = archiveDocument.getNextRevision();
+        if (archiveDocument.getId() == null) {
+            this.saveOrFindIfExistDocument(archiveDocument);
+            return;
+        }
+        if (nextRevisionDocument.getId() == null) {
+            nextRevisionDocument = this.saveOrFindIfExistDocument(nextRevisionDocument);
+        }
+        archiveDocumentRepository.updateNextRevisionId(archiveDocument.getId(), nextRevisionDocument.getId());
     }
 }

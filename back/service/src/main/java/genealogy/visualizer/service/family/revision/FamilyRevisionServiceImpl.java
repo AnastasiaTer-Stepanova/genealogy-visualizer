@@ -81,14 +81,14 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             return errorMapper.toFamilyRevisionError(BAD_REQUEST_ERROR);
         } else {
             genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = archiveDocumentDAO.findArchiveDocumentWithFamilyRevisionByNumberFamily(
-                    archiveDocumentMapper.toEntity(archiveDocument),
+                    archiveDocumentMapper.toEntity(archiveDocument, mappingContext),
                     familyRevisionFilter.getFamilyRevisionNumber().shortValue());
             if (archiveDocumentEntity == null || archiveDocumentEntity.getFamilyRevisions() == null ||
                     archiveDocumentEntity.getFamilyRevisions().isEmpty()) {
                 return errorMapper.toFamilyRevisionError(NOT_FOUND_ERROR);
             }
             return new ArchiveWithFamilyRevisionList().data(Collections.singletonList(new ArchiveWithFamilyRevision(
-                    archiveDocumentMapper.toDTO(archiveDocumentEntity),
+                    archiveDocumentMapper.toDTO(archiveDocumentEntity, mappingContext),
                     familyRevisionMapper.toListDTO(archiveDocumentEntity.getFamilyRevisions(), mappingContext))));
         }
     }

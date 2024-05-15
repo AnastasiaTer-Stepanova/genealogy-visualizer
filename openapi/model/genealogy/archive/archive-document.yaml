@@ -13,6 +13,14 @@ properties:
     type: integer
     format: int64
     example: 124353
+  name:
+    description: Наименование документа
+    type: string
+    example: "4 ревизия"
+  abbreviation:
+    description: Сокращенное наименование
+    type: string
+    example: "РС04"
   fund:
     description: Номер фонда
     type: string
@@ -40,3 +48,10 @@ properties:
     example: 1858
   archive:
     $ref: "archive.yaml"
+  nextRevision:
+    $ref: "archive-document.yaml"
+  previousRevisions:
+    description: Предыдущие ревизии
+    type: array
+    items:
+      $ref: "archive-document.yaml"

@@ -30,6 +30,9 @@ public class Archive implements Serializable {
     @Column(nullable = false)
     private String name;
 
+    @Comment("Сокращенное наименование")
+    private String abbreviation;
+
     @Comment("Комментарий")
     private String comment;
 
@@ -46,9 +49,15 @@ public class Archive implements Serializable {
         this.name = name;
     }
 
-    public Archive(Long id, String name, String comment, String address, List<ArchiveDocument> archiveDocuments) {
+    public Archive(String name, String abbreviation) {
+        this.name = name;
+        this.abbreviation = abbreviation;
+    }
+
+    public Archive(Long id, String name, String abbreviation, String comment, String address, List<ArchiveDocument> archiveDocuments) {
         this.id = id;
         this.name = name;
+        this.abbreviation = abbreviation;
         this.comment = comment;
         this.address = address;
         this.archiveDocuments = archiveDocuments;
@@ -70,6 +79,14 @@ public class Archive implements Serializable {
         this.name = name;
     }
 
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -87,9 +104,6 @@ public class Archive implements Serializable {
     }
 
     public List<ArchiveDocument> getArchiveDocuments() {
-        if (archiveDocuments == null) {
-            return new ArrayList<>();
-        }
         return archiveDocuments;
     }
 

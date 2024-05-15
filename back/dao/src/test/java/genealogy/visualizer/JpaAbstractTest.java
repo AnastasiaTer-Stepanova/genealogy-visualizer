@@ -60,6 +60,7 @@ public class JpaAbstractTest {
             locality.setAnotherNames(anotherNames);
         }
         entityManager.persistAndFlush(locality);
+        entityManager.clear();
     }
 
     protected void assertFullName(FullName fullName1, FullName fullName2) {

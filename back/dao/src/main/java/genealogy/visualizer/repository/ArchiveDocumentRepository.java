@@ -1,8 +1,8 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.ArchiveDocument;
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -10,25 +10,20 @@ import java.util.Optional;
 
 public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument, Long> {
 
-    @Query("select ad from ArchiveDocument ad join fetch ad.archive where ad.archive.name = :archiveName and ad.fund = :fund  " +
-            "and ad.catalog = :catalog and ad.instance = :instance and ad.bunch = :bunch and ad.year = :year and ad.type = :type")
-    Optional<ArchiveDocument> findArchiveDocumentByConstraint(@Param("archiveName") String archiveName,
-                                                              @Param("fund") String fund,
-                                                              @Param("catalog") String catalog,
-                                                              @Param("instance") String instance,
-                                                              @Param("bunch") String bunch,
-                                                              @Param("year") Short year,
-                                                              @Param("type") ArchiveDocumentType type);
+    @Query("select ad from ArchiveDocument ad join fetch ad.archive where ad.archive.name = :#{#entity.archive.name} and ad.fund = :#{#entity.fund} " +
+            "and ad.catalog =  :#{#entity.catalog} and ad.instance = :#{#entity.instance} and ad.bunch = :#{#entity.bunch} and " +
+            "ad.year = :#{#entity.year} and ad.type = :#{#entity.type}")
+    Optional<ArchiveDocument> findArchiveDocumentByConstraint(@Param("entity") ArchiveDocument entity);
 
     @Query("select ad from ArchiveDocument ad join fetch ad.archive join fetch ad.familyRevisions fs " +
-            "where ad.archive.name = :archiveName and ad.fund = :fund  and ad.catalog = :catalog and ad.instance = :instance " +
-            "and ad.bunch = :bunch and ad.year = :year and ad.type = :type and fs.familyRevisionNumber = :number")
-    Optional<ArchiveDocument> findArchiveDocumentWithFamilyRevisionByNumberFamily(@Param("archiveName") String archiveName,
-                                                                                  @Param("fund") String fund,
-                                                                                  @Param("catalog") String catalog,
-                                                                                  @Param("instance") String instance,
-                                                                                  @Param("bunch") String bunch,
-                                                                                  @Param("year") Short year,
-                                                                                  @Param("type") ArchiveDocumentType type,
+            "where ad.archive.name = :#{#entity.archive.name} and ad.fund = :#{#entity.fund}  and ad.catalog =  :#{#entity.catalog} " +
+            "and ad.instance = :#{#entity.instance} and ad.bunch = :#{#entity.bunch} and ad.year = :#{#entity.year} " +
+            "and ad.type = :#{#entity.type} and fs.familyRevisionNumber = :number")
+    Optional<ArchiveDocument> findArchiveDocumentWithFamilyRevisionByNumberFamily(@Param("entity") ArchiveDocument entity,
                                                                                   @Param("number") short number);
+
+    @Modifying
+    @Query(value = "update archive_document ad set next_revision_id = :nextRevisionId where id = :id", nativeQuery = true)
+    void updateNextRevisionId(@Param("id") Long id, @Param("nextRevisionId") Long nextRevisionId);
+
 }

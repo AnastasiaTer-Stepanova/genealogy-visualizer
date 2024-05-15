@@ -37,8 +37,6 @@ import static org.apache.commons.lang3.StringUtils.split;
  */
 public class FamilyRevisionSheetParser extends AbstractSheetParser implements SheetParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
-
     private static final String MALE_COLUMN_NAME = "Male";
     private static final String FEMALE_COLUMN_NAME = "Female";
     private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber";
@@ -63,6 +61,7 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
     public FamilyRevisionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
         super(archiveDocumentDAO);
         this.familyRevisionDAO = familyRevisionDAO;
+        LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
     }
 
     @Override

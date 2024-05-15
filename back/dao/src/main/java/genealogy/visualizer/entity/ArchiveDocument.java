@@ -37,6 +37,13 @@ public class ArchiveDocument implements Serializable {
     @Convert(converter = ArchiveDocumentTypeConverter.class)
     private ArchiveDocumentType type;
 
+    @Comment("Наименование документа")
+    private String name;
+
+    @Comment("Сокращенное наименование")
+    @Column(length = 10)
+    private String abbreviation;
+
     @Column(nullable = false)
     @Comment("Год написания документа")
     private Short year;
@@ -75,7 +82,28 @@ public class ArchiveDocument implements Serializable {
             foreignKey = @ForeignKey(name = "FK_ARCHIVE"))
     private Archive archive;
 
+    @OneToMany(mappedBy = "nextRevision", fetch = FetchType.LAZY)
+    private List<ArchiveDocument> previousRevisions = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "NEXT_REVISION_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_NEXT_REVISION_ID"))
+    private ArchiveDocument nextRevision;
+
     public ArchiveDocument() {
+    }
+
+    public ArchiveDocument(ArchiveDocumentType type, String name, String abbreviation, Short year, String fund, String catalog, String instance, String bunch, Archive archive) {
+        this.type = type;
+        this.name = name;
+        this.abbreviation = abbreviation;
+        this.year = year;
+        this.fund = fund;
+        this.catalog = catalog;
+        this.instance = instance;
+        this.bunch = bunch;
+        this.archive = archive;
     }
 
     public ArchiveDocument(ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, Archive archive) {
@@ -88,9 +116,11 @@ public class ArchiveDocument implements Serializable {
         this.archive = archive;
     }
 
-    public ArchiveDocument(Long id, ArchiveDocumentType type, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, List<Christening> christenings, List<Marriage> marriages, List<Death> deaths, Archive archive) {
+    public ArchiveDocument(Long id, ArchiveDocumentType type, String name, String abbreviation, Short year, String fund, String catalog, String instance, String bunch, List<FamilyRevision> familyRevisions, List<Christening> christenings, List<Marriage> marriages, List<Death> deaths, Archive archive, List<ArchiveDocument> previousRevisions, ArchiveDocument nextRevision) {
         this.id = id;
         this.type = type;
+        this.name = name;
+        this.abbreviation = abbreviation;
         this.year = year;
         this.fund = fund;
         this.catalog = catalog;
@@ -101,6 +131,8 @@ public class ArchiveDocument implements Serializable {
         this.marriages = marriages;
         this.deaths = deaths;
         this.archive = archive;
+        this.previousRevisions = previousRevisions;
+        this.nextRevision = nextRevision;
     }
 
     public Long getId() {
@@ -117,6 +149,22 @@ public class ArchiveDocument implements Serializable {
 
     public void setType(ArchiveDocumentType type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
     }
 
     public Short getYear() {
@@ -197,5 +245,21 @@ public class ArchiveDocument implements Serializable {
 
     public void setArchive(Archive archive) {
         this.archive = archive;
+    }
+
+    public List<ArchiveDocument> getPreviousRevisions() {
+        return previousRevisions;
+    }
+
+    public void setPreviousRevisions(List<ArchiveDocument> previousRevisions) {
+        this.previousRevisions = previousRevisions;
+    }
+
+    public ArchiveDocument getNextRevision() {
+        return nextRevision;
+    }
+
+    public void setNextRevision(ArchiveDocument nextRevision) {
+        this.nextRevision = nextRevision;
     }
 }

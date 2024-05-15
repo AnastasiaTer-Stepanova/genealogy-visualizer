@@ -9,7 +9,6 @@ import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -27,7 +26,6 @@ import static genealogy.visualizer.parser.util.ParserUtils.getStringCellValue;
 import static genealogy.visualizer.parser.util.ParserUtils.updateStatus;
 
 public class ChristeningSheetParser extends AbstractSheetParser implements SheetParser {
-    private static final Logger LOGGER = LogManager.getLogger(ChristeningSheetParser.class);
 
     private static final String MALE_COLUMN_NAME = "Male";
     private static final String FEMALE_COLUMN_NAME = "Female";
@@ -48,6 +46,7 @@ public class ChristeningSheetParser extends AbstractSheetParser implements Sheet
     public ChristeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO) {
         super(archiveDocumentDAO);
         this.christeningDAO = christeningDAO;
+        LOGGER = LogManager.getLogger(ChristeningSheetParser.class);
     }
 
     @Override
