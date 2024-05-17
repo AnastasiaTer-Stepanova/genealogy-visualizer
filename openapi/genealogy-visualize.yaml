@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: API для визуализации генеалогического исследования
-  version: "1.0.1"
+  version: "1.0.0"
 tags:
   - name: GenealogyVisualize
     description: API для визуализации генеалогического исследования
@@ -24,7 +24,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GenealogyVisualizeResponse"
+                $ref: "#/components/schemas/GenealogyVisualizeGraph"
         404:
           description: "Failed to find data"
           content:
@@ -34,10 +34,7 @@ paths:
 
 components:
   schemas:
-    GenealogyVisualizeResponse:
-      type: object
-      oneOf:
-        - $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
-        - $ref: "#/components/schemas/GenealogyVisualizeErrorResponse"
+    GenealogyVisualizeGraph:
+      $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
     GenealogyVisualizeErrorResponse:
       $ref: "./model/common/error.yaml"

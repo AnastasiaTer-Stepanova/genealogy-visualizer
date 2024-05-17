@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import genealogy.visualizer.api.model.Age;
 import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.FamilyRevision;
+import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
@@ -68,7 +68,7 @@ class IntegrationTest {
     static {
         EasyRandomParameters parameters = getGeneratorParams()
                 .randomize(named("nextRevision").and(ofType(ArchiveDocument.class)), () -> null)
-                .randomize(named("partner").and(ofType(FamilyRevision.class)), () -> null)
+                .randomize(named("partner").and(ofType(FamilyMember.class)), () -> null)
                 .randomize(named("person").and(ofType(EasyPerson.class)), () -> null)
                 .randomize(named("name").and(ofType(String.class)), () -> new StringRandomizer().getRandomValue())
                 .randomize(Age.class, () -> new Age(new BigDecimalRangeRandomizer(Double.valueOf(0.0), Double.valueOf(99.9), Integer.valueOf(1)).getRandomValue(),

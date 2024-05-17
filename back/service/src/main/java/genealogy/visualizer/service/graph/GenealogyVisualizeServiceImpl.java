@@ -2,11 +2,9 @@ package genealogy.visualizer.service.graph;
 
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.GenealogyVisualizeGraph;
-import genealogy.visualizer.api.model.GenealogyVisualizeResponse;
 import genealogy.visualizer.api.model.GenealogyVisualizeRq;
 import genealogy.visualizer.api.model.GraphLinks;
 import genealogy.visualizer.entity.Person;
-import genealogy.visualizer.mapper.ErrorMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.service.PersonDAO;
 
@@ -21,23 +19,21 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
 
     private final PersonDAO personDAO;
     private final PersonMapper personMapper;
-    private final ErrorMapper errorMapper;
 
-    public GenealogyVisualizeServiceImpl(PersonDAO personDAO, PersonMapper personMapper, ErrorMapper errorMapper) {
+    public GenealogyVisualizeServiceImpl(PersonDAO personDAO, PersonMapper personMapper) {
         this.personDAO = personDAO;
         this.personMapper = personMapper;
-        this.errorMapper = errorMapper;
     }
 
     @Override
-    public GenealogyVisualizeResponse getGenealogyVisualizeGraph(GenealogyVisualizeRq genealogyVisualizeRq) {
+    public GenealogyVisualizeGraph getGenealogyVisualizeGraph(GenealogyVisualizeRq genealogyVisualizeRq) {
         if (genealogyVisualizeRq != null && (genealogyVisualizeRq.getSort() != null || genealogyVisualizeRq.getFilter() != null)) {
             //TODO После добавления фильтрации изменить реализацию
-            return errorMapper.toGenealogyVisualizeError(BAD_REQUEST_ERROR);
+            throw new RuntimeException(BAD_REQUEST_ERROR);
         }
         List<Person> entities = personDAO.getAllEasyPersons();
         if (entities == null) {
-            return errorMapper.toGenealogyVisualizeError(NOT_FOUND_ERROR);
+            throw new RuntimeException(NOT_FOUND_ERROR);
         }
         Set<EasyPerson> easyPersonSet = personMapper.toEasyPersonDTO(entities);
         return new GenealogyVisualizeGraph().persons(easyPersonSet).links(graphLinksSet(entities));

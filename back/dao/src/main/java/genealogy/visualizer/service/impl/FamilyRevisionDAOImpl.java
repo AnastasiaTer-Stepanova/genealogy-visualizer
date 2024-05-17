@@ -80,7 +80,7 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     }
 
     @Override
-    public FamilyRevision getById(Long id) {
-        return familyRevisionRepository.findById(id).orElse(null);
+    public FamilyRevision findFullInfoById(Long id) {
+        return familyRevisionRepository.findFullInfoById(id).orElse(null);
     }
 }

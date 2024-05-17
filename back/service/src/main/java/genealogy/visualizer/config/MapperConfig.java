@@ -6,8 +6,6 @@ import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.ArchiveDocumentMapperImpl;
 import genealogy.visualizer.mapper.ArchiveMapper;
 import genealogy.visualizer.mapper.ArchiveMapperImpl;
-import genealogy.visualizer.mapper.ErrorMapper;
-import genealogy.visualizer.mapper.ErrorMapperImpl;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapperImpl;
 import genealogy.visualizer.mapper.FullNameMapper;
@@ -55,11 +53,5 @@ public class MapperConfig {
     @Primary
     public PersonMapper personMapper() {
         return new PersonMapperImpl();
-    }
-
-    @Bean
-    @Primary
-    public ErrorMapper errorMapper() {
-        return new ErrorMapperImpl();
     }
 }

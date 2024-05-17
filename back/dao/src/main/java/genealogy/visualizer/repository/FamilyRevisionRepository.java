@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, Long> {
 
@@ -26,4 +27,8 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
     @Query(value = "select anir.another_name from another_name_in_revision anir where anir.family_revision_id = :id",
             nativeQuery = true)
     List<String> getAnotherNames(@Param("id") Long id);
+
+    @Query(value = "select fs from FamilyRevision fs left join fetch fs.anotherNames an left join fetch fs.archiveDocument ad left join fetch ad.archive " +
+            "left join fetch ad.nextRevision left join fetch fs.partner left join fetch fs.person where fs.id = :id")
+    Optional<FamilyRevision> findFullInfoById(@Param("id") Long id);
 }

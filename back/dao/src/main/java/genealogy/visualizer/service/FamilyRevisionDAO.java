@@ -14,5 +14,5 @@ public interface FamilyRevisionDAO {
 
     FamilyRevision update(FamilyRevision familyRevision);
 
-    FamilyRevision getById(Long id);
+    FamilyRevision findFullInfoById(Long id);
 }

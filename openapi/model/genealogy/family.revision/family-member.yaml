@@ -1,7 +1,7 @@
 description: Данные из переписи (РС/ИВ/ПП)
 type: object
 allOf:
-  - $ref: "family-revision-save.yaml"
+  - $ref: "family-member-save.yaml"
   - type: object
     required:
       - id

@@ -81,7 +81,4 @@ properties:
       type: string
       example: "Стебунов"
   partner:
-    $ref: "family-revision.yaml"
-#  person:
-#    description: Связь с уникальным человеком
-#    $ref: "easy-person.yaml"
+    $ref: "family-member.yaml"

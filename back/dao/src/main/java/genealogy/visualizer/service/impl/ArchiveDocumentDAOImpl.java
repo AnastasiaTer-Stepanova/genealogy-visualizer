@@ -51,8 +51,8 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     }
 
     @Override
-    public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(ArchiveDocument archiveDocument, short familyNumber) {
-        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(archiveDocument, familyNumber)
+    public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber) {
+        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(archiveDocumentId, familyNumber)
                 .orElse(null);
     }
 

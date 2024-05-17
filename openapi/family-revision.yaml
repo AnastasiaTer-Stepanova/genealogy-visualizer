@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: API для работы с данными по переписям (РС/ИВ/ПП)
-  version: "1.0.1"
+  version: "1.0.0"
 tags:
   - name: FamilyRevision
     description: API для работы с данными по переписям (РС/ИВ/ПП)
@@ -25,7 +25,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionResponse"
+                $ref: "#/components/schemas/FamilyMember"
         404:
           description: "Data not found"
           content:
@@ -57,7 +57,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/family.revision/family-revision-save.yaml"
+              $ref: "./model/genealogy/family.revision/family-member-save.yaml"
         required: true
       responses:
         200:
@@ -65,7 +65,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionResponse"
+                $ref: "#/components/schemas/FamilyMember"
         404:
           description: "Failed to save data"
           content:
@@ -81,7 +81,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/family.revision/family-revision.yaml"
+              $ref: "#/components/schemas/FamilyMember"
         required: true
       responses:
         200:
@@ -89,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionResponse"
+                $ref: "#/components/schemas/FamilyMember"
         404:
           description: "Failed to update data"
           content:
@@ -106,7 +106,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/family.revision/family-revision-filter.yaml"
+              $ref: "./model/genealogy/family.revision/family-member-filter.yaml"
         required: true
       responses:
         200:
@@ -114,7 +114,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/FamilyMemberFullInfo"
         404:
           description: "Failed to find data"
           content:
@@ -124,20 +126,16 @@ paths:
 
 components:
   schemas:
-    FamilyRevisionResponse:
-      type: object
-      oneOf:
-        - $ref: "./model/genealogy/family.revision/family-revision.yaml"
-        - $ref: "#/components/schemas/FamilyRevisionErrorResponse"
-        - $ref: "#/components/schemas/ArchiveWithFamilyRevisionList"
-    ArchiveWithFamilyRevisionList:
-      type: object
-      description: Список архивов с вложенным списком ревизий
+    FamilyMember:
+      $ref: "./model/genealogy/family.revision/family-member.yaml"
+    FamilyMemberFullInfo:
       properties:
-        data:
-          description: Список архивов с вложенным списком ревизий
+        familyMember:
+          $ref: "#/components/schemas/FamilyMember"
+        anotherFamilies:
+          description: Список архивов с вложенным списком семей
           type: array
           items:
-            $ref: "./model/genealogy/family.revision/archive-with-family-revision.yaml"
+            $ref: "./model/genealogy/family.revision/archive-with-family-members.yaml"
     FamilyRevisionErrorResponse:
       $ref: "./model/common/error-response.yaml"

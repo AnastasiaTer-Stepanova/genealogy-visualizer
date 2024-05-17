@@ -224,7 +224,8 @@ public class ParserUtils {
         } else if (femaleStr != null) {
             return Sex.FEMALE;
         }
-        throw new IllegalArgumentException("Sex doesn't exist");
+        LOGGER.error("Sex doesn't exist");
+        return null;
     }
 
     private static Cell checkAndReturnFromRow(Row row, Integer cellNum) {

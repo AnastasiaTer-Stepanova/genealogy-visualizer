@@ -1,7 +1,5 @@
 package genealogy.visualizer.config;
 
-import genealogy.visualizer.mapper.ArchiveDocumentMapper;
-import genealogy.visualizer.mapper.ErrorMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
@@ -43,11 +41,8 @@ public class ServiceConfig {
     @Bean
     public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
                                                        ArchiveDocumentDAO archiveDocumentDAO,
-                                                       FamilyRevisionMapper familyRevisionMapper,
-                                                       ArchiveDocumentMapper archiveDocumentMapper,
-                                                       ErrorMapper errorMapper) {
-        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper,
-                archiveDocumentMapper, errorMapper);
+                                                       FamilyRevisionMapper familyRevisionMapper) {
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper);
     }
 
     @Bean
@@ -97,7 +92,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, PersonMapper personMapper, ErrorMapper errorMapper) {
-        return new GenealogyVisualizeServiceImpl(personDAO, personMapper, errorMapper);
+    public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, PersonMapper personMapper) {
+        return new GenealogyVisualizeServiceImpl(personDAO, personMapper);
     }
 }

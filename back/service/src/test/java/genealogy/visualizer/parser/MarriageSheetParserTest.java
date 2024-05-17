@@ -1,7 +1,5 @@
 package genealogy.visualizer.parser;
 
-import genealogy.visualizer.entity.Archive;
-import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.enums.WitnessType;
 import genealogy.visualizer.entity.model.Witness;

@@ -6,7 +6,7 @@ public interface ArchiveDocumentDAO {
 
     ArchiveDocument saveOrFindIfExistDocument(ArchiveDocument archiveDocument);
 
-    ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(ArchiveDocument archiveDocument, short familyNumber);
+    ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber);
 
     void updateNextRevisionDocument(ArchiveDocument archiveDocument);
 }

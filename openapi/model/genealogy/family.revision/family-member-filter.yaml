@@ -2,7 +2,7 @@ description: Фильтр для поиска данных по номеру с�
 type: object
 required:
   - familyRevisionNumber
-  - archiveDocument
+  - archiveDocumentId
   - isFindInAllRevision
 properties:
   familyRevisionNumber:
@@ -12,8 +12,11 @@ properties:
     minimum: 1
     maximum: 32767
     example: 124
-  archiveDocument:
-    $ref: "./../archive/archive-document.yaml"
+  archiveDocumentId:
+    description: Идентификатор документа в архиве
+    type: integer
+    format: int64
+    example: 124353
   isFindInAllRevision:
     description: Искать ли семью по связкам во всех ревизиях
     type: boolean

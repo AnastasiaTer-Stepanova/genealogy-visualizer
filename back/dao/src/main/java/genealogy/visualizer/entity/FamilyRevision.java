@@ -111,7 +111,7 @@ public class FamilyRevision implements Serializable {
     @Comment("Комментарий")
     private String comment;
 
-    @Column(length = 1, nullable = false)
+    @Column(length = 1)
     @Comment("Пол: Ж - женщина, М - мужчина")
     @Convert(converter = SexConverter.class)
     private Sex sex;
@@ -129,7 +129,7 @@ public class FamilyRevision implements Serializable {
     @Comment(value = "Статус родственника", on = "RELATIVE_STATUS")
     private FullName relative;
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class)
     @CollectionTable(name = "ANOTHER_NAME_IN_REVISION",
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_NAME_IN_REVISION")),
