@@ -3,7 +3,6 @@ package genealogy.visualizer.config;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.Person;
-import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.model.Age;
 import genealogy.visualizer.entity.model.DateInfo;
 import genealogy.visualizer.randomizer.AbbreviationRandomizer;
@@ -11,7 +10,6 @@ import genealogy.visualizer.randomizer.AgeRandomizer;
 import genealogy.visualizer.randomizer.DateInfoRandomizer;
 import genealogy.visualizer.randomizer.PersonStatusRandomizer;
 import org.jeasy.random.EasyRandomParameters;
-import org.jeasy.random.randomizers.misc.EnumRandomizer;
 import org.jeasy.random.randomizers.range.ByteRangeRandomizer;
 import org.jeasy.random.randomizers.range.IntegerRangeRandomizer;
 import org.jeasy.random.randomizers.range.ShortRangeRandomizer;
@@ -44,12 +42,10 @@ public class EasyRandomParamsBuilder {
                         () -> new IntegerRangeRandomizer(1, (int) Short.MAX_VALUE).getRandomValue())
                 .randomize(ofType(String.class).and(named("status")),
                         () -> new PersonStatusRandomizer().getRandomValue())
-                .randomize((named("familyRevisionNumber").or(named("previousFamilyRevisionNumber")
-                                .or(named("nextFamilyRevisionNumber")).or(named("listNumber"))))
+                .randomize((named("familyRevisionNumber").or(named("nextFamilyRevisionNumber").or(named("listNumber"))))
                                 .and(ofType(Short.class)),
                         () -> new ShortRangeRandomizer((short) 1, Short.MAX_VALUE).getRandomValue())
-                .randomize((named("familyRevisionNumber").or(named("previousFamilyRevisionNumber")
-                                .or(named("nextFamilyRevisionNumber")).or(named("listNumber"))))
+                .randomize((named("familyRevisionNumber").or(named("nextFamilyRevisionNumber").or(named("listNumber"))))
                                 .and(ofType(Integer.class)),
                         () -> new IntegerRangeRandomizer(1, (int) Short.MAX_VALUE).getRandomValue())
                 .randomize((named("catalog").or(named("fund")).or(named("instance"))).and(ofType(String.class)),

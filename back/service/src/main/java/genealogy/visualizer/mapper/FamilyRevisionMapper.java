@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR,
         uses = {FullNameMapper.class, AgeMapper.class, ArchiveDocumentMapper.class, PersonMapper.class})
 public interface FamilyRevisionMapper {
@@ -24,4 +26,6 @@ public interface FamilyRevisionMapper {
     @Mapping(target = "partner.isHeadOfYard", source = "partner.headOfYard")
     @Mapping(target = "partner.partner", ignore = true)
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision family, @Context CycleAvoidingMappingContext context);
+
+    List<FamilyMember> toListDTO(List<genealogy.visualizer.entity.FamilyRevision> family, @Context CycleAvoidingMappingContext context);
 }

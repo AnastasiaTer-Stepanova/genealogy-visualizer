@@ -15,13 +15,6 @@ properties:
     minimum: 1
     maximum: 32767
     example: 124
-  previousFamilyRevisionNumber:
-    description: Номер семьи в предыдущей ревизии
-    type: integer
-    format: short
-    minimum: 1
-    maximum: 32767
-    example: 124
   nextFamilyRevisionNumber:
     description: Номер семьи в следующей ревизии
     type: integer
@@ -68,8 +61,6 @@ properties:
   relative:
     $ref: "./../../common/full-name.yaml"
   age:
-    $ref: "./../../common/age.yaml"
-  ageInPreviousRevision:
     $ref: "./../../common/age.yaml"
   ageInNextRevision:
     $ref: "./../../common/age.yaml"

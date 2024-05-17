@@ -6,6 +6,8 @@ import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
+import genealogy.visualizer.entity.Archive;
+import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
@@ -54,7 +56,9 @@ class IntegrationTest {
 
     ArchiveDocument archiveDocumentExisting;
 
-    genealogy.visualizer.entity.Locality localityExisting;
+    Locality localityExisting;
+
+    Archive archiveExisting;
 
     static ObjectMapper objectMapper = new ObjectMapper();
     static CycleAvoidingMappingContext cycleAvoidingMappingContext = new CycleAvoidingMappingContext();
@@ -80,10 +84,10 @@ class IntegrationTest {
     void setUp() {
         genealogy.visualizer.entity.Locality localityExisting = localityRepository.save(generator.nextObject(genealogy.visualizer.entity.Locality.class));
         localityIds.add(localityExisting.getId());
-        genealogy.visualizer.entity.Archive archiveEntity = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveRepository.saveAndFlush(archiveEntity);
+        archiveExisting = generator.nextObject(genealogy.visualizer.entity.Archive.class);
+        archiveRepository.saveAndFlush(archiveExisting);
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentEntity.setArchive(archiveEntity);
+        archiveDocumentEntity.setArchive(archiveExisting);
         archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity), cycleAvoidingMappingContext);
         archiveIds.add(archiveDocumentExisting.getArchive().getId());
         archiveDocumentIds.add(archiveDocumentExisting.getId());

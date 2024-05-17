@@ -8,6 +8,7 @@ import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
@@ -82,5 +83,17 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     @Override
     public FamilyRevision findFullInfoById(Long id) {
         return familyRevisionRepository.findFullInfoById(id).orElse(null);
+    }
+
+    @Override
+    public List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId, short familyNumber) {
+        return familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(archiveDocumentId, familyNumber)
+                .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId, short familyNumber) {
+        return familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(archiveDocumentId, familyNumber)
+                .orElse(Collections.emptyList());
     }
 }

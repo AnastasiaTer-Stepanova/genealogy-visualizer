@@ -11,7 +11,6 @@ import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -40,7 +39,6 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
     private static final String MALE_COLUMN_NAME = "Male";
     private static final String FEMALE_COLUMN_NAME = "Female";
     private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber";
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber";
     private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber";
     private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber";
     private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName";
@@ -48,7 +46,6 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
     private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother";
     private static final String FULL_NAME_COLUMN_NAME = "FullName";
     private static final String AGE_COLUMN_NAME = "Age";
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision";
     private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision";
     private static final String DEPARTED_COLUMN_NAME = "Departed";
     private static final String ARRIVED_COLUMN_NAME = "Arrived";
@@ -107,13 +104,11 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
                         null,
                         partner,
                         currentFamilyRevisionNumber,
-                        getShortCellValue(row, header.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
                         getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
                         getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
                         getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
                         getFullName(row, header, fullNameHelper.getFullName()),
                         parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
-                        parseAge(getStringCellValue(row, header.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))),
                         parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
                         getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
                         getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),

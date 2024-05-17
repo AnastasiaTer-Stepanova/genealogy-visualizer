@@ -25,7 +25,6 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
 
     private static final String sheetName = "FamilyRevision";
     private static final String FAMILY_REVISION_NUMBER_COLUMN_NAME = "FamilyRevisionNumber";
-    private static final String PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME = "PreviousFamilyRevisionNumber";
     private static final String NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME = "NextFamilyRevisionNumber";
     private static final String LIST_NUMBER_COLUMN_NAME = "ListNumber";
     private static final String HEAD_OF_YARD_LAST_NAME_COLUMN_NAME = "HeadOfYardLastName";
@@ -33,7 +32,6 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
     private static final String LAST_NAME_ANOTHER_COLUMN_NAME = "LastNameAnother";
     private static final String FULL_NAME_COLUMN_NAME = "FullName";
     private static final String AGE_COLUMN_NAME = "Age";
-    private static final String AGE_IN_PREVIOUS_REVISION_COLUMN_NAME = "AgeInPreviousRevision";
     private static final String AGE_IN_NEXT_REVISION_COLUMN_NAME = "AgeInNextRevision";
     private static final String DEPARTED_COLUMN_NAME = "Departed";
     private static final String ARRIVED_COLUMN_NAME = "Arrived";
@@ -57,15 +55,13 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         familyRevisions = generateFamilyRevisions();
         headers = new HashMap<>();
         headers.put(FAMILY_REVISION_NUMBER_COLUMN_NAME, 0);
-        headers.put(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME, 1);
-        headers.put(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME, 2);
+        headers.put(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME, 1);
         headers.put(LIST_NUMBER_COLUMN_NAME, 3);
         headers.put(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME, 4);
         headers.put(LAST_NAME_COLUMN_NAME, 5);
         headers.put(LAST_NAME_ANOTHER_COLUMN_NAME, 6);
         headers.put(FULL_NAME_COLUMN_NAME, 7);
         headers.put(AGE_COLUMN_NAME, 8);
-        headers.put(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME, 9);
         headers.put(AGE_IN_NEXT_REVISION_COLUMN_NAME, 10);
         headers.put(DEPARTED_COLUMN_NAME, 11);
         headers.put(ARRIVED_COLUMN_NAME, 12);
@@ -135,8 +131,6 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
             row.createCell(headers.get(FEMALE_COLUMN_NAME)).setCellValue("*");
         }
         row.createCell(headers.get(FAMILY_REVISION_NUMBER_COLUMN_NAME)).setCellValue(familyRevision.getFamilyRevisionNumber());
-        row.createCell(headers.get(PREVIOUS_FAMILY_REVISION_NUMBER_COLUMN_NAME))
-                .setCellValue(familyRevision.getPreviousFamilyRevisionNumber());
         row.createCell(headers.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)).setCellValue(familyRevision.getNextFamilyRevisionNumber());
         row.createCell(headers.get(LIST_NUMBER_COLUMN_NAME)).setCellValue(familyRevision.getListNumber());
         row.createCell(headers.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)).setCellValue(familyRevision.getHeadOfYard());
@@ -146,8 +140,6 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
                 .setCellValue(getFullName(familyRevision.getFullName()) + " " + getFullName(familyRevision.getRelative()));
         row.createCell(headers.get(AGE_COLUMN_NAME))
                 .setCellValue(familyRevision.getAge().getAge() + familyRevision.getAge().getType().getName());
-        row.createCell(headers.get(AGE_IN_PREVIOUS_REVISION_COLUMN_NAME))
-                .setCellValue(familyRevision.getAgeInPreviousRevision().getAge() + familyRevision.getAgeInPreviousRevision().getType().getName());
         row.createCell(headers.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))
                 .setCellValue(familyRevision.getAgeInNextRevision().getAge() + familyRevision.getAgeInNextRevision().getType().getName());
         row.createCell(headers.get(DEPARTED_COLUMN_NAME)).setCellValue(familyRevision.getDeparted());

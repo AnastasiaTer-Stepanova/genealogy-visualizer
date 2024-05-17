@@ -59,9 +59,6 @@ public class FamilyRevision implements Serializable {
     @Comment("Номер семьи в текущей ревизии")
     private Short familyRevisionNumber;
 
-    @Comment("Номер семьи в предыдущей ревизии")
-    private Short previousFamilyRevisionNumber;
-
     @Comment("Номер семьи в следующей ревизии")
     private Short nextFamilyRevisionNumber;
 
@@ -79,15 +76,6 @@ public class FamilyRevision implements Serializable {
     @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE", length = 15))
     @Comment(value = "Тип возраста", on = "AGE_TYPE")
     private Age age;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "age", column = @Column(name = "AGE_IN_PREVIOUS_REVISION", precision = 5, scale = 1)),
-            @AttributeOverride(name = "type", column = @Column(name = "AGE_TYPE_IN_PREVIOUS_REVISION", length = 15))
-    })
-    @Comment(value = "Возраст в прежней ревизии", on = "AGE_IN_PREVIOUS_REVISION")
-    @Comment(value = "Тип возраста в прежней ревизии", on = "AGE_TYPE_IN_PREVIOUS_REVISION")
-    private Age ageInPreviousRevision;
 
     @Embedded
     @AttributeOverrides({
@@ -153,17 +141,15 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short previousFamilyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInPreviousRevision, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.partner = partner;
         this.familyRevisionNumber = familyRevisionNumber;
-        this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
         this.nextFamilyRevisionNumber = nextFamilyRevisionNumber;
         this.listNumber = listNumber;
         this.isHeadOfYard = isHeadOfYard;
         this.fullName = fullName;
         this.age = age;
-        this.ageInPreviousRevision = ageInPreviousRevision;
         this.ageInNextRevision = ageInNextRevision;
         this.departed = departed;
         this.arrived = arrived;
@@ -198,14 +184,6 @@ public class FamilyRevision implements Serializable {
 
     public void setFamilyRevisionNumber(Short familyRevisionNumber) {
         this.familyRevisionNumber = familyRevisionNumber;
-    }
-
-    public Short getPreviousFamilyRevisionNumber() {
-        return previousFamilyRevisionNumber;
-    }
-
-    public void setPreviousFamilyRevisionNumber(Short previousFamilyRevisionNumber) {
-        this.previousFamilyRevisionNumber = previousFamilyRevisionNumber;
     }
 
     public Short getNextFamilyRevisionNumber() {
@@ -246,14 +224,6 @@ public class FamilyRevision implements Serializable {
 
     public void setAge(Age age) {
         this.age = age;
-    }
-
-    public Age getAgeInPreviousRevision() {
-        return ageInPreviousRevision;
-    }
-
-    public void setAgeInPreviousRevision(Age ageInPreviousRevision) {
-        this.ageInPreviousRevision = ageInPreviousRevision;
     }
 
     public Age getAgeInNextRevision() {
