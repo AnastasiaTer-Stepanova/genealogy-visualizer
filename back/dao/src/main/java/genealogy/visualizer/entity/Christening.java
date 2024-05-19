@@ -29,8 +29,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -45,11 +45,11 @@ public class Christening implements Serializable {
 
     @Column(columnDefinition = "DATE", nullable = false)
     @Comment("Дата рождения")
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @Column(columnDefinition = "DATE")
     @Comment("Дата крещения")
-    private Date christeningDate;
+    private LocalDate christeningDate;
 
     @Column(length = 1, nullable = false)
     @Comment("Пол: Ж - женщина, М - мужчина")
@@ -128,7 +128,7 @@ public class Christening implements Serializable {
     public Christening() {
     }
 
-    public Christening(Long id, Date birthDate, Date christeningDate, Sex sex, String name, FullName father, FullName mother, String comment, Boolean legitimacy, Locality locality, List<GodParent> godParents, Person person, ArchiveDocument archiveDocument) {
+    public Christening(Long id, LocalDate birthDate, LocalDate christeningDate, Sex sex, String name, FullName father, FullName mother, String comment, Boolean legitimacy, Locality locality, List<GodParent> godParents, Person person, ArchiveDocument archiveDocument) {
         this.id = id;
         this.birthDate = birthDate;
         this.christeningDate = christeningDate;
@@ -152,19 +152,19 @@ public class Christening implements Serializable {
         this.id = id;
     }
 
-    public Date getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
-    public Date getChristeningDate() {
+    public LocalDate getChristeningDate() {
         return christeningDate;
     }
 
-    public void setChristeningDate(Date christeningDate) {
+    public void setChristeningDate(LocalDate christeningDate) {
         this.christeningDate = christeningDate;
     }
 

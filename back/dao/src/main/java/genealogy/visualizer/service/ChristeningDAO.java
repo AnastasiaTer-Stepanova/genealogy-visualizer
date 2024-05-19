@@ -4,5 +4,9 @@ import genealogy.visualizer.entity.Christening;
 
 public interface ChristeningDAO {
 
-    void save(Christening christening);
+    Christening save(Christening christening);
+
+    void updatePersonIdByPersonId(Long personId, Long newPersonId);
+
+    void updatePersonIdById(Long id, Long newPersonId);
 }

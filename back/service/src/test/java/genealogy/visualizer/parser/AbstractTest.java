@@ -25,8 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ abstract class AbstractTest {
 
     static final String DATE_PATTERN = "dd.MM.yyyy";
 
-    static final DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
+    static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(DATE_PATTERN);
 
     static EasyRandom generator;
 

@@ -63,6 +63,12 @@ public class Locality implements Serializable {
     @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
     private List<Death> deaths = new ArrayList<>();
 
+    @OneToMany(mappedBy = "birthLocality", fetch = FetchType.LAZY)
+    private List<Person> personsWithBirthLocality = new ArrayList<>();
+
+    @OneToMany(mappedBy = "deathLocality", fetch = FetchType.LAZY)
+    private List<Person> personsWithDeathLocality = new ArrayList<>();
+
     public Locality() {
     }
 
@@ -78,7 +84,7 @@ public class Locality implements Serializable {
         this.anotherNames = anotherNames;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths) {
+    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -86,6 +92,8 @@ public class Locality implements Serializable {
         this.anotherNames = anotherNames;
         this.christenings = christenings;
         this.deaths = deaths;
+        this.personsWithBirthLocality = personsWithBirthLocality;
+        this.personsWithDeathLocality = personsWithDeathLocality;
     }
 
     public Long getId() {
@@ -142,5 +150,21 @@ public class Locality implements Serializable {
 
     public void setDeaths(List<Death> deaths) {
         this.deaths = deaths;
+    }
+
+    public List<Person> getPersonsWithBirthLocality() {
+        return personsWithBirthLocality;
+    }
+
+    public void setPersonsWithBirthLocality(List<Person> personsWithBirthLocality) {
+        this.personsWithBirthLocality = personsWithBirthLocality;
+    }
+
+    public List<Person> getPersonsWithDeathLocality() {
+        return personsWithDeathLocality;
+    }
+
+    public void setPersonsWithDeathLocality(List<Person> personsWithDeathLocality) {
+        this.personsWithDeathLocality = personsWithDeathLocality;
     }
 }

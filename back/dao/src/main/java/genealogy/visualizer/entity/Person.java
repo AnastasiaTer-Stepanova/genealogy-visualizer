@@ -1,11 +1,14 @@
 package genealogy.visualizer.entity;
 
+import genealogy.visualizer.converter.SexConverter;
+import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.DateInfo;
 import genealogy.visualizer.entity.model.FullName;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,6 +23,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
@@ -27,22 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-//TODO Разобраться с графами
-//@NamedEntityGraphs(value = {
-//        @NamedEntityGraph(
-//                name = "Person.Relationships",
-//                attributeNodes = {
-//                        @NamedAttributeNode("father"),
-//                        @NamedAttributeNode(value = "deviceType", subgraph = "DeviceType.Transaction")
-//                }
-//        )
-//})
-//@EntityGraph в repository
 public class Person implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PERSON")
-    @SequenceGenerator(name = "SEQ_PERSON", sequenceName = "SEQ_PERSON", allocationSize = 1)
+    @SequenceGenerator(name = "SEQ_PERSON", sequenceName = "SEQ_PERSON", allocationSize = 5)
     @Comment("Идентификатор записи")
     private Long id;
 
@@ -68,18 +61,29 @@ public class Person implements Serializable {
     private DateInfo deathDate;
 
     @ManyToOne
-    @JoinColumn(name = "BIRTH_LOCALITY_ID", referencedColumnName = "id")
+    @JoinColumn(name = "BIRTH_LOCALITY_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_PERSON_BIRTH_LOCALITY"))
     private Locality birthLocality;
 
     @ManyToOne
-    @JoinColumn(name = "DEATH_LOCALITY_ID", referencedColumnName = "id")
+    @JoinColumn(name = "DEATH_LOCALITY_ID",
+            referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_PERSON_DEATH_LOCALITY"))
     private Locality deathLocality;
+
+    @Column(length = 1)
+    @Comment("Пол: Ж - женщина, М - мужчина")
+    @Convert(converter = SexConverter.class)
+    private Sex sex;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "PERSON_PARTNER",
             joinColumns = @JoinColumn(name = "PARTNER_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PARTNER_ID_PERSON_ID")),
+            uniqueConstraints = @UniqueConstraint(name = "UK_PARTNER_ID_PERSON_ID",
+                    columnNames = {"PARTNER_ID", "PERSON_ID"}),
             inverseJoinColumns = @JoinColumn(name = "PERSON_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PERSON_ID_PARTNER_ID")))
@@ -90,6 +94,8 @@ public class Person implements Serializable {
             joinColumns = @JoinColumn(name = "PARENT_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PARENT_ID_PERSON_ID")),
+            uniqueConstraints = @UniqueConstraint(name = "UK_PARENT_ID_PERSON_ID",
+                    columnNames = {"PARENT_ID", "PERSON_ID"}),
             inverseJoinColumns = @JoinColumn(name = "PERSON_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PERSON_ID_PARENT_ID")))
@@ -112,27 +118,31 @@ public class Person implements Serializable {
             joinColumns = @JoinColumn(name = "MARRIAGE_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_MARRIAGE_ID_PERSON_ID")),
+            uniqueConstraints = @UniqueConstraint(name = "UK_MARRIAGE_ID_PERSON_ID",
+                    columnNames = {"PERSON_ID", "MARRIAGE_ID"}),
             inverseJoinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "ID"))
     private List<Marriage> marriages = new ArrayList<>();
 
     public Person() {
     }
 
-    public Person(FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality) {
+    public Person(FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality, Sex sex) {
         this.fullName = fullName;
         this.birthDate = birthDate;
         this.deathDate = deathDate;
         this.birthLocality = birthLocality;
         this.deathLocality = deathLocality;
+        this.sex = sex;
     }
 
-    public Person(Long id, FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality, List<Person> partners, List<Person> children, List<Person> parents, Christening christening, Death death, List<FamilyRevision> revisions, List<Marriage> marriages) {
+    public Person(Long id, FullName fullName, DateInfo birthDate, DateInfo deathDate, Locality birthLocality, Locality deathLocality, Sex sex, List<Person> partners, List<Person> children, List<Person> parents, Christening christening, Death death, List<FamilyRevision> revisions, List<Marriage> marriages) {
         this.id = id;
         this.fullName = fullName;
         this.birthDate = birthDate;
         this.deathDate = deathDate;
         this.birthLocality = birthLocality;
         this.deathLocality = deathLocality;
+        this.sex = sex;
         this.partners = partners;
         this.children = children;
         this.parents = parents;
@@ -188,6 +198,14 @@ public class Person implements Serializable {
 
     public void setDeathLocality(Locality deathLocality) {
         this.deathLocality = deathLocality;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
     }
 
     public List<Person> getPartners() {

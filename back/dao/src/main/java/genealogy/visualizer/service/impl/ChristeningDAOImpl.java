@@ -29,7 +29,7 @@ public class ChristeningDAOImpl implements ChristeningDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void save(Christening christening) {
+    public Christening save(Christening christening) {
         ArchiveDocument archiveDocument = christening.getArchiveDocument();
         if (archiveDocument != null && archiveDocument.getId() == null) {
             archiveDocument = archiveDocumentDAO.saveOrFindIfExistDocument(archiveDocument);
@@ -44,6 +44,16 @@ public class ChristeningDAOImpl implements ChristeningDAO {
             locality = localityDAO.saveOrFindIfExist(locality);
             christening.setLocality(locality);
         }
-        christeningRepository.save(christening);
+        return christeningRepository.save(christening);
+    }
+
+    @Override
+    public void updatePersonIdByPersonId(Long personId, Long newPersonId) {
+        christeningRepository.updatePersonIdByPersonId(personId, newPersonId);
+    }
+
+    @Override
+    public void updatePersonIdById(Long id, Long newPersonId) {
+        christeningRepository.updatePersonIdById(id, newPersonId);
     }
 }

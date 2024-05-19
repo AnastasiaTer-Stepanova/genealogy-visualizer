@@ -32,10 +32,12 @@ public class EasyRandomParamsBuilder {
                         () -> new ShortRangeRandomizer((short) 1300, (short) 2030).getRandomValue())
                 .randomize(named("year").and(ofType(Integer.class)),
                         () -> new IntegerRangeRandomizer(1300, 2030).getRandomValue())
-                .randomize(named("familyGeneration").and(ofType(Byte.class)),
+                .randomize((named("familyGeneration").or(named("husbandMarriageNumber")).or(named("wifeMarriageNumber")))
+                                .and(ofType(Byte.class)),
                         () -> new ByteRangeRandomizer((byte) 1, (byte) 5).getRandomValue())
-                .randomize(named("familyGeneration").and(ofType(Integer.class)),
-                        () -> new IntegerRangeRandomizer(1, 5).getRandomValue())
+                .randomize((named("familyGeneration").or(named("husbandMarriageNumber")).or(named("wifeMarriageNumber")))
+                                .and(ofType(Integer.class)),
+                        () -> new IntegerRangeRandomizer(1, (int) Byte.MAX_VALUE).getRandomValue())
                 .randomize(named("listNumber").and(ofType(Short.class)),
                         () -> new ShortRangeRandomizer((short) 1, Short.MAX_VALUE).getRandomValue())
                 .randomize(named("listNumber").and(ofType(Integer.class)),

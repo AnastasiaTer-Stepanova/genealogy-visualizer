@@ -10,12 +10,11 @@ import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,7 +68,7 @@ public class MarriageSheetParser extends AbstractSheetParser implements SheetPar
             if (rowNum == 0 || STATUS_IMPORTED.equals(status)) {
                 continue;
             }
-            Date marriageDate = getDateCellValue(row, header.get(DATE_COLUMN_NAME));
+            LocalDate marriageDate = getDateCellValue(row, header.get(DATE_COLUMN_NAME));
             if (marriageDate == null) {
                 LOGGER.error("Marriage date is null for row {}", rowNum);
                 continue;

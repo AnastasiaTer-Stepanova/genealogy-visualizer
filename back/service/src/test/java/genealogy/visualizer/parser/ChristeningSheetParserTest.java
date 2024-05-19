@@ -18,8 +18,8 @@ import java.util.Map;
 
 import static genealogy.visualizer.entity.enums.Sex.MALE;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 class ChristeningSheetParserTest extends AbstractTest {
 
@@ -69,7 +69,7 @@ class ChristeningSheetParserTest extends AbstractTest {
 
     @Test
     void checkParseTest() throws IOException {
-        doNothing().when(christeningDAO).save(any());
+        when(christeningDAO.save(any())).thenReturn(christenings.getFirst());
         Sheet sheet = createXSSFWorkbook(christenings);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
@@ -122,8 +122,8 @@ class ChristeningSheetParserTest extends AbstractTest {
             row.createCell(headers.get(MALE_COLUMN_NAME)).setCellValue("");
             row.createCell(headers.get(FEMALE_COLUMN_NAME)).setCellValue("*");
         }
-        row.createCell(headers.get(BIRTH_COLUMN_NAME)).setCellValue(dateFormat.format(christening.getBirthDate()));
-        row.createCell(headers.get(CHRISTENING_COLUMN_NAME)).setCellValue(dateFormat.format(christening.getChristeningDate()));
+        row.createCell(headers.get(BIRTH_COLUMN_NAME)).setCellValue(christening.getBirthDate().format(dateFormat));
+        row.createCell(headers.get(CHRISTENING_COLUMN_NAME)).setCellValue(christening.getChristeningDate().format(dateFormat));
         row.createCell(headers.get(LOCALITY_COLUMN_NAME)).setCellValue(christening.getLocality().getName());
         row.createCell(headers.get(NAME_COLUMN_NAME)).setCellValue(christening.getName());
         row.createCell(headers.get(FATHER_COLUMN_NAME)).setCellValue(getFullName(christening.getFather()));

@@ -19,4 +19,9 @@ public interface FamilyRevisionDAO {
     List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId, short familyNumber);
 
     List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId, short familyNumber);
+
+    void updatePersonIdByPersonId(Long personId, Long newPersonId);
+
+    void updatePersonIdById(Long id, Long newPersonId);
+
 }

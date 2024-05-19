@@ -15,3 +15,5 @@ properties:
     $ref: "./../../common/date-info.yaml"
   deathDate:
     $ref: "./../../common/date-info.yaml"
+  sex:
+    $ref: "./../../common/sex.yaml"

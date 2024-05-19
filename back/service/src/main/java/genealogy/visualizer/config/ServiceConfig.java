@@ -24,6 +24,8 @@ import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeServiceImpl;
+import genealogy.visualizer.service.person.PersonService;
+import genealogy.visualizer.service.person.PersonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -96,5 +98,10 @@ public class ServiceConfig {
     @Bean
     public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, PersonMapper personMapper) {
         return new GenealogyVisualizeServiceImpl(personDAO, personMapper);
+    }
+
+    @Bean
+    public PersonService personService(PersonDAO personDAO, PersonMapper personMapper) {
+        return new PersonServiceImpl(personDAO, personMapper);
     }
 }

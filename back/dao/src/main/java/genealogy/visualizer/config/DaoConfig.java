@@ -76,8 +76,9 @@ public class DaoConfig {
     }
 
     @Bean
-    public PersonDAO personDAO(@Autowired PersonRepository personRepository) {
-        return new PersonDAOImpl(personRepository);
+    public PersonDAO personDAO(@Autowired PersonRepository personRepository, LocalityDAO localityDAO, ChristeningDAO christeningDAO,
+                               DeathDAO deathDAO, MarriageDAO marriageDAO, FamilyRevisionDAO familyRevisionDAO) {
+        return new PersonDAOImpl(personRepository, localityDAO, christeningDAO, deathDAO, marriageDAO, familyRevisionDAO);
     }
 
 //    @Bean

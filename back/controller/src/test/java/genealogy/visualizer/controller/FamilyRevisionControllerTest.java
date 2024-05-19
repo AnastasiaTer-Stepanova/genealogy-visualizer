@@ -11,7 +11,6 @@ import genealogy.visualizer.api.model.FamilyMemberFullInfo;
 import genealogy.visualizer.api.model.FamilyMemberSave;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
-import genealogy.visualizer.repository.FamilyRevisionRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -20,10 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -42,12 +38,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Autowired
-    private FamilyRevisionRepository familyRevisionRepository;
-
-    @Autowired
     private FamilyRevisionMapper familyRevisionMapper;
 
-    private final Set<Long> familyRevisionIds = new HashSet<>();
+    private static final String PATH = "/family-revision";
 
     @Test
     void saveTest() throws Exception {
@@ -56,17 +49,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         archiveDocumentSave.setArchive(archiveSave);
         FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
         revisionSave.setArchiveDocument(archiveDocumentSave);
-        String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionSave);
+        String responseJson = postRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
@@ -79,17 +63,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setArchiveDocument(archiveDocumentExisting);
         revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionSave.setPartner(revisionPartnerSave);
-        String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionSave);
+        String responseJson = postRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
@@ -104,17 +79,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         archiveDocumentSave.setArchive(archiveDocumentExisting.getArchive());
         FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
         revisionSave.setArchiveDocument(archiveDocumentSave);
-        String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionSave);
+        String responseJson = postRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
@@ -124,17 +90,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     void saveWithExistingArchiveDocumentTest() throws Exception {
         FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
         revisionSave.setArchiveDocument(archiveDocumentExisting);
-        String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionSave);
+        String responseJson = postRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
@@ -145,14 +102,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
         revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
-        String responseJson = mockMvc.perform(
-                        get("/family-revision/" + revisionExist.getId()))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String responseJson = getRequest(PATH + "/" + revisionExist.getId());
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertEquals(response.getId(), revisionExist.getId());
@@ -186,17 +136,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionUpdate.setPartner(revisionPartnerSave);
         revisionUpdate.setAnotherNames(generator.objects(String.class, 4).toList());
-        String objectString = objectMapper.writeValueAsString(revisionUpdate);
-        String responseJson = mockMvc.perform(
-                        put("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionUpdate);
+        String responseJson = putRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionUpdate);
@@ -243,18 +184,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist, cycleAvoidingMappingContext);
         revisionUpdate.setPartner(null);
         revisionUpdate.setAnotherNames(List.of(revisionUpdate.getAnotherNames().getFirst(), generator.nextObject(String.class)));
-        String objectString = objectMapper.writeValueAsString(revisionUpdate);
-        System.out.println("----------------------Start request------------------------");
-        String responseJson = mockMvc.perform(
-                        put("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(revisionUpdate);
+        String responseJson = putRequest(PATH, requestJson);
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
         assertNotNull(response);
         assertFamilyRevision(response, revisionUpdate);
@@ -272,14 +203,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAllAndFlush(List.of(revisionSave, partnerRevisionSave)).getFirst();
-        System.out.println("----------------------Start request------------------------");
-        String responseJson = mockMvc.perform(
-                        delete("/family-revision/" + revisionExist.getId()))
-                .andExpectAll(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        System.out.println("----------------------End request------------------------");
+        String responseJson = deleteRequest(PATH + "/" + revisionSave.getId());
         familyRevisionIds.add(revisionExist.getPartner().getId());
         assertTrue(responseJson.isEmpty());
         assertTrue(familyRevisionRepository.findById(revisionExist.getId()).isEmpty());
@@ -291,14 +215,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Test
     void deleteNotExistingTest() throws Exception {
-        System.out.println("----------------------Start request------------------------");
-        String responseJson = mockMvc.perform(
-                        delete("/family-revision/" + generator.nextInt(10000, 20000)))
-                .andExpectAll(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        System.out.println("----------------------End request------------------------");
+        String responseJson = deleteRequest(PATH + "/" + generator.nextInt(10000, 20000));
         assertTrue(responseJson.isEmpty());
     }
 
@@ -320,17 +237,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 .toList();
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
         FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false);
-        String objectString = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision/family")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(filterRequest);
+        String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
         assertNotNull(response);
         List<genealogy.visualizer.entity.FamilyRevision> existFamilyRevisionList = familyRevisionList.stream()
@@ -439,17 +347,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         }
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
         FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true);
-        String objectString = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision/family")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String requestJson = objectMapper.writeValueAsString(filterRequest);
+        String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
         response.sort((fr1, fr2) -> fr2.getFamilyMember().getId().compareTo(fr1.getFamilyMember().getId()));
         assertNotNull(response);
@@ -530,7 +429,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         return response;
     }
 
-    private void assertFamilyRevision(FamilyMember familyRevision, FamilyMemberSave familyRevisionSave) {
+    protected static void assertFamilyRevision(FamilyMember familyRevision, FamilyMemberSave familyRevisionSave) {
         assertNotNull(familyRevision);
         assertNotNull(familyRevisionSave);
         assertEquals(familyRevision.getFamilyRevisionNumber(), familyRevisionSave.getFamilyRevisionNumber());
@@ -554,7 +453,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         assertNotNull(familyRevision.getId());
     }
 
-    private void assertFamilyRevision(FamilyMember familyRevision1, FamilyMember familyRevision2) {
+    protected static void assertFamilyRevision(FamilyMember familyRevision1, FamilyMember familyRevision2) {
         assertNotNull(familyRevision1);
         assertNotNull(familyRevision2);
         assertEquals(familyRevision1.getFamilyRevisionNumber(), familyRevision2.getFamilyRevisionNumber());
@@ -583,7 +482,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         }
     }
 
-    private void assertFamilyRevision(FamilyMember familyRevision1, genealogy.visualizer.entity.FamilyRevision familyRevision2) {
+    protected static void assertFamilyRevision(FamilyMember familyRevision1, genealogy.visualizer.entity.FamilyRevision familyRevision2) {
         assertNotNull(familyRevision1);
         assertNotNull(familyRevision2);
         assertEquals(familyRevision1.getFamilyRevisionNumber(), (int) familyRevision2.getFamilyRevisionNumber());

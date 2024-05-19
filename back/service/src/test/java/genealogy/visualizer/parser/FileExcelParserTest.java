@@ -35,6 +35,7 @@ class FileExcelParserTest extends AbstractTest {
     private SheetParser sheetParser;
 
     @Test
+    @SuppressWarnings("unchecked")
     void checkParseTest(@TempDir(cleanup = CleanupMode.ALWAYS) Path tempDir) throws IOException {
         ArchiveDocument archiveDocument = generator.nextObject(ArchiveDocument.class);
         when(parserMap.get(archiveDocument.getType().getName())).thenReturn(sheetParser);

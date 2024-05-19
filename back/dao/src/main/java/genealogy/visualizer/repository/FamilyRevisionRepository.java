@@ -2,6 +2,7 @@ package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.FamilyRevision;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -40,4 +41,13 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
             "where ad.id = :archiveDocumentId and fs.nextFamilyRevisionNumber = :nextFamilyRevisionNumber")
     Optional<List<FamilyRevision>> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(@Param("archiveDocumentId") Long archiveDocumentId,
                                                                                                      @Param("nextFamilyRevisionNumber") Short nextFamilyRevisionNumber);
+
+    @Modifying
+    @Query(value = "update family_revision set person_id = :newPersonId where person_id = :personId", nativeQuery = true)
+    void updatePersonIdByPersonId(@Param("personId") Long personId, @Param("newPersonId") Long newPersonId);
+
+    @Modifying
+    @Query(value = "update family_revision set person_id = :newPersonId where id = :id", nativeQuery = true)
+    void updatePersonIdById(@Param("id") Long id, @Param("newPersonId") Long newPersonId);
+
 }

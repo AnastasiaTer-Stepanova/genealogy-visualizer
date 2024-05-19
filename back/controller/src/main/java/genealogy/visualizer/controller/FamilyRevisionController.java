@@ -23,7 +23,7 @@ public class FamilyRevisionController implements FamilyRevisionApi {
     @Override
     public ResponseEntity<Void> delete(Long id) {
         familyRevisionService.delete(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @Override

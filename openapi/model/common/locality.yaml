@@ -1,0 +1,35 @@
+description: Возраст
+type: object
+required:
+  - name
+properties:
+  id:
+    description: Идентификатор
+    type: integer
+    format: int64
+    example: 124353
+  name:
+    description: Наименование населенного пункта
+    type: string
+    minimum: 0
+    maximum: 50
+    example: Павелец
+  type:
+    type: string
+    enum:
+      - город
+      - село
+      - деревня
+    x-enum-varnames: [ TOWN, VILLAGE, HAMLET ]
+  address:
+    description: Адрес населенного пункта
+    type: string
+    maximum: 255
+    example: Россия, Рязанская область
+  anotherNames:
+    description: Другие названия населенного пункта
+    type: array
+    items:
+      description: Название
+      type: string
+      example: Хреновое

@@ -23,7 +23,7 @@ public class DeathDAOImpl implements DeathDAO {
     }
 
     @Override
-    public void save(Death death) {
+    public Death save(Death death) {
         ArchiveDocument archiveDocument = death.getArchiveDocument();
         if (archiveDocument != null && archiveDocument.getId() == null) {
             archiveDocument = archiveDocumentDAO.saveOrFindIfExistDocument(archiveDocument);
@@ -34,6 +34,16 @@ public class DeathDAOImpl implements DeathDAO {
             locality = localityDAO.saveOrFindIfExist(locality);
             death.setLocality(locality);
         }
-        deathRepository.save(death);
+        return deathRepository.save(death);
+    }
+
+    @Override
+    public void updatePersonIdByPersonId(Long personId, Long newPersonId) {
+        deathRepository.updatePersonIdByPersonId(personId, newPersonId);
+    }
+
+    @Override
+    public void updatePersonIdById(Long id, Long newPersonId) {
+        deathRepository.updatePersonIdById(id, newPersonId);
     }
 }

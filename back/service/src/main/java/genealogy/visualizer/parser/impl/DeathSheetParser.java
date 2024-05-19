@@ -12,8 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +57,7 @@ public class DeathSheetParser extends AbstractSheetParser implements SheetParser
             if (rowNum == 0 || STATUS_IMPORTED.equals(status)) {
                 continue;
             }
-            Date deathDate = getDateCellValue(row, header.get(DATE_COLUMN_NAME));
+            LocalDate deathDate = getDateCellValue(row, header.get(DATE_COLUMN_NAME));
             if (deathDate == null) {
                 LOGGER.error("Death date is null for row {}", rowNum);
                 continue;

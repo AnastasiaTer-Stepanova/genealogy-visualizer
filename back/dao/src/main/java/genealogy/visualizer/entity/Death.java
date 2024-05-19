@@ -19,7 +19,7 @@ import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 public class Death implements Serializable {
@@ -31,7 +31,7 @@ public class Death implements Serializable {
 
     @Column(columnDefinition = "DATE", nullable = false)
     @Comment("Дата смерти")
-    private Date date;
+    private LocalDate date;
 
     @Embedded
     private FullName fullName;
@@ -87,7 +87,7 @@ public class Death implements Serializable {
     public Death() {
     }
 
-    public Death(Long id, Date date, FullName fullName, FullName relative, Age age, String cause, String burialPlace, String comment, Locality locality, ArchiveDocument archiveDocument, Person person) {
+    public Death(Long id, LocalDate date, FullName fullName, FullName relative, Age age, String cause, String burialPlace, String comment, Locality locality, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.date = date;
         this.fullName = fullName;
@@ -109,11 +109,11 @@ public class Death implements Serializable {
         this.id = id;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

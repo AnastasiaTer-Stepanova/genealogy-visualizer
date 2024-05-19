@@ -24,17 +24,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GenealogyVisualizeGraph"
+                $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
         404:
           description: "Failed to find data"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GenealogyVisualizeErrorResponse"
-
-components:
-  schemas:
-    GenealogyVisualizeGraph:
-      $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
-    GenealogyVisualizeErrorResponse:
-      $ref: "./model/common/error.yaml"
+                $ref: "./model/common/error-response.yaml"

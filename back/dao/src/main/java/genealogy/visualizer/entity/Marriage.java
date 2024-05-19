@@ -25,8 +25,8 @@ import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -40,7 +40,7 @@ public class Marriage implements Serializable {
 
     @Column(columnDefinition = "DATE", nullable = false)
     @Comment("Дата брака")
-    private Date date;
+    private LocalDate date;
 
     @Comment("Город, село, деревня и т.д. мужа")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -160,12 +160,12 @@ public class Marriage implements Serializable {
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PERSON_ID_MARRIAGE_ID")),
             inverseJoinColumns = @JoinColumn(name = "MARRIAGE_ID", referencedColumnName = "ID"))
-    private List<Person> persons;
+    private List<Person> persons = new ArrayList<>();
 
     public Marriage() {
     }
 
-    public Marriage(Long id, Date date, Locality husbandLocality, FullName husbandsFather, FullName husband, Age husbandAge, Byte husbandMarriageNumber, Locality wifeLocality, FullName wifesFather, FullName wife, Age wifeAge, Byte wifeMarriageNumber, String comment, List<Witness> witnesses, ArchiveDocument archiveDocument, List<Person> persons) {
+    public Marriage(Long id, LocalDate date, Locality husbandLocality, FullName husbandsFather, FullName husband, Age husbandAge, Byte husbandMarriageNumber, Locality wifeLocality, FullName wifesFather, FullName wife, Age wifeAge, Byte wifeMarriageNumber, String comment, List<Witness> witnesses, ArchiveDocument archiveDocument, List<Person> persons) {
         this.id = id;
         this.date = date;
         this.husbandLocality = husbandLocality;
@@ -192,11 +192,11 @@ public class Marriage implements Serializable {
         this.id = id;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
@@ -310,5 +310,14 @@ public class Marriage implements Serializable {
 
     public void setPersons(List<Person> persons) {
         this.persons = persons;
+    }
+
+    public void addPerson(Person person) {
+        if (this.persons == null) {
+            this.persons = new ArrayList<>();
+        }
+        if (!this.persons.contains(person)) {
+            this.persons.add(person);
+        }
     }
 }

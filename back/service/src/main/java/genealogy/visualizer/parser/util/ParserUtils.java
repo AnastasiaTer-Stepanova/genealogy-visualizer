@@ -4,7 +4,6 @@ import genealogy.visualizer.entity.enums.AgeType;
 import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.Age;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -14,8 +13,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,7 @@ public class ParserUtils {
     private static final String NEWBORN = "н/р";
 
     private static final Set<String> OBSCURE_DATA = Set.of("?", "-", ",", ".");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     /**
      * Get header map kay - name of column, value - number of column, add status column if sheet does not have it
@@ -104,24 +104,19 @@ public class ParserUtils {
      * @param cellNum header params
      * @return short value
      */
-    public static Date getDateCellValue(Row row, Integer cellNum) {
+    public static LocalDate getDateCellValue(Row row, Integer cellNum) {
         Cell cell = checkAndReturnFromRow(row, cellNum);
         return getDateCellValue(cell);
     }
 
-    public static Date getDateCellValue(Cell cell) {
+    public static LocalDate getDateCellValue(Cell cell) {
         if (cell == null) return null;
         return switch (cell.getCellType()) {
             case CellType.NUMERIC, CellType.BLANK -> null;
             case CellType.STRING -> {
-                try {
-                    String cellValue = cell.getStringCellValue();
-                    if (HYPHEN.equals(cellValue)) yield null;
-                    yield DateUtils.parseDate(cellValue, "dd.MM.yyyy");
-                } catch (ParseException e) {
-                    LOGGER.error(String.format("Error parsing date %s", cell.getStringCellValue()), e);
-                    yield null;
-                }
+                String cellValue = cell.getStringCellValue();
+                if (HYPHEN.equals(cellValue)) yield null;
+                yield LocalDate.parse(cellValue, dateFormatter);
             }
             default -> throw new IllegalArgumentException("Параметр в excel задан в неверном формате");
         };

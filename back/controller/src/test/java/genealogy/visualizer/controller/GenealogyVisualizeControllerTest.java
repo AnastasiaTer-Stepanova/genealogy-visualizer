@@ -40,6 +40,9 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
             person.setDeath(null);
             person.setMarriages(null);
             person.setRevisions(null);
+            person.setParents(null);
+            person.setPartners(null);
+            person.setChildren(null);
         });
         persons = personRepository.saveAllAndFlush(persons);
         Set<GraphLinks> graphLinks = new HashSet<>();

@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 class DeathSheetParserTest extends AbstractTest {
 
@@ -59,7 +59,7 @@ class DeathSheetParserTest extends AbstractTest {
 
     @Test
     void checkParseTest() throws IOException {
-        doNothing().when(deathDAO).save(any());
+        when(deathDAO.save(any())).thenReturn(deaths.getFirst());
         Sheet sheet = createXSSFWorkbook(deaths);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);
@@ -92,7 +92,7 @@ class DeathSheetParserTest extends AbstractTest {
     private void addRow(Sheet sheet, Death death) {
         if (sheet == null) throw new NullPointerException("Sheet is null, create Workbook first");
         Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-        row.createCell(headers.get(DATE_COLUMN_NAME)).setCellValue(dateFormat.format(death.getDate()));
+        row.createCell(headers.get(DATE_COLUMN_NAME)).setCellValue(death.getDate().format(dateFormat));
         row.createCell(headers.get(LOCALITY_COLUMN_NAME)).setCellValue(death.getLocality().getName());
         row.createCell(headers.get(RELATIVE_COLUMN_NAME)).setCellValue(getFullName(death.getRelative()));
         row.createCell(headers.get(FULL_NAME_COLUMN_NAME)).setCellValue(getFullName(death.getFullName()));

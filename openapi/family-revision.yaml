@@ -31,7 +31,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionErrorResponse"
+                $ref: "./model/common/error-response.yaml"
     delete:
       tags:
         - FamilyRevision
@@ -71,7 +71,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionErrorResponse"
+                $ref: "./model/common/error-response.yaml"
     put:
       tags:
         - FamilyRevision
@@ -95,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionErrorResponse"
+                $ref: "./model/common/error-response.yaml"
   /family-revision/family:
     post:
       tags:
@@ -122,7 +122,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FamilyRevisionErrorResponse"
+                $ref: "./model/common/error-response.yaml"
 
 components:
   schemas:
@@ -137,5 +137,3 @@ components:
           type: array
           items:
             $ref: "./model/genealogy/family.revision/archive-with-family-members.yaml"
-    FamilyRevisionErrorResponse:
-      $ref: "./model/common/error-response.yaml"

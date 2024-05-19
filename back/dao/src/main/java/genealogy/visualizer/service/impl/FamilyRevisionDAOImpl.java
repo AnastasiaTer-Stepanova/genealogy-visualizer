@@ -96,4 +96,14 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
         return familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(archiveDocumentId, familyNumber)
                 .orElse(Collections.emptyList());
     }
+
+    @Override
+    public void updatePersonIdByPersonId(Long personId, Long newPersonId) {
+        familyRevisionRepository.updatePersonIdByPersonId(personId, newPersonId);
+    }
+
+    @Override
+    public void updatePersonIdById(Long id, Long newPersonId) {
+        familyRevisionRepository.updatePersonIdById(id, newPersonId);
+    }
 }

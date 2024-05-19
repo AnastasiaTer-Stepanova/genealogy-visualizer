@@ -133,7 +133,7 @@ class MarriageSheetParserTest extends AbstractTest {
     private void addRow(Sheet sheet, Marriage marriage) {
         if (sheet == null) throw new NullPointerException("Sheet is null, create Workbook first");
         Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-        row.createCell(headers.get(DATE_COLUMN_NAME)).setCellValue(dateFormat.format(marriage.getDate()));
+        row.createCell(headers.get(DATE_COLUMN_NAME)).setCellValue(marriage.getDate().format(dateFormat));
         row.createCell(headers.get(HUSBAND_LOCALITY_COLUMN_NAME)).setCellValue(marriage.getHusbandLocality().getName());
         row.createCell(headers.get(HUSBAND_FATHER_COLUMN_NAME)).setCellValue(getFullName(marriage.getHusbandsFather()));
         row.createCell(headers.get(HUSBAND_COLUMN_NAME)).setCellValue(getFullName(marriage.getHusband()));
