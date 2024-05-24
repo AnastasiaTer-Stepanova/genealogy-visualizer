@@ -71,6 +71,7 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
         List<Integer> rowNumbers = new ArrayList<>();
         FamilyRevision previousPerson = null;
         int lastRowNum = excelSheet.getLastRowNum();
+        boolean isLastNameClearlyStated = true;
         for (Row row : excelSheet) {
             String status = getStringCellValue(row, header.get(STATUS_COLUMN_NAME));
             int rowNum = row.getRowNum();
@@ -98,37 +99,40 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
                 partner = previousPerson;
             }
             StringParserHelper fullNameHelper = new StringParserHelper(fullName);
-            FamilyRevision familyRevisionPerson;
+            FamilyRevision familyMember;
+            String headOfYard = getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME));
+            if (WITHOUT_LAST_NAME.equalsIgnoreCase(headOfYard)) {
+                isLastNameClearlyStated = false;
+            }
             try {
-                familyRevisionPerson = new FamilyRevision(
-                        null,
-                        partner,
-                        currentFamilyRevisionNumber,
-                        getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)),
-                        getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)),
-                        getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME)) != null ? Boolean.TRUE : Boolean.FALSE,
-                        getFullName(row, header, fullNameHelper.getFullName()),
-                        parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))),
-                        parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))),
-                        getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)),
-                        getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)),
-                        getFamilyGeneration(row, header),
-                        getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
-                        getSex(getStringCellValue(row, header.get(MALE_COLUMN_NAME)), getStringCellValue(row, header.get(FEMALE_COLUMN_NAME))),
-                        fullNameHelper.getRelative(),
-                        getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))),
-                        archive,
-                        null);
+                familyMember = new FamilyRevision();
+                familyMember.setFamilyRevisionNumber(currentFamilyRevisionNumber);
+                familyMember.setPartner(partner);
+                familyMember.setHeadOfYard(headOfYard != null ? Boolean.TRUE : Boolean.FALSE);
+                familyMember.setLastNameClearlyStated(isLastNameClearlyStated);
+                familyMember.setNextFamilyRevisionNumber(getShortCellValue(row, header.get(NEXT_FAMILY_REVISION_NUMBER_COLUMN_NAME)));
+                familyMember.setListNumber(getShortCellValue(row, header.get(LIST_NUMBER_COLUMN_NAME)));
+                familyMember.setFullName(getFullName(row, header, fullNameHelper.getFullName()));
+                familyMember.setAge(parseAge(getStringCellValue(row, header.get(AGE_COLUMN_NAME))));
+                familyMember.setAgeInNextRevision(parseAge(getStringCellValue(row, header.get(AGE_IN_NEXT_REVISION_COLUMN_NAME))));
+                familyMember.setDeparted(getStringCellValue(row, header.get(DEPARTED_COLUMN_NAME)));
+                familyMember.setArrived(getStringCellValue(row, header.get(ARRIVED_COLUMN_NAME)));
+                familyMember.setFamilyGeneration(getFamilyGeneration(row, header));
+                familyMember.setComment(getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)));
+                familyMember.setSex(getSex(getStringCellValue(row, header.get(MALE_COLUMN_NAME)), getStringCellValue(row, header.get(FEMALE_COLUMN_NAME))));
+                familyMember.setRelative(fullNameHelper.getRelative());
+                familyMember.setAnotherNames(getAnotherNamesFromCell(row.getCell(header.get(LAST_NAME_ANOTHER_COLUMN_NAME))));
+                familyMember.setArchiveDocument(archive);
             } catch (Exception e) {
                 LOGGER.error("Failed to parse row {}", row.getRowNum(), e);
                 continue;
             }
-            familyRevision.add(familyRevisionPerson);
-            previousPerson = familyRevisionPerson;
+            familyRevision.add(familyMember);
+            previousPerson = familyMember;
             rowNumbers.add(rowNum);
             if (partner != null && familyRevision.contains(partner)) {
                 familyRevision.remove(partner);
-                partner.setPartner(familyRevisionPerson);
+                partner.setPartner(familyMember);
                 familyRevision.add(partner);
             }
 
@@ -140,12 +144,21 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
                 }
             }
 
+            if (!isLastNameClearlyStated) {
+                familyRevision.forEach(fr -> {
+                    fr.setLastNameClearlyStated(false);
+                    if (fr.getPartner() != null) {
+                        fr.getPartner().setLastNameClearlyStated(false);
+                    }
+                });
+            }
             try {
                 familyRevisionDAO.saveBatch(familyRevision);
                 successParsingRowNumbers.addAll(rowNumbers);
             } catch (Exception e) {
                 LOGGER.error(String.format("Failed to save family revision with number: %s", currentFamilyRevisionNumber), e);
             }
+            isLastNameClearlyStated = true;
             rowNumbers.clear();
             familyRevision.clear();
         }

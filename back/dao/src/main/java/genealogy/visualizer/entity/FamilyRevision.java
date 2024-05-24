@@ -68,6 +68,10 @@ public class FamilyRevision implements Serializable {
     @Comment("Является ли главой двора")
     private Boolean isHeadOfYard = false;
 
+    @Column(nullable = false)
+    @Comment("Фамилия в документе указана явно, true - явно, false - выведена")
+    private Boolean isLastNameClearlyStated = true;
+
     @Embedded
     private FullName fullName;
 
@@ -140,13 +144,14 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, FullName fullName, Age age, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, Boolean isLastNameClearlyStated, FullName fullName, Age age, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.partner = partner;
         this.familyRevisionNumber = familyRevisionNumber;
         this.nextFamilyRevisionNumber = nextFamilyRevisionNumber;
         this.listNumber = listNumber;
         this.isHeadOfYard = isHeadOfYard;
+        this.isLastNameClearlyStated = isLastNameClearlyStated;
         this.fullName = fullName;
         this.age = age;
         this.ageInNextRevision = ageInNextRevision;
@@ -207,6 +212,14 @@ public class FamilyRevision implements Serializable {
 
     public void setHeadOfYard(Boolean headOfYard) {
         isHeadOfYard = headOfYard;
+    }
+
+    public Boolean getLastNameClearlyStated() {
+        return isLastNameClearlyStated;
+    }
+
+    public void setLastNameClearlyStated(Boolean lastNameClearlyStated) {
+        isLastNameClearlyStated = lastNameClearlyStated;
     }
 
     public FullName getFullName() {

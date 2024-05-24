@@ -13,18 +13,22 @@ import java.util.List;
 public interface FamilyRevisionMapper {
 
     @Mapping(target = "headOfYard", source = "isHeadOfYard")
+    @Mapping(target = "lastNameClearlyStated", source = "isLastNameClearlyStated")
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "partner", expression = "java(this.fromEasyDTO(familyMember.getPartner()))")
     genealogy.visualizer.entity.FamilyRevision toEntity(FamilyMember familyMember);
 
     @Mapping(target = "isHeadOfYard", source = "headOfYard")
+    @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
     @Mapping(target = "partner", expression = "java(this.toEasyDTO(familyMember.getPartner()))")
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
 
     @Mapping(target = "isHeadOfYard", source = "headOfYard")
+    @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
     EasyFamilyMember toEasyDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
 
     @Mapping(target = "headOfYard", source = "isHeadOfYard")
+    @Mapping(target = "lastNameClearlyStated", source = "isLastNameClearlyStated")
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "partner", ignore = true)
     genealogy.visualizer.entity.FamilyRevision fromEasyDTO(EasyFamilyMember familyMember);

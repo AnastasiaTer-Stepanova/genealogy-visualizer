@@ -5,6 +5,7 @@ required:
   - familyGeneration
   - familyRevisionNumber
   - isHeadOfYard
+  - isLastNameClearlyStated
   - sex
   - archiveDocument
 properties:
@@ -45,6 +46,12 @@ properties:
   isHeadOfYard:
     description: Является ли главой семьи
     type: boolean
+    default: false
+    example: true
+  isLastNameClearlyStated:
+    description: Фамилия в документе указана явно, true - явно, false - выведена
+    type: boolean
+    default: true
     example: true
   familyGeneration:
     description: Поколение в семье
