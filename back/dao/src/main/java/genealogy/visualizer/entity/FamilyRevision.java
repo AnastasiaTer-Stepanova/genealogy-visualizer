@@ -33,7 +33,6 @@ import java.util.List;
 @Entity
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(name = "UK_FAMILY_REVISION_PERSON_ID", columnNames = {"PERSON_ID"}),
                 @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
         },
         indexes = {

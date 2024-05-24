@@ -91,15 +91,25 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     }
 
     @Override
-    public List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId, short familyNumber) {
-        return familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(archiveDocumentId, familyNumber)
-                .orElse(Collections.emptyList());
+    public List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId,
+                                                                                      short familyNumber,
+                                                                                      boolean isFindWithHavePerson) {
+        return isFindWithHavePerson ?
+                familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(archiveDocumentId, familyNumber)
+                        .orElse(Collections.emptyList()) :
+                familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentIdWithoutPerson(archiveDocumentId, familyNumber)
+                        .orElse(Collections.emptyList());
     }
 
     @Override
-    public List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId, short familyNumber) {
-        return familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(archiveDocumentId, familyNumber)
-                .orElse(Collections.emptyList());
+    public List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId,
+                                                                                                  short familyNumber,
+                                                                                                  boolean isFindWithHavePerson) {
+        return isFindWithHavePerson ?
+                familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(archiveDocumentId, familyNumber)
+                        .orElse(Collections.emptyList()) :
+                familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentIdWithoutPerson(archiveDocumentId, familyNumber)
+                        .orElse(Collections.emptyList());
     }
 
     @Override

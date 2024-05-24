@@ -242,7 +242,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 })
                 .toList();
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false);
+        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false, true);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
         String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
@@ -266,7 +266,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Disabled
     void findFamilyRevisionNullTest() throws Exception {
         generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false);
+        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false, true);
         String objectString = objectMapper.writeValueAsString(filterRequest);
         String responseJson = mockMvc.perform(
                         post("/family-revision/family")
@@ -285,7 +285,29 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     @Test
-    void findFamilyRevisionsAllInfoTest() throws Exception {
+    void findFamilyRevisionsAllInfoWithPersonTest() throws Exception {
+        findFamilyRevisionsAllInfoTest(true);
+    }
+
+    @Test
+    void findFamilyRevisionsAllInfoWithoutPersonTest() throws Exception {
+        findFamilyRevisionsAllInfoTest(false);
+    }
+
+    void findFamilyRevisionsAllInfoTest(boolean isFindWithHavePerson) throws Exception {
+        genealogy.visualizer.entity.Person person = generator.nextObject(genealogy.visualizer.entity.Person.class);
+        person.setBirthLocality(localityExisting);
+        person.setDeathLocality(localityExisting);
+        person.setChristening(null);
+        person.setDeath(null);
+        person.setMarriages(null);
+        person.setRevisions(null);
+        person.setParents(null);
+        person.setPartners(null);
+        person.setChildren(null);
+        person.setId(null);
+        person = personRepository.saveAndFlush(person);
+        personIds.add(person.getId());
         genealogy.visualizer.entity.ArchiveDocument adParent = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adParent.setArchive(archiveExisting);
         adParent = archiveDocumentRepository.saveAndFlush(adParent);
@@ -323,6 +345,12 @@ class FamilyRevisionControllerTest extends IntegrationTest {
             if ((i % 5) == 0) {
                 familyRevision.setArchiveDocument(adParent);
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberParent);
+                if (generator.nextBoolean()) {
+                    familyRevision.setPerson(person);
+                    if (!isFindWithHavePerson) {
+                        continue;
+                    }
+                }
                 adParentCount++;
                 continue;
             }
@@ -330,6 +358,12 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setArchiveDocument(adChildLevel1);
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberChildLevel1);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberParent);
+                if (generator.nextBoolean()) {
+                    familyRevision.setPerson(person);
+                    if (!isFindWithHavePerson) {
+                        continue;
+                    }
+                }
                 adChildLevel1Count++;
                 continue;
             }
@@ -337,6 +371,12 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setArchiveDocument(adSecondChildLevel1);
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberSecondChildLeve1);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberParent);
+                if (generator.nextBoolean()) {
+                    familyRevision.setPerson(person);
+                    if (!isFindWithHavePerson) {
+                        continue;
+                    }
+                }
                 adSecondChildLevel1Count++;
                 continue;
             }
@@ -344,15 +384,24 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setArchiveDocument(adChildLevel2);
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberChildLeve2);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberChildLevel1);
+                if (generator.nextBoolean()) {
+                    familyRevision.setPerson(person);
+                    if (!isFindWithHavePerson) {
+                        continue;
+                    }
+                }
                 adChildLevel2Count++;
                 continue;
             }
             if (generator.nextBoolean()) {
                 familyRevision.setArchiveDocument(adSecondChildLevel1);
             }
+            if (generator.nextBoolean()) {
+                familyRevision.setPerson(person);
+            }
         }
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true);
+        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true, isFindWithHavePerson);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
         String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
@@ -375,6 +424,9 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                         existFamilyRevisionMap.get(family.getArchive().getId())
                                 .stream()
                                 .filter(familyRevision -> {
+                                    if (!isFindWithHavePerson && familyRevision.getPerson() != null) {
+                                        return false;
+                                    }
                                     if (familyRevision.getArchiveDocument().getId().equals(adParentId)) {
                                         return familyRevision.getFamilyRevisionNumber().equals(familyRevisionNumberParent);
                                     }
@@ -419,6 +471,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     void tearDown() {
         System.out.println("----------------------End test------------------------");
         familyRevisionRepository.deleteAllById(familyRevisionIds);
+        personRepository.deleteAllById(personIds);
         super.tearDown();
     }
 

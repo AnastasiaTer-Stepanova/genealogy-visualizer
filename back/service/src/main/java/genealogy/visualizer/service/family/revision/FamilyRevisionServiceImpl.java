@@ -83,7 +83,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 !archiveDocumentEntity.getPreviousRevisions().isEmpty() || archiveDocumentEntity.getNextRevision() != null)) {
             return familyMembers
                     .stream()
-                    .map(this::getFamilyMemberFullInfo)
+                    .map(fm -> getFamilyMemberFullInfo(fm, familyMemberFilter.getIsFindWithHavePerson()))
                     .toList();
         }
         return familyMembers
@@ -92,7 +92,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 .toList();
     }
 
-    private FamilyMemberFullInfo getFamilyMemberFullInfo(FamilyRevision familyMember) {
+    private FamilyMemberFullInfo getFamilyMemberFullInfo(FamilyRevision familyMember, Boolean isFindWithHavePerson) {
         FamilyMemberFullInfo fullInfo = new FamilyMemberFullInfo();
         fullInfo.setFamilyMember(familyRevisionMapper.toDTO(familyMember));
         ArchiveDocument archiveDocument = familyMember.getArchiveDocument();
@@ -109,16 +109,23 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 archiveDocumentMap.put(archiveDocument, familyRevisionMapper.toListDTO(
                         familyRevisionDAO.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(
                                 archiveDocument.getId(),
-                                familyMember.getNextFamilyRevisionNumber())));
+                                familyMember.getNextFamilyRevisionNumber(),
+                                isFindWithHavePerson)));
             } while (archiveDocument.getNextRevision() != null);
         }
 
         List<FamilyMember> lastFamily = archiveDocumentMap.get(archiveDocument);
         if (lastFamily == null) {
-            archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap, archiveDocument, familyMember.getFamilyRevisionNumber());
+            archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap,
+                    archiveDocument,
+                    familyMember.getFamilyRevisionNumber(),
+                    isFindWithHavePerson);
         } else {
             for (FamilyMember lastFamilyMember : lastFamily) {
-                archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap, archiveDocument, lastFamilyMember.getFamilyRevisionNumber().shortValue());
+                archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap,
+                        archiveDocument,
+                        lastFamilyMember.getFamilyRevisionNumber().shortValue(),
+                        isFindWithHavePerson);
             }
         }
 
@@ -136,7 +143,9 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
     }
 
     private Map<ArchiveDocument, List<FamilyMember>> getArchiveWithFamilyMembers(Map<ArchiveDocument, List<FamilyMember>> archiveDocumentMap,
-                                                                                 ArchiveDocument archiveDocument, Short familyRevisionNumber) {
+                                                                                 ArchiveDocument archiveDocument,
+                                                                                 Short familyRevisionNumber,
+                                                                                 Boolean isFindWithHavePerson) {
         if (archiveDocument.getPreviousRevisions() == null || archiveDocument.getPreviousRevisions().isEmpty()) {
             return archiveDocumentMap;
         }
@@ -145,11 +154,15 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             List<FamilyMember> members = familyRevisionMapper.toListDTO(
                     familyRevisionDAO.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(
                             archiveDocumentPrevious.getId(),
-                            familyRevisionNumber));
+                            familyRevisionNumber,
+                            isFindWithHavePerson));
             archiveDocumentMap.put(archiveDocumentPrevious, members);
             if (members != null && !members.isEmpty()) {
                 for (FamilyMember familyMember : members) {
-                    archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap, archiveDocumentPrevious, familyMember.getFamilyRevisionNumber().shortValue());
+                    archiveDocumentMap = getArchiveWithFamilyMembers(archiveDocumentMap,
+                            archiveDocumentPrevious,
+                            familyMember.getFamilyRevisionNumber().shortValue(),
+                            isFindWithHavePerson);
                 }
             }
         }
