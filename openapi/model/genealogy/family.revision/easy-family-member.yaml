@@ -8,6 +8,11 @@ required:
   - sex
   - archiveDocument
 properties:
+  id:
+    description: Идентификатор
+    type: integer
+    format: int64
+    example: 124353
   familyRevisionNumber:
     description: Номер семьи в текущей ревизии
     type: integer

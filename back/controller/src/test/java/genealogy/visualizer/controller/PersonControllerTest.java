@@ -54,9 +54,9 @@ class PersonControllerTest extends IntegrationTest {
     @Test
     void updateDeleteLinksTest() throws Exception {
         Person person = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person, cycleAvoidingMappingContext);
+        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person);
         personEntity = personDAO.save(personEntity);
-        Person personSave = personMapper.toDTO(personEntity, cycleAvoidingMappingContext);
+        Person personSave = personMapper.toDTO(personEntity);
         updateIds(personSave);
         assertPerson(personSave, person);
         personSave.setBirthLocality(null);
@@ -80,7 +80,7 @@ class PersonControllerTest extends IntegrationTest {
     @Test
     void updateAddLinksTest() throws Exception {
         Person personSave = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(personSave, cycleAvoidingMappingContext);
+        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(personSave);
         personEntity.setBirthLocality(null);
         personEntity.setDeathLocality(null);
         personEntity.setDeath(null);
@@ -106,7 +106,7 @@ class PersonControllerTest extends IntegrationTest {
     @Test
     void deleteTest() throws Exception {
         Person person = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person, cycleAvoidingMappingContext);
+        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person);
         personEntity = personDAO.save(personEntity);
         updateIds(personEntity);
         String responseJson = deleteRequest(PATH + "/" + personEntity.getId());
@@ -126,7 +126,7 @@ class PersonControllerTest extends IntegrationTest {
     @Test
     void getByIdTest() throws Exception {
         Person person = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person, cycleAvoidingMappingContext);
+        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person);
         personEntity = personDAO.save(personEntity);
         updateIds(personEntity);
         String responseJson = getRequest(PATH + "/" + personEntity.getId());
@@ -159,6 +159,7 @@ class PersonControllerTest extends IntegrationTest {
         FamilyMember familyMember = generator.nextObject(FamilyMember.class);
         familyMember.setArchiveDocument(archiveDocumentExisting);
         familyMember.setId(null);
+        familyMember.getPartner().setId(null);
         Christening christening = generator.nextObject(Christening.class);
         christening.setId(null);
         Death death = generator.nextObject(Death.class);
@@ -274,9 +275,14 @@ class PersonControllerTest extends IntegrationTest {
                         .filter(Objects::nonNull).toList());
             }
             if (person.getRevisions() != null && !person.getRevisions().isEmpty()) {
-                familyRevisionIds.addAll(person.getRevisions().stream()
-                        .map(r -> r.getId() != null ? r.getId() : null)
-                        .filter(Objects::nonNull).toList());
+                person.getRevisions().forEach(r -> {
+                    if (r.getId() != null) {
+                        familyRevisionIds.add(r.getId());
+                    }
+                    if (r.getPartner() != null && r.getPartner().getId() != null) {
+                        familyRevisionIds.add(r.getPartner().getId());
+                    }
+                });
             }
             if (person.getChildren() != null && !person.getChildren().isEmpty()) {
                 personIds.addAll(person.getChildren().stream()
@@ -320,6 +326,11 @@ class PersonControllerTest extends IntegrationTest {
                 familyRevisionIds.addAll(person.getRevisions().stream()
                         .map(r -> r.getId() != null ? r.getId() : null)
                         .filter(Objects::nonNull).toList());
+                person.getRevisions().forEach(r -> {
+                    if (r.getPartner() != null && r.getPartner().getId() != null) {
+                        familyRevisionIds.add(r.getPartner().getId());
+                    }
+                });
             }
             if (person.getChildren() != null && !person.getChildren().isEmpty()) {
                 personIds.addAll(person.getChildren().stream()

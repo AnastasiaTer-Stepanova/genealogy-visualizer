@@ -4,7 +4,6 @@ import genealogy.visualizer.api.FamilyRevisionApi;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
-import genealogy.visualizer.api.model.FamilyMemberSave;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,8 +31,8 @@ public class FamilyRevisionController implements FamilyRevisionApi {
     }
 
     @Override
-    public ResponseEntity<FamilyMember> save(FamilyMemberSave familyMemberSave) {
-        return ResponseEntity.ok(familyRevisionService.save(familyMemberSave));
+    public ResponseEntity<FamilyMember> save(FamilyMember familyMember) {
+        return ResponseEntity.ok(familyRevisionService.save(familyMember));
     }
 
     @Override

@@ -57,7 +57,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/family.revision/family-member-save.yaml"
+              $ref: "#/components/schemas/FamilyMember"
         required: true
       responses:
         200:

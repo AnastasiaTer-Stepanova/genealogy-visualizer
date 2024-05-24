@@ -10,7 +10,6 @@ import genealogy.visualizer.api.model.FullName;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
-import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.mapper.LocalityMapper;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
@@ -97,7 +96,6 @@ class IntegrationTest {
     Locality localityExisting;
 
     Archive archiveExisting;
-    static CycleAvoidingMappingContext cycleAvoidingMappingContext = new CycleAvoidingMappingContext();
 
     static EasyRandom generator;
 
@@ -130,7 +128,7 @@ class IntegrationTest {
         archiveRepository.saveAndFlush(archiveExisting);
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         archiveDocumentEntity.setArchive(archiveExisting);
-        archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity), cycleAvoidingMappingContext);
+        archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity));
         archiveIds.add(archiveDocumentExisting.getArchive().getId());
         archiveDocumentIds.add(archiveDocumentExisting.getId());
         System.out.println("----------------------Start test------------------------");

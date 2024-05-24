@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
+import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
-import genealogy.visualizer.api.model.FamilyMemberSave;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -47,7 +47,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         Archive archiveSave = generator.nextObject(Archive.class);
         ArchiveDocument archiveDocumentSave = generator.nextObject(ArchiveDocument.class);
         archiveDocumentSave.setArchive(archiveSave);
-        FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
+        FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
+        revisionSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentSave);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
@@ -58,8 +59,10 @@ class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Test
     void saveWithPartnerTest() throws Exception {
-        FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
-        FamilyMember revisionPartnerSave = generator.nextObject(FamilyMember.class);
+        FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
+        revisionSave.setId(null);
+        EasyFamilyMember revisionPartnerSave = generator.nextObject(EasyFamilyMember.class);
+        revisionPartnerSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentExisting);
         revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionSave.setPartner(revisionPartnerSave);
@@ -77,7 +80,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     void saveWithExistingArchiveTest() throws Exception {
         ArchiveDocument archiveDocumentSave = generator.nextObject(ArchiveDocument.class);
         archiveDocumentSave.setArchive(archiveDocumentExisting.getArchive());
-        FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
+        FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
+        revisionSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentSave);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
@@ -88,7 +92,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Test
     void saveWithExistingArchiveDocumentTest() throws Exception {
-        FamilyMemberSave revisionSave = generator.nextObject(FamilyMemberSave.class);
+        FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
+        revisionSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentExisting);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
@@ -100,7 +105,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
         String responseJson = getRequest(PATH + "/" + revisionExist.getId());
         FamilyMember response = getFamilyRevisionFromJson(responseJson);
@@ -129,10 +134,11 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void updateParentExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
-        FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist, cycleAvoidingMappingContext);
-        FamilyMember revisionPartnerSave = generator.nextObject(FamilyMember.class);
+        FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist);
+        EasyFamilyMember revisionPartnerSave = generator.nextObject(EasyFamilyMember.class);
+        revisionPartnerSave.setId(null);
         revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionUpdate.setPartner(revisionPartnerSave);
         revisionUpdate.setAnotherNames(generator.objects(String.class, 4).toList());
@@ -172,16 +178,16 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void updateAnotherNamesExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         revisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         genealogy.visualizer.entity.FamilyRevision partnerRevisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         partnerRevisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAllAndFlush(List.of(revisionSave, partnerRevisionSave)).getFirst();
         familyRevisionIds.add(revisionExist.getPartner().getId());
-        FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist, cycleAvoidingMappingContext);
+        FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist);
         revisionUpdate.setPartner(null);
         revisionUpdate.setAnotherNames(List.of(revisionUpdate.getAnotherNames().getFirst(), generator.nextObject(String.class)));
         String requestJson = objectMapper.writeValueAsString(revisionUpdate);
@@ -195,10 +201,10 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     void deleteExistingTest() throws Exception {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        revisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         revisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         genealogy.visualizer.entity.FamilyRevision partnerRevisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
-        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+        partnerRevisionSave.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
         partnerRevisionSave.setAnotherNames(generator.objects(String.class, 4).toList());
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
@@ -225,7 +231,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         short familyRevisionNumber = (short) generator.nextInt(10000, 20000);
         familyRevisionList = familyRevisionList.stream().peek(familyRevision -> {
                     if (generator.nextBoolean()) {
-                        familyRevision.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting, cycleAvoidingMappingContext));
+                        familyRevision.setArchiveDocument(archiveDocumentMapper.toEntity(archiveDocumentExisting));
                         if (generator.nextBoolean()) {
                             familyRevision.setFamilyRevisionNumber(familyRevisionNumber);
                         }
@@ -429,27 +435,46 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         return response;
     }
 
-    protected static void assertFamilyRevision(FamilyMember familyRevision, FamilyMemberSave familyRevisionSave) {
+    protected static void assertFamilyRevision(FamilyMember familyRevision, EasyFamilyMember easyFamilyMember) {
         assertNotNull(familyRevision);
-        assertNotNull(familyRevisionSave);
-        assertEquals(familyRevision.getFamilyRevisionNumber(), familyRevisionSave.getFamilyRevisionNumber());
-        assertEquals(familyRevision.getNextFamilyRevisionNumber(), familyRevisionSave.getNextFamilyRevisionNumber());
-        assertEquals(familyRevision.getListNumber(), familyRevisionSave.getListNumber());
-        assertEquals(familyRevision.getDeparted(), familyRevisionSave.getDeparted());
-        assertEquals(familyRevision.getArrived(), familyRevisionSave.getArrived());
-        assertEquals(familyRevision.getIsHeadOfYard(), familyRevisionSave.getIsHeadOfYard());
-        assertEquals(familyRevision.getFamilyGeneration(), familyRevisionSave.getFamilyGeneration());
-        assertEquals(familyRevision.getComment(), familyRevisionSave.getComment());
-        assertArchiveDocument(familyRevision.getArchiveDocument(), familyRevisionSave.getArchiveDocument());
-        assertEquals(familyRevision.getSex(), familyRevisionSave.getSex());
-        assertEquals(familyRevision.getFullName(), familyRevisionSave.getFullName());
-        assertEquals(familyRevision.getRelative(), familyRevisionSave.getRelative());
-        assertEquals(familyRevision.getAge(), familyRevisionSave.getAge());
-        assertEquals(familyRevision.getAgeInNextRevision(), familyRevisionSave.getAgeInNextRevision());
-        assertEquals(familyRevision.getAnotherNames(), familyRevisionSave.getAnotherNames());
-        if (familyRevisionSave.getPartner() == null) {
-            assertNull(familyRevision.getPartner());
-        }
+        assertNotNull(easyFamilyMember);
+        assertEquals(familyRevision.getFamilyRevisionNumber(), easyFamilyMember.getFamilyRevisionNumber());
+        assertEquals(familyRevision.getNextFamilyRevisionNumber(), easyFamilyMember.getNextFamilyRevisionNumber());
+        assertEquals(familyRevision.getListNumber(), easyFamilyMember.getListNumber());
+        assertEquals(familyRevision.getDeparted(), easyFamilyMember.getDeparted());
+        assertEquals(familyRevision.getArrived(), easyFamilyMember.getArrived());
+        assertEquals(familyRevision.getIsHeadOfYard(), easyFamilyMember.getIsHeadOfYard());
+        assertEquals(familyRevision.getFamilyGeneration(), easyFamilyMember.getFamilyGeneration());
+        assertEquals(familyRevision.getComment(), easyFamilyMember.getComment());
+        assertArchiveDocument(familyRevision.getArchiveDocument(), easyFamilyMember.getArchiveDocument());
+        assertEquals(familyRevision.getSex(), easyFamilyMember.getSex());
+        assertEquals(familyRevision.getFullName(), easyFamilyMember.getFullName());
+        assertEquals(familyRevision.getRelative(), easyFamilyMember.getRelative());
+        assertEquals(familyRevision.getAge(), easyFamilyMember.getAge());
+        assertEquals(familyRevision.getAgeInNextRevision(), easyFamilyMember.getAgeInNextRevision());
+        assertEquals(familyRevision.getAnotherNames(), easyFamilyMember.getAnotherNames());
+        assertNull(familyRevision.getPartner());
+        assertNotNull(familyRevision.getId());
+    }
+
+    protected static void assertFamilyRevision(EasyFamilyMember familyRevision, EasyFamilyMember easyFamilyMember) {
+        assertNotNull(familyRevision);
+        assertNotNull(easyFamilyMember);
+        assertEquals(familyRevision.getFamilyRevisionNumber(), easyFamilyMember.getFamilyRevisionNumber());
+        assertEquals(familyRevision.getNextFamilyRevisionNumber(), easyFamilyMember.getNextFamilyRevisionNumber());
+        assertEquals(familyRevision.getListNumber(), easyFamilyMember.getListNumber());
+        assertEquals(familyRevision.getDeparted(), easyFamilyMember.getDeparted());
+        assertEquals(familyRevision.getArrived(), easyFamilyMember.getArrived());
+        assertEquals(familyRevision.getIsHeadOfYard(), easyFamilyMember.getIsHeadOfYard());
+        assertEquals(familyRevision.getFamilyGeneration(), easyFamilyMember.getFamilyGeneration());
+        assertEquals(familyRevision.getComment(), easyFamilyMember.getComment());
+        assertArchiveDocument(familyRevision.getArchiveDocument(), easyFamilyMember.getArchiveDocument());
+        assertEquals(familyRevision.getSex(), easyFamilyMember.getSex());
+        assertEquals(familyRevision.getFullName(), easyFamilyMember.getFullName());
+        assertEquals(familyRevision.getRelative(), easyFamilyMember.getRelative());
+        assertEquals(familyRevision.getAge(), easyFamilyMember.getAge());
+        assertEquals(familyRevision.getAgeInNextRevision(), easyFamilyMember.getAgeInNextRevision());
+        assertEquals(familyRevision.getAnotherNames(), easyFamilyMember.getAnotherNames());
         assertNotNull(familyRevision.getId());
     }
 

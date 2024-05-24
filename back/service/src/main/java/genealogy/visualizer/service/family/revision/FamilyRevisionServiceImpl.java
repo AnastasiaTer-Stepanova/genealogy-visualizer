@@ -4,11 +4,9 @@ import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
-import genealogy.visualizer.api.model.FamilyMemberSave;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
-import genealogy.visualizer.mapper.CycleAvoidingMappingContext;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
@@ -23,8 +21,6 @@ import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
 import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
 
 public class FamilyRevisionServiceImpl implements FamilyRevisionService {
-
-    private static final CycleAvoidingMappingContext mappingContext = new CycleAvoidingMappingContext();
 
     private final FamilyRevisionDAO familyRevisionDAO;
     private final ArchiveDocumentDAO archiveDocumentDAO;
@@ -52,22 +48,22 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         if (entity == null) {
             throw new RuntimeException(NOT_FOUND_ERROR);
         }
-        return familyRevisionMapper.toDTO(entity, mappingContext);
+        return familyRevisionMapper.toDTO(entity);
     }
 
     @Override
-    public FamilyMember save(FamilyMemberSave familyRevisionSave) {
-        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.save(familyRevisionMapper.toEntity(familyRevisionSave, mappingContext));
-        return familyRevisionMapper.toDTO(entity, mappingContext);
+    public FamilyMember save(FamilyMember familyMember) {
+        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.save(familyRevisionMapper.toEntity(familyMember));
+        return familyRevisionMapper.toDTO(entity);
     }
 
     @Override
     public FamilyMember update(FamilyMember familyRevision) {
-        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision, mappingContext));
+        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision));
         if (entity == null) {
             throw new RuntimeException(NOT_FOUND_ERROR);
         }
-        return familyRevisionMapper.toDTO(entity, mappingContext);
+        return familyRevisionMapper.toDTO(entity);
     }
 
     @Override
@@ -92,13 +88,13 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         }
         return familyMembers
                 .stream()
-                .map(fr -> new FamilyMemberFullInfo().familyMember(familyRevisionMapper.toDTO(fr, mappingContext)))
+                .map(fr -> new FamilyMemberFullInfo().familyMember(familyRevisionMapper.toDTO(fr)))
                 .toList();
     }
 
     private FamilyMemberFullInfo getFamilyMemberFullInfo(FamilyRevision familyMember) {
         FamilyMemberFullInfo fullInfo = new FamilyMemberFullInfo();
-        fullInfo.setFamilyMember(familyRevisionMapper.toDTO(familyMember, mappingContext));
+        fullInfo.setFamilyMember(familyRevisionMapper.toDTO(familyMember));
         ArchiveDocument archiveDocument = familyMember.getArchiveDocument();
         if (archiveDocument == null || archiveDocument.getNextRevision() == null && (archiveDocument.getPreviousRevisions() == null
                 || archiveDocument.getPreviousRevisions().isEmpty())) {
@@ -113,8 +109,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 archiveDocumentMap.put(archiveDocument, familyRevisionMapper.toListDTO(
                         familyRevisionDAO.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(
                                 archiveDocument.getId(),
-                                familyMember.getNextFamilyRevisionNumber()),
-                        mappingContext));
+                                familyMember.getNextFamilyRevisionNumber())));
             } while (archiveDocument.getNextRevision() != null);
         }
 
@@ -132,7 +127,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 .map(map -> {
                     if (map.getValue() == null || map.getValue().isEmpty()) return null;
                     return new ArchiveWithFamilyMembers()
-                            .archive(archiveDocumentMapper.toDTO(map.getKey(), mappingContext))
+                            .archive(archiveDocumentMapper.toDTO(map.getKey()))
                             .families(map.getValue());
                 })
                 .filter(Objects::nonNull)
@@ -150,8 +145,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             List<FamilyMember> members = familyRevisionMapper.toListDTO(
                     familyRevisionDAO.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(
                             archiveDocumentPrevious.getId(),
-                            familyRevisionNumber),
-                    mappingContext);
+                            familyRevisionNumber));
             archiveDocumentMap.put(archiveDocumentPrevious, members);
             if (members != null && !members.isEmpty()) {
                 for (FamilyMember familyMember : members) {

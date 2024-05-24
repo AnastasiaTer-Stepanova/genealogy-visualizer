@@ -2,7 +2,6 @@ package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.Person;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -31,7 +30,7 @@ public interface PersonMapper {
     Set<EasyPerson> toEasyPersonDTO(List<genealogy.visualizer.entity.Person> person);
 
     @Mapping(target = "partners[].partners", ignore = true)
-    Person toDTO(genealogy.visualizer.entity.Person person, @Context CycleAvoidingMappingContext context);
+    Person toDTO(genealogy.visualizer.entity.Person person);
 
-    genealogy.visualizer.entity.Person toEntity(Person person,  @Context CycleAvoidingMappingContext context);
+    genealogy.visualizer.entity.Person toEntity(Person person);
 }

@@ -1,8 +1,7 @@
 package genealogy.visualizer.mapper;
 
+import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.FamilyMember;
-import genealogy.visualizer.api.model.FamilyMemberSave;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -15,17 +14,20 @@ public interface FamilyRevisionMapper {
 
     @Mapping(target = "headOfYard", source = "isHeadOfYard")
     @Mapping(target = "person", ignore = true)
-    genealogy.visualizer.entity.FamilyRevision toEntity(FamilyMember member, @Context CycleAvoidingMappingContext context);
-
-    @Mapping(target = "headOfYard", source = "isHeadOfYard")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "person", ignore = true)
-    genealogy.visualizer.entity.FamilyRevision toEntity(FamilyMemberSave member, @Context CycleAvoidingMappingContext context);
+    @Mapping(target = "partner", expression = "java(this.fromEasyDTO(familyMember.getPartner()))")
+    genealogy.visualizer.entity.FamilyRevision toEntity(FamilyMember familyMember);
 
     @Mapping(target = "isHeadOfYard", source = "headOfYard")
-    @Mapping(target = "partner.isHeadOfYard", source = "partner.headOfYard")
-    @Mapping(target = "partner.partner", ignore = true)
-    FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision family, @Context CycleAvoidingMappingContext context);
+    @Mapping(target = "partner", expression = "java(this.toEasyDTO(familyMember.getPartner()))")
+    FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
 
-    List<FamilyMember> toListDTO(List<genealogy.visualizer.entity.FamilyRevision> family, @Context CycleAvoidingMappingContext context);
+    @Mapping(target = "isHeadOfYard", source = "headOfYard")
+    EasyFamilyMember toEasyDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
+
+    @Mapping(target = "headOfYard", source = "isHeadOfYard")
+    @Mapping(target = "person", ignore = true)
+    @Mapping(target = "partner", ignore = true)
+    genealogy.visualizer.entity.FamilyRevision fromEasyDTO(EasyFamilyMember familyMember);
+
+    List<FamilyMember> toListDTO(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
 }

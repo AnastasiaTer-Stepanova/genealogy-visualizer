@@ -1,7 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.ArchiveDocument;
-import org.mapstruct.Context;
+import genealogy.visualizer.api.model.EasyArchiveDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -15,13 +15,24 @@ public interface ArchiveDocumentMapper extends CommonMapper {
     @Mapping(target = "christenings", ignore = true)
     @Mapping(target = "marriages", ignore = true)
     @Mapping(target = "deaths", ignore = true)
-    genealogy.visualizer.entity.ArchiveDocument toEntity(ArchiveDocument archiveDocument, @Context CycleAvoidingMappingContext context);
+    genealogy.visualizer.entity.ArchiveDocument toEntity(ArchiveDocument archiveDocument);
 
-    @Mapping(target = "nextRevision.nextRevision", ignore = true)
-    @Mapping(target = "nextRevision.previousRevisions", ignore = true)
+    @Mapping(target = "nextRevision", expression = "java(this.toEasyDTO(archiveDocument.getNextRevision()))")
+    @Mapping(target = "previousRevisions", expression = "java(this.toEasyDTOs(archiveDocument.getPreviousRevisions()))")
+    ArchiveDocument toDTO(genealogy.visualizer.entity.ArchiveDocument archiveDocument);
+
+    EasyArchiveDocument toEasyDTO(genealogy.visualizer.entity.ArchiveDocument archiveDocument);
+
+    List<EasyArchiveDocument> toEasyDTOs(List<genealogy.visualizer.entity.ArchiveDocument> archiveDocument);
+
+    @Mapping(target = "familyRevisions", ignore = true)
+    @Mapping(target = "christenings", ignore = true)
+    @Mapping(target = "marriages", ignore = true)
+    @Mapping(target = "deaths", ignore = true)
     @Mapping(target = "previousRevisions", ignore = true)
-    ArchiveDocument toDTO(genealogy.visualizer.entity.ArchiveDocument archiveDocument, @Context CycleAvoidingMappingContext context);
+    @Mapping(target = "nextRevision", ignore = true)
+    genealogy.visualizer.entity.ArchiveDocument fromEasyDTO(EasyArchiveDocument easyArchiveDocument);
 
-    List<ArchiveDocument> toDTO(List<genealogy.visualizer.entity.ArchiveDocument> archiveDocument, @Context CycleAvoidingMappingContext context);
+    List<ArchiveDocument> toDTO(List<genealogy.visualizer.entity.ArchiveDocument> archiveDocument);
 
 }

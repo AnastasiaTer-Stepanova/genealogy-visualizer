@@ -48,6 +48,11 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
         if (familyRevision.getPartner() != null && familyRevision.getPartner().getFullName() != null &&
                 familyRevision.getPartner().getFullName().getName() != null) {
             FamilyRevision partner = familyRevision.getPartner();
+            ArchiveDocument partnerArchiveDocument = partner.getArchiveDocument();
+            if (partnerArchiveDocument != null && partnerArchiveDocument.getId() == null) {
+                partnerArchiveDocument = archiveDocumentDAO.saveOrFindIfExistDocument(partnerArchiveDocument);
+                partner.setArchiveDocument(partnerArchiveDocument);
+            }
             partner.setPartner(familyRevision);
             List<FamilyRevision> result = familyRevisionRepository.saveAll(List.of(familyRevision, partner));
             return result.getFirst();
