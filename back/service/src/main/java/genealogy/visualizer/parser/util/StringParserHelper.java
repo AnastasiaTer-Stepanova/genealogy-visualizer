@@ -23,7 +23,7 @@ import static org.apache.commons.lang3.StringUtils.contains;
 public class StringParserHelper {
 
     private static final Set<String> RELATIVE = Set.of("брат мужа", "муж", "отец", "брат", "племянник", "дядя", "отчим", "дед", "мать",
-                    "свекр", "брат двоюродный", "брат сводный")
+                    "свекр", "брат двоюродный", "брат сводный", "сестра близнец", "дядя по мужу")
             .stream()
             .sorted(StringParserHelper::sortSet)
             .collect(Collectors.toCollection(LinkedHashSet::new));
