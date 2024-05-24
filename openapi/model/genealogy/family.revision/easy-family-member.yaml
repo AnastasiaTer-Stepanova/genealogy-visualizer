@@ -1,0 +1,73 @@
+description: Данные из переписи (РС/ИВ/ПП) для сохранения или обновления
+type: object
+required:
+  - fullName
+  - familyGeneration
+  - familyRevisionNumber
+  - isHeadOfYard
+  - sex
+  - archiveDocument
+properties:
+  familyRevisionNumber:
+    description: Номер семьи в текущей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  nextFamilyRevisionNumber:
+    description: Номер семьи в следующей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  listNumber:
+    description: Номер страницы в деле, на котором указана семья
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  departed:
+    description: Комментарий о выбытии/смерти/рекрутинга в армию
+    type: string
+    example: "умер"
+  arrived:
+    description: Комментарий о том откуда прибыли
+    type: string
+    example: "из Восточной слободы"
+  isHeadOfYard:
+    description: Является ли главой семьи
+    type: boolean
+    example: true
+  familyGeneration:
+    description: Поколение в семье
+    type: integer
+    format: byte
+    minimum: 1
+    maximum: 5
+    example: 4
+  comment:
+    description: Комментарий
+    type: string
+    example: "переселенцы из Сибири"
+  archiveDocument:
+    $ref: "./../archive/archive-document.yaml"
+  sex:
+    $ref: "./../../common/sex.yaml"
+  fullName:
+    $ref: "./../../common/full-name.yaml"
+  relative:
+    $ref: "./../../common/full-name.yaml"
+  age:
+    $ref: "./../../common/age.yaml"
+  ageInNextRevision:
+    $ref: "./../../common/age.yaml"
+  anotherNames:
+    description: Другие фамилии
+    type: array
+    items:
+      description: Фимилия
+      type: string
+      example: "Стебунов"
