@@ -1,0 +1,37 @@
+.css-1rszp2j-JoyAutocomplete-listbox {
+    background-color: rgba(218, 235, 255, 0.5) !important;
+    color: rgba(255, 255, 255, 1) !important;
+}
+.css-181aw53-JoyAutocomplete-option:not(.Mui-selected, [aria-selected="true"]):hover {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.css-181aw53-JoyAutocomplete-option:not(.Mui-selected, [aria-selected="true"]):active {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+.css-181aw53-JoyAutocomplete-option[aria-selected="true"] {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+.css-181aw53-JoyAutocomplete-option {
+    color: white !important;
+}
+
+.css-1rszp2j-JoyAutocomplete-listbox {
+    padding-left: 2rem !important;
+}
+.css-1b04z1z-JoyAutocomplete-input {
+    padding-left: 0.7rem !important;
+
+}
+.MuiAutocomplete-clearIndicator:hover {
+    background-color: transparent !important;
+}
+
+
+
+.MuiAutocomplete-clearIndicator > svg > path {
+    fill: rgba(255, 255, 255, 0.6) !important;
+}
