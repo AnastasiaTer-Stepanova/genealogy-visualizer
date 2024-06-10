@@ -64,8 +64,6 @@ properties:
     description: Комментарий
     type: string
     example: "переселенцы из Сибири"
-  archiveDocument:
-    $ref: "./../archive/archive-document.yaml"
   sex:
     $ref: "./../../common/sex.yaml"
   fullName:

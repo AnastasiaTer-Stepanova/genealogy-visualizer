@@ -64,7 +64,6 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         EasyFamilyMember revisionPartnerSave = generator.nextObject(EasyFamilyMember.class);
         revisionPartnerSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentExisting);
-        revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionSave.setPartner(revisionPartnerSave);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
@@ -139,7 +138,6 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist);
         EasyFamilyMember revisionPartnerSave = generator.nextObject(EasyFamilyMember.class);
         revisionPartnerSave.setId(null);
-        revisionPartnerSave.setArchiveDocument(archiveDocumentExisting);
         revisionUpdate.setPartner(revisionPartnerSave);
         revisionUpdate.setAnotherNames(generator.objects(String.class, 4).toList());
         String requestJson = objectMapper.writeValueAsString(revisionUpdate);
@@ -443,7 +441,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                                 })
                                 .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId()))
                                 .toList();
-                List<FamilyMember> familyMembers = family.getFamilies()
+                List<EasyFamilyMember> familyMembers = family.getFamilies()
                         .stream()
                         .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId()))
                         .toList();
@@ -461,7 +459,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 }
                 assertEquals(familyMembers.size(), existFamilyRevision.size());
                 for (int j = 0; j < familyMembers.size(); j++) {
-                    assertFamilyRevision(familyMembers.get(j), existFamilyRevision.get(j));
+                    assertFamilyRevision(existFamilyRevision.get(j), familyMembers.get(j));
                 }
             }
         }
@@ -499,7 +497,6 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         assertEquals(familyRevision.getIsHeadOfYard(), easyFamilyMember.getIsHeadOfYard());
         assertEquals(familyRevision.getFamilyGeneration(), easyFamilyMember.getFamilyGeneration());
         assertEquals(familyRevision.getComment(), easyFamilyMember.getComment());
-        assertArchiveDocument(familyRevision.getArchiveDocument(), easyFamilyMember.getArchiveDocument());
         assertEquals(familyRevision.getSex(), easyFamilyMember.getSex());
         assertEquals(familyRevision.getFullName(), easyFamilyMember.getFullName());
         assertEquals(familyRevision.getRelative(), easyFamilyMember.getRelative());
@@ -521,13 +518,37 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         assertEquals(familyRevision.getIsHeadOfYard(), easyFamilyMember.getIsHeadOfYard());
         assertEquals(familyRevision.getFamilyGeneration(), easyFamilyMember.getFamilyGeneration());
         assertEquals(familyRevision.getComment(), easyFamilyMember.getComment());
-        assertArchiveDocument(familyRevision.getArchiveDocument(), easyFamilyMember.getArchiveDocument());
         assertEquals(familyRevision.getSex(), easyFamilyMember.getSex());
         assertEquals(familyRevision.getFullName(), easyFamilyMember.getFullName());
         assertEquals(familyRevision.getRelative(), easyFamilyMember.getRelative());
         assertEquals(familyRevision.getAge(), easyFamilyMember.getAge());
         assertEquals(familyRevision.getAgeInNextRevision(), easyFamilyMember.getAgeInNextRevision());
         assertEquals(familyRevision.getAnotherNames(), easyFamilyMember.getAnotherNames());
+        assertNotNull(familyRevision.getId());
+    }
+
+    protected static void assertFamilyRevision(genealogy.visualizer.entity.FamilyRevision familyRevision, EasyFamilyMember easyFamilyMember) {
+        assertNotNull(familyRevision);
+        assertNotNull(easyFamilyMember);
+        assertEquals(familyRevision.getFamilyRevisionNumber().intValue(), easyFamilyMember.getFamilyRevisionNumber());
+        assertEquals(familyRevision.getNextFamilyRevisionNumber().intValue(), easyFamilyMember.getNextFamilyRevisionNumber());
+        assertEquals(familyRevision.getListNumber().intValue(), easyFamilyMember.getListNumber());
+        assertEquals(familyRevision.getDeparted(), easyFamilyMember.getDeparted());
+        assertEquals(familyRevision.getArrived(), easyFamilyMember.getArrived());
+        assertEquals(familyRevision.getHeadOfYard(), easyFamilyMember.getIsHeadOfYard());
+        assertEquals(familyRevision.getFamilyGeneration().intValue(), easyFamilyMember.getFamilyGeneration());
+        assertEquals(familyRevision.getComment(), easyFamilyMember.getComment());
+        assertEquals(familyRevision.getSex().name(), easyFamilyMember.getSex().name());
+        assertFullName(easyFamilyMember.getFullName(), familyRevision.getFullName());
+        assertFullName(easyFamilyMember.getRelative(), familyRevision.getRelative());
+        assertAge(easyFamilyMember.getAge(), familyRevision.getAge());
+        assertAge(easyFamilyMember.getAgeInNextRevision(), familyRevision.getAgeInNextRevision());
+        assertEquals(familyRevision.getAnotherNames().size(), easyFamilyMember.getAnotherNames().size());
+        if (!familyRevision.getAnotherNames().isEmpty()) {
+            familyRevision.getAnotherNames().forEach(an ->
+                    assertTrue(easyFamilyMember.getAnotherNames().contains(an))
+            );
+        }
         assertNotNull(familyRevision.getId());
     }
 

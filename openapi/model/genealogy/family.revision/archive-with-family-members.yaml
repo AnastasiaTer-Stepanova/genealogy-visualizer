@@ -10,4 +10,4 @@ properties:
     description: Список семей входящих в этот архив
     type: array
     items:
-      $ref: "family-member.yaml"
+      $ref: "easy-family-member.yaml"

@@ -6,3 +6,5 @@ allOf:
     properties:
       partner:
         $ref: "./easy-family-member.yaml"
+      archiveDocument:
+        $ref: "./../archive/archive-document.yaml"

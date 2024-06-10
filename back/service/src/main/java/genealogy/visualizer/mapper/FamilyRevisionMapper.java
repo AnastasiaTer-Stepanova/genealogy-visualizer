@@ -31,7 +31,10 @@ public interface FamilyRevisionMapper {
     @Mapping(target = "lastNameClearlyStated", source = "isLastNameClearlyStated")
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "partner", ignore = true)
+    @Mapping(target = "archiveDocument", ignore = true)
     genealogy.visualizer.entity.FamilyRevision fromEasyDTO(EasyFamilyMember familyMember);
 
     List<FamilyMember> toListDTO(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
+
+    List<EasyFamilyMember> toEasyListDTO(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
 }
