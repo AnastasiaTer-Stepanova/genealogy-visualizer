@@ -1,9 +1,9 @@
 package genealogy.visualizer.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
+import genealogy.visualizer.api.model.EasyArchive;
 import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyMember;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,7 +45,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Test
     void saveTest() throws Exception {
-        Archive archiveSave = generator.nextObject(Archive.class);
+        EasyArchive archiveSave = generator.nextObject(EasyArchive.class);
         ArchiveDocument archiveDocumentSave = generator.nextObject(ArchiveDocument.class);
         archiveDocumentSave.setArchive(archiveSave);
         FamilyMember revisionSave = generator.nextObject(FamilyMember.class);

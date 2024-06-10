@@ -10,12 +10,12 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "UK_INSTANCE_IN_ARCHIVE", columnNames = {"ARCHIVE_ID", "FUND", "CATALOG", "INSTANCE", "BUNCH", "YEAR", "TYPE"}))
+@Table(indexes = @Index(name = "IDX_INSTANCE_IN_ARCHIVE", columnList = "ARCHIVE_ID, FUND, CATALOG, INSTANCE, BUNCH, YEAR, TYPE"))
 public class ArchiveDocument implements Serializable {
 
     @Id

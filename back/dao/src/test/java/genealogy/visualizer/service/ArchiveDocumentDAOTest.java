@@ -4,8 +4,17 @@ import genealogy.visualizer.JpaAbstractTest;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -86,7 +95,7 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
         nextArchDocForSave.getArchive().setName(archName + "1");
         archDocForSave.setNextRevision(nextArchDocForSave);
         archiveDocumentDAO.updateNextRevisionDocument(archDocForSave);
-        ArchiveDocument savedDocument = archiveDocumentRepository.findArchiveDocumentByConstraint(archDocForSave).orElseThrow();
+        ArchiveDocument savedDocument = findArchiveDocument(archDocForSave);
         asserArchiveDocument(savedDocument, archDocForSave);
         asserArchiveDocument(savedDocument.getNextRevision(), nextArchDocForSave);
     }
@@ -100,7 +109,7 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
         nextArchDocForSave.getArchive().setName(archName);
         archiveDocument.setNextRevision(nextArchDocForSave);
         archiveDocumentDAO.updateNextRevisionDocument(archiveDocument);
-        ArchiveDocument savedDocument = archiveDocumentRepository.findArchiveDocumentByConstraint(archiveDocument).orElseThrow();
+        ArchiveDocument savedDocument = findArchiveDocument(archiveDocument);
         asserArchiveDocument(savedDocument, archiveDocument);
         asserArchiveDocument(savedDocument.getNextRevision(), nextArchDocForSave);
     }
@@ -127,5 +136,25 @@ class ArchiveDocumentDAOTest extends JpaAbstractTest {
                 archiveDocument.getBunch(),
                 new Archive(archiveDocument.getArchive().getName())
         );
+    }
+
+    private ArchiveDocument findArchiveDocument(ArchiveDocument archiveDocument) {
+        CriteriaBuilder cb = entityManager.getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<ArchiveDocument> cq = cb.createQuery(ArchiveDocument.class);
+        Root<ArchiveDocument> adRoot = cq.from(ArchiveDocument.class);
+        Join<ArchiveDocument, Archive> aJoin = adRoot.join("archive", JoinType.LEFT);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(aJoin.get("id"), archiveDocument.getArchive().getId()));
+        predicates.add(cb.equal(adRoot.get("fund"), archiveDocument.getFund()));
+        predicates.add(cb.equal(adRoot.get("catalog"), archiveDocument.getCatalog()));
+        predicates.add(cb.equal(adRoot.get("instance"), archiveDocument.getInstance()));
+        predicates.add(cb.equal(adRoot.get("bunch"), archiveDocument.getBunch()));
+        predicates.add(cb.equal(adRoot.get("year"), archiveDocument.getYear()));
+        predicates.add(cb.equal(adRoot.get("type"), archiveDocument.getType().getName()));
+        cq.where(predicates.toArray(new Predicate[0]));
+        List<ArchiveDocument> result = entityManager.getEntityManager().createQuery(cq).getResultList();
+        assertEquals(1, result.size());
+        return result.getFirst();
     }
 }

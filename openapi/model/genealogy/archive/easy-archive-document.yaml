@@ -46,5 +46,3 @@ properties:
     minimum: 1
     maximum: 32767
     example: 1858
-  archive:
-    $ref: "archive.yaml"

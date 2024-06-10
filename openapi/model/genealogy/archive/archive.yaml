@@ -1,27 +1,12 @@
 description: Данные архива
 type: object
-required:
-  - name
-properties:
-  id:
-    description: Идентификатор
-    type: integer
-    format: int64
-    example: 124353
-  name:
-    description: Наименование архива
-    type: string
-    example: "Российский государственный архив Рязанской области"
-  abbreviation:
-    description: Сокращенное наименование
-    type: string
-    maxLength: 10
-    example: "ГАРО"
-  comment:
-    description: Комментарий
-    type: string
-    example: "Принимает только по четвергам"
-  address:
-    description: Адресс
-    type: string
-    example: "Россия, Рязанская область, город Рязань, улица Пушкина, дом 5"
+allOf:
+  - $ref: "easy-archive.yaml"
+  - type: object
+    properties:
+      archiveDocuments:
+        description: Документы архива
+        type: array
+        items:
+          $ref: "easy-archive-document.yaml"
+

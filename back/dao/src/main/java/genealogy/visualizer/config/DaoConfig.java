@@ -8,6 +8,7 @@ import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.MarriageRepository;
 import genealogy.visualizer.repository.PersonRepository;
+import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.DeathDAO;
@@ -15,6 +16,7 @@ import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
+import genealogy.visualizer.service.impl.ArchiveDAOImpl;
 import genealogy.visualizer.service.impl.ArchiveDocumentDAOImpl;
 import genealogy.visualizer.service.impl.ChristeningDAOImpl;
 import genealogy.visualizer.service.impl.DeathDAOImpl;
@@ -22,6 +24,7 @@ import genealogy.visualizer.service.impl.FamilyRevisionDAOImpl;
 import genealogy.visualizer.service.impl.LocalityDAOImpl;
 import genealogy.visualizer.service.impl.MarriageDAOImpl;
 import genealogy.visualizer.service.impl.PersonDAOImpl;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -39,8 +42,9 @@ public class DaoConfig {
 
     @Bean
     public ArchiveDocumentDAO archiveDocumentDAO(@Autowired ArchiveDocumentRepository archiveDocumentRepository,
-                                                 @Autowired ArchiveRepository archiveRepository) {
-        return new ArchiveDocumentDAOImpl(archiveDocumentRepository, archiveRepository);
+                                                 @Autowired ArchiveRepository archiveRepository,
+                                                 @Autowired EntityManager entityManager) {
+        return new ArchiveDocumentDAOImpl(archiveDocumentRepository, archiveRepository, entityManager);
     }
 
     @Bean
@@ -73,6 +77,12 @@ public class DaoConfig {
                              ArchiveDocumentDAO archiveDocumentDAO,
                              LocalityDAO localityDAO) {
         return new DeathDAOImpl(deathRepository, archiveDocumentDAO, localityDAO);
+    }
+
+    @Bean
+    public ArchiveDAO archiveDAO(@Autowired ArchiveRepository archiveRepository,
+                                 @Autowired ArchiveDocumentRepository archiveDocumentRepository) {
+        return new ArchiveDAOImpl(archiveRepository, archiveDocumentRepository);
     }
 
     @Bean

@@ -3,9 +3,11 @@ package genealogy.visualizer.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import genealogy.visualizer.controller.ArchiveController;
 import genealogy.visualizer.controller.FamilyRevisionController;
 import genealogy.visualizer.controller.GenealogyVisualizeController;
 import genealogy.visualizer.controller.PersonController;
+import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import genealogy.visualizer.service.person.PersonService;
@@ -41,6 +43,11 @@ public class ControllerConfig {
     @Bean
     public PersonController personController(PersonService personService) {
         return new PersonController(personService);
+    }
+
+    @Bean
+    public ArchiveController archiveController(ArchiveService archiveService) {
+        return new ArchiveController(archiveService);
     }
 
 }

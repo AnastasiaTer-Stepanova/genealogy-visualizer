@@ -11,11 +11,6 @@ import java.util.Optional;
 
 public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument, Long> {
 
-    @Query("select ad from ArchiveDocument ad join fetch ad.archive where ad.archive.name = :#{#entity.archive.name} and ad.fund = :#{#entity.fund} " +
-            "and ad.catalog =  :#{#entity.catalog} and ad.instance = :#{#entity.instance} and ad.bunch = :#{#entity.bunch} and " +
-            "ad.year = :#{#entity.year} and ad.type = :#{#entity.type}")
-    Optional<ArchiveDocument> findArchiveDocumentByConstraint(@Param("entity") ArchiveDocument entity);
-
     @Query("select ad from ArchiveDocument ad join fetch ad.archive join fetch ad.familyRevisions fs " +
             "where ad.id = :archiveDocumentId and fs.familyRevisionNumber = :number")
     Optional<ArchiveDocument> findArchiveDocumentWithFamilyRevisionByNumberFamily(@Param("archiveDocumentId") Long archiveDocumentId,
@@ -29,5 +24,13 @@ public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument
     @Override
     @Query(value = "select ad from ArchiveDocument ad left join fetch ad.archive a where ad.id = :id")
     Optional<ArchiveDocument> findById(@NonNull @Param("id") Long id);
+
+    @Modifying
+    @Query(value = "update archive_document set archive_id = :newArchiveId where archive_id = :archiveId", nativeQuery = true)
+    void updateArchiveId(@Param("archiveId") Long archiveId, @Param("newArchiveId") Long newArchiveId);
+
+    @Modifying
+    @Query(value = "update archive_document set archive_id = :newArchiveId where id = :archiveDocumentId", nativeQuery = true)
+    void updateArchiveIdById(@Param("archiveDocumentId") Long archiveDocumentId, @Param("newArchiveId") Long newArchiveId);
 
 }

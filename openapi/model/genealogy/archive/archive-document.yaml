@@ -4,6 +4,8 @@ allOf:
   - $ref: "easy-archive-document.yaml"
   - type: object
     properties:
+      archive:
+        $ref: "easy-archive.yaml"
       nextRevision:
         $ref: "easy-archive-document.yaml"
       previousRevisions:

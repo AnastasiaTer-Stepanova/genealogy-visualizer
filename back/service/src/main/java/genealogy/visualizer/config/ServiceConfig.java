@@ -1,6 +1,7 @@
 package genealogy.visualizer.config;
 
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
+import genealogy.visualizer.mapper.ArchiveMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
@@ -14,12 +15,15 @@ import genealogy.visualizer.parser.impl.FamilyRevisionSheetParser;
 import genealogy.visualizer.parser.impl.FileExcelParser;
 import genealogy.visualizer.parser.impl.InterimCensusSheetParser;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
+import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
+import genealogy.visualizer.service.archive.ArchiveService;
+import genealogy.visualizer.service.archive.ArchiveServiceImpl;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
@@ -103,5 +107,10 @@ public class ServiceConfig {
     @Bean
     public PersonService personService(PersonDAO personDAO, PersonMapper personMapper) {
         return new PersonServiceImpl(personDAO, personMapper);
+    }
+
+    @Bean
+    public ArchiveService archiveService(ArchiveDAO archiveDAO, ArchiveMapper archiveMapper) {
+        return new ArchiveServiceImpl(archiveDAO, archiveMapper);
     }
 }

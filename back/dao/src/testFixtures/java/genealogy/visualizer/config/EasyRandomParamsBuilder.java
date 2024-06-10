@@ -10,6 +10,7 @@ import genealogy.visualizer.randomizer.AgeRandomizer;
 import genealogy.visualizer.randomizer.DateInfoRandomizer;
 import genealogy.visualizer.randomizer.PersonStatusRandomizer;
 import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.randomizers.collection.ListRandomizer;
 import org.jeasy.random.randomizers.range.ByteRangeRandomizer;
 import org.jeasy.random.randomizers.range.IntegerRangeRandomizer;
 import org.jeasy.random.randomizers.range.ShortRangeRandomizer;
@@ -57,6 +58,7 @@ public class EasyRandomParamsBuilder {
                 .randomize(named("person").and(ofType(Person.class)), () -> null)
                 .randomize(named("nextRevision").and(ofType(ArchiveDocument.class)), () -> null)
                 .randomize(named("previousRevisions").and(ofType(List.class)), Collections::emptyList)
+                .randomize(named("anotherNames").and(ofType(List.class)), () -> new ListRandomizer(StringRandomizer::new, 5).getRandomValue())
                 .randomize(Age.class, new AgeRandomizer())
                 .randomize(DateInfo.class, new DateInfoRandomizer());
     }

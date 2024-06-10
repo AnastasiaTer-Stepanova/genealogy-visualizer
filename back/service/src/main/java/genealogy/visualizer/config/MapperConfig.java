@@ -10,6 +10,10 @@ import genealogy.visualizer.mapper.ChristeningMapper;
 import genealogy.visualizer.mapper.ChristeningMapperImpl;
 import genealogy.visualizer.mapper.DeathMapper;
 import genealogy.visualizer.mapper.DeathMapperImpl;
+import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
+import genealogy.visualizer.mapper.EasyArchiveDocumentMapperImpl;
+import genealogy.visualizer.mapper.EasyArchiveMapper;
+import genealogy.visualizer.mapper.EasyArchiveMapperImpl;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapperImpl;
 import genealogy.visualizer.mapper.FullNameMapper;
@@ -85,5 +89,17 @@ public class MapperConfig {
     @Primary
     public MarriageMapper marriageMapper() {
         return new MarriageMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyArchiveDocumentMapper easyArchiveDocumentMapper() {
+        return new EasyArchiveDocumentMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyArchiveMapper easyArchiveMapper() {
+        return new EasyArchiveMapperImpl();
     }
 }
