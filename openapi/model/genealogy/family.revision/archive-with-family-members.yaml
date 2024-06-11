@@ -5,7 +5,7 @@ required:
   - families
 properties:
   archive:
-    $ref: "./../archive/archive-document.yaml"
+    $ref: "./../archive/easy-archive-document.yaml"
   families:
     description: Список семей входящих в этот архив
     type: array

@@ -1,33 +1,4 @@
 description: Данные брака
 type: object
-required:
-  - date
-  - husband
-  - husbandMarriageNumber
-  - wife
-  - wifeMarriageNumber
-properties:
-  id:
-    description: Идентификатор
-    type: integer
-    format: int64
-    example: 124353
-  date:
-    description: Дата брака
-    type: string
-    format: date
-    pattern: "[0-9]{2}-[0-9]{2}-[0-9]{4}"
-    example: 01-01-1843
-    x-field-extra-annotation: '@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")'
-  husbandMarriageNumber:
-    description: Номер брака мужа
-    type: integer
-    example: 1
-  wifeMarriageNumber:
-    description: Номер брака мужа
-    type: integer
-    example: 1
-  wife:
-    $ref: "./../../common/full-name.yaml"
-  husband:
-    $ref: "./../../common/full-name.yaml"
+allOf:
+  - $ref: "easy-marriage.yaml"

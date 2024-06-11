@@ -1,13 +1,13 @@
 package genealogy.visualizer.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import genealogy.visualizer.api.model.Christening;
-import genealogy.visualizer.api.model.Death;
+import genealogy.visualizer.api.model.EasyChristening;
+import genealogy.visualizer.api.model.EasyDeath;
+import genealogy.visualizer.api.model.EasyFamilyMember;
+import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
 import genealogy.visualizer.api.model.Locality;
-import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.Person;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.service.PersonDAO;
@@ -156,15 +156,13 @@ class PersonControllerTest extends IntegrationTest {
         partner.setId(null);
         EasyPerson child = generator.nextObject(EasyPerson.class);
         child.setId(null);
-        FamilyMember familyMember = generator.nextObject(FamilyMember.class);
-        familyMember.setArchiveDocument(archiveDocumentExisting);
+        EasyFamilyMember familyMember = generator.nextObject(EasyFamilyMember.class);
         familyMember.setId(null);
-        familyMember.getPartner().setId(null);
-        Christening christening = generator.nextObject(Christening.class);
+        EasyChristening christening = generator.nextObject(EasyChristening.class);
         christening.setId(null);
-        Death death = generator.nextObject(Death.class);
+        EasyDeath death = generator.nextObject(EasyDeath.class);
         death.setId(null);
-        Marriage marriage = generator.nextObject(Marriage.class);
+        EasyMarriage marriage = generator.nextObject(EasyMarriage.class);
         marriage.setId(null);
         Person personSave = generator.nextObject(Person.class);
         personSave.setId(null);
@@ -207,7 +205,7 @@ class PersonControllerTest extends IntegrationTest {
 
         assertEquals(expected.getMarriages().size(), actual.getMarriages().size());
         expected.getMarriages().sort(Comparator.comparing(r -> r.getWife().getName()));
-        List<Marriage> actualMarriages = actual.getMarriages().stream().sorted(Comparator.comparing(r -> r.getWife().getName())).toList();
+        List<EasyMarriage> actualMarriages = actual.getMarriages().stream().sorted(Comparator.comparing(r -> r.getWife().getName())).toList();
         for (int i = 0; i < expected.getMarriages().size(); i++) {
             assertMarriage(expected.getMarriages().get(i), actualMarriages.get(i));
         }
@@ -235,7 +233,7 @@ class PersonControllerTest extends IntegrationTest {
 
         assertEquals(expected.getRevisions().size(), actual.getRevisions().size());
         expected.getRevisions().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<FamilyMember> actualRevisions = actual.getRevisions().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
+        List<EasyFamilyMember> actualRevisions = actual.getRevisions().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
         for (int i = 0; i < expected.getRevisions().size(); i++) {
             assertFamilyRevision(expected.getRevisions().get(i), actualRevisions.get(i));
         }
@@ -278,9 +276,6 @@ class PersonControllerTest extends IntegrationTest {
                 person.getRevisions().forEach(r -> {
                     if (r.getId() != null) {
                         familyRevisionIds.add(r.getId());
-                    }
-                    if (r.getPartner() != null && r.getPartner().getId() != null) {
-                        familyRevisionIds.add(r.getPartner().getId());
                     }
                 });
             }

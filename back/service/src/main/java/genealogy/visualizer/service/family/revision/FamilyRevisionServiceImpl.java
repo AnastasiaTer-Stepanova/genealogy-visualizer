@@ -7,7 +7,8 @@ import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
-import genealogy.visualizer.mapper.ArchiveDocumentMapper;
+import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
+import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
@@ -26,16 +27,19 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
     private final FamilyRevisionDAO familyRevisionDAO;
     private final ArchiveDocumentDAO archiveDocumentDAO;
     private final FamilyRevisionMapper familyRevisionMapper;
-    private final ArchiveDocumentMapper archiveDocumentMapper;
+    private final EasyFamilyRevisionMapper easyFamilyRevisionMapper;
+    private final EasyArchiveDocumentMapper easyArchiveDocumentMapper;
 
     public FamilyRevisionServiceImpl(FamilyRevisionDAO familyRevisionDAO,
                                      ArchiveDocumentDAO archiveDocumentDAO,
                                      FamilyRevisionMapper familyRevisionMapper,
-                                     ArchiveDocumentMapper archiveDocumentMapper) {
+                                     EasyFamilyRevisionMapper easyFamilyRevisionMapper,
+                                     EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
         this.familyRevisionDAO = familyRevisionDAO;
         this.archiveDocumentDAO = archiveDocumentDAO;
         this.familyRevisionMapper = familyRevisionMapper;
-        this.archiveDocumentMapper = archiveDocumentMapper;
+        this.easyFamilyRevisionMapper = easyFamilyRevisionMapper;
+        this.easyArchiveDocumentMapper = easyArchiveDocumentMapper;
     }
 
     @Override
@@ -107,7 +111,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             do {
                 archiveDocument = archiveDocument.getNextRevision();
                 if (familyMember.getNextFamilyRevisionNumber() == null) continue;
-                archiveDocumentMap.put(archiveDocument, familyRevisionMapper.toEasyListDTO(
+                archiveDocumentMap.put(archiveDocument, easyFamilyRevisionMapper.toDTOs(
                         familyRevisionDAO.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(
                                 archiveDocument.getId(),
                                 familyMember.getNextFamilyRevisionNumber(),
@@ -135,7 +139,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 .map(map -> {
                     if (map.getValue() == null || map.getValue().isEmpty()) return null;
                     return new ArchiveWithFamilyMembers()
-                            .archive(archiveDocumentMapper.toDTO(map.getKey()))
+                            .archive(easyArchiveDocumentMapper.toDTO(map.getKey()))
                             .families(map.getValue());
                 })
                 .filter(Objects::nonNull)
@@ -152,7 +156,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         }
         for (ArchiveDocument archiveDocumentPrevious : archiveDocument.getPreviousRevisions()) {
             if (archiveDocumentMap.containsKey(archiveDocumentPrevious)) continue;
-            List<EasyFamilyMember> members = familyRevisionMapper.toEasyListDTO(
+            List<EasyFamilyMember> members = easyFamilyRevisionMapper.toDTOs(
                     familyRevisionDAO.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(
                             archiveDocumentPrevious.getId(),
                             familyRevisionNumber,

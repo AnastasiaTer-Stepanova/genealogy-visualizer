@@ -1,38 +1,4 @@
 description: Данные о рождении
 type: object
-required:
-  - birthDate
-  - name
-  - sex
-  - legitimacy
-properties:
-  id:
-    description: Идентификатор
-    type: integer
-    format: int64
-    example: 124353
-  birthDate:
-    description: Дата рождения
-    type: string
-    format: date
-    pattern: "[0-9]{2}-[0-9]{2}-[0-9]{4}"
-    example: 01-01-1843
-    x-field-extra-annotation: '@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")'
-  christeningDate:
-    description: Дата крещения
-    type: string
-    format: date
-    pattern: "[0-9]{2}-[0-9]{2}-[0-9]{4}"
-    example: 01-01-1843
-    x-field-extra-annotation: '@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")'
-  legitimacy:
-    description: Легитимность рождения (законнорожденный/незаконнорожденный)
-    type: boolean
-    example: true
-  name:
-    description: Имя данное при рождении
-    type: string
-    maxLength: 50
-    example: Иван
-  sex:
-    $ref: "./../../common/sex.yaml"
+allOf:
+  - $ref: "easy-christening.yaml"

@@ -5,11 +5,9 @@ import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveFilter;
 import genealogy.visualizer.api.model.EasyArchive;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
-import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,9 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ArchiveControllerTest extends IntegrationTest {
 
-    @Autowired
-    EasyArchiveDocumentMapper easyArchiveDocumentMapper;
-
     private static final String PATH = "/archive";
 
     @Test
@@ -39,6 +34,10 @@ class ArchiveControllerTest extends IntegrationTest {
         Archive response = getArchiveFromJson(responseJson);
         assertNotNull(response);
         assertArchive(response, archiveSave);
+        String responseGetJson = getRequest(PATH + "/" + response.getId());
+        Archive responseGet = getArchiveFromJson(responseGetJson);
+        assertNotNull(responseGet);
+        assertArchive(responseGet, archiveSave);
     }
 
     @Test
@@ -67,6 +66,10 @@ class ArchiveControllerTest extends IntegrationTest {
         Archive response = getArchiveFromJson(responseJson);
         assertNotNull(response);
         assertArchive(response, archiveUpdate);
+        String responseGetJson = getRequest(PATH + "/" + response.getId());
+        Archive responseGet = getArchiveFromJson(responseGetJson);
+        assertNotNull(responseGet);
+        assertArchive(responseGet, archiveUpdate);
     }
 
     @Test
@@ -77,7 +80,6 @@ class ArchiveControllerTest extends IntegrationTest {
         assertTrue(archiveRepository.findById(archiveExist.getId()).isEmpty());
         for (genealogy.visualizer.entity.ArchiveDocument ad : archiveExist.getArchiveDocuments()) {
             assertFalse(archiveDocumentRepository.findById(ad.getId()).isEmpty());
-
         }
     }
 
@@ -139,7 +141,7 @@ class ArchiveControllerTest extends IntegrationTest {
         return response;
     }
 
-    protected void assertArchive(Archive archive1, Archive archive2) {
+    protected static void assertArchive(Archive archive1, Archive archive2) {
         assertNotNull(archive1);
         assertNotNull(archive2);
         if (archive1.getId() != null && archive2.getId() != null) {
@@ -159,7 +161,19 @@ class ArchiveControllerTest extends IntegrationTest {
         }
     }
 
-    protected void assertArchive(Archive archive1, genealogy.visualizer.entity.Archive archive2) {
+    protected static void assertArchive(EasyArchive archive1, EasyArchive archive2) {
+        assertNotNull(archive1);
+        assertNotNull(archive2);
+        if (archive1.getId() != null && archive2.getId() != null) {
+            assertEquals(archive1.getId(), archive2.getId());
+        }
+        assertEquals(archive1.getName(), archive2.getName());
+        assertEquals(archive1.getAbbreviation(), archive2.getAbbreviation());
+        assertEquals(archive1.getAddress(), archive2.getAddress());
+        assertEquals(archive1.getComment(), archive2.getComment());
+    }
+
+    protected static void assertArchive(Archive archive1, genealogy.visualizer.entity.Archive archive2) {
         assertNotNull(archive1);
         assertNotNull(archive2);
         if (archive1.getId() != null && archive2.getId() != null) {
@@ -179,7 +193,19 @@ class ArchiveControllerTest extends IntegrationTest {
         }
     }
 
-    protected genealogy.visualizer.entity.Archive generateRandomExistArchive() {
+    protected static void assertArchive(EasyArchive archive1, genealogy.visualizer.entity.Archive archive2) {
+        assertNotNull(archive1);
+        assertNotNull(archive2);
+        if (archive1.getId() != null && archive2.getId() != null) {
+            assertEquals(archive1.getId(), archive2.getId());
+        }
+        assertEquals(archive1.getName(), archive2.getName());
+        assertEquals(archive1.getAbbreviation(), archive2.getAbbreviation());
+        assertEquals(archive1.getAddress(), archive2.getAddress());
+        assertEquals(archive1.getComment(), archive2.getComment());
+    }
+
+    private genealogy.visualizer.entity.Archive generateRandomExistArchive() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setId(null);
         archiveSave.setArchiveDocuments(null);

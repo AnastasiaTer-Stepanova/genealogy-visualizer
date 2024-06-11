@@ -60,4 +60,12 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
     @Query(value = "update family_revision set person_id = :newPersonId where id = :id", nativeQuery = true)
     void updatePersonIdById(@Param("id") Long id, @Param("newPersonId") Long newPersonId);
 
+    @Modifying
+    @Query(value = "update family_revision set archive_document_id = :newArchiveDocumentId where archive_document_id = :archiveDocumentId", nativeQuery = true)
+    void updateArchiveDocumentId(@Param("archiveDocumentId") Long archiveDocumentId, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
+
+    @Modifying
+    @Query(value = "update family_revision set archive_document_id = :newArchiveDocumentId where id = :id", nativeQuery = true)
+    void updateArchiveDocumentIdById(@Param("id") Long id, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
+
 }

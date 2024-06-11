@@ -7,9 +7,13 @@ import genealogy.visualizer.api.model.DateInfo;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
-import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
+import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
+import genealogy.visualizer.mapper.EasyChristeningMapper;
+import genealogy.visualizer.mapper.EasyDeathMapper;
+import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyMarriageMapper;
 import genealogy.visualizer.mapper.LocalityMapper;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
@@ -72,6 +76,21 @@ class IntegrationTest {
     ArchiveDocumentMapper archiveDocumentMapper;
 
     @Autowired
+    EasyArchiveDocumentMapper easyArchiveDocumentMapper;
+
+    @Autowired
+    EasyFamilyRevisionMapper easyFamilyRevisionMapper;
+
+    @Autowired
+    EasyChristeningMapper easyChristeningMapper;
+
+    @Autowired
+    EasyDeathMapper easyDeathMapper;
+
+    @Autowired
+    EasyMarriageMapper easyMarriageMapper;
+
+    @Autowired
     PersonRepository personRepository;
 
     @Autowired
@@ -92,11 +111,11 @@ class IntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    ArchiveDocument archiveDocumentExisting;
+    genealogy.visualizer.entity.ArchiveDocument archiveDocumentExisting;
 
     Locality localityExisting;
 
-    Archive archiveExisting;
+    genealogy.visualizer.entity.Archive archiveExisting;
 
     static EasyRandom generator;
 
@@ -111,6 +130,7 @@ class IntegrationTest {
 
     static {
         EasyRandomParameters parameters = getGeneratorParams()
+                .randomize(named("id").and(ofType(Long.class)), () -> null)
                 .randomize(named("nextRevision").and(ofType(ArchiveDocument.class)), () -> null)
                 .randomize(named("partner").and(ofType(FamilyMember.class)), () -> null)
                 .randomize(named("person").and(ofType(EasyPerson.class)), () -> null)
@@ -126,11 +146,11 @@ class IntegrationTest {
         localityExisting = localityRepository.save(generator.nextObject(genealogy.visualizer.entity.Locality.class));
         localityIds.add(localityExisting.getId());
         archiveExisting = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveRepository.saveAndFlush(archiveExisting);
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentEntity.setArchive(archiveExisting);
-        archiveDocumentExisting = archiveDocumentMapper.toDTO(archiveDocumentRepository.saveAndFlush(archiveDocumentEntity));
-        archiveIds.add(archiveDocumentExisting.getArchive().getId());
+        archiveExisting = archiveRepository.saveAndFlush(archiveExisting);
+        archiveIds.add(archiveExisting.getId());
+        archiveDocumentExisting = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
+        archiveDocumentExisting.setArchive(archiveExisting);
+        archiveDocumentExisting = archiveDocumentRepository.saveAndFlush(archiveDocumentExisting);
         archiveDocumentIds.add(archiveDocumentExisting.getId());
         System.out.println("----------------------Start test------------------------");
     }

@@ -41,10 +41,15 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class DaoConfig {
 
     @Bean
-    public ArchiveDocumentDAO archiveDocumentDAO(@Autowired ArchiveDocumentRepository archiveDocumentRepository,
-                                                 @Autowired ArchiveRepository archiveRepository,
-                                                 @Autowired EntityManager entityManager) {
-        return new ArchiveDocumentDAOImpl(archiveDocumentRepository, archiveRepository, entityManager);
+    public ArchiveDocumentDAO archiveDocumentDAO(@Autowired ArchiveRepository archiveRepository,
+                                                 @Autowired ChristeningRepository christeningRepository,
+                                                 @Autowired DeathRepository deathRepository,
+                                                 @Autowired EntityManager entityManager,
+                                                 @Autowired FamilyRevisionRepository familyRevisionRepository,
+                                                 @Autowired MarriageRepository marriageRepository,
+                                                 @Autowired ArchiveDocumentRepository archiveDocumentRepository) {
+        return new ArchiveDocumentDAOImpl(archiveRepository, christeningRepository, deathRepository, entityManager, familyRevisionRepository,
+                marriageRepository, archiveDocumentRepository);
     }
 
     @Bean

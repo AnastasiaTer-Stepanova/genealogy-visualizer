@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.service.ArchiveDAO;
+import genealogy.visualizer.service.helper.RepositoryEasyModelHelper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -17,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ArchiveDAOImpl implements ArchiveDAO {
 
@@ -34,6 +33,8 @@ public class ArchiveDAOImpl implements ArchiveDAO {
         this.entityManager = entityManager;
     }
 
+    private static final RepositoryEasyModelHelper<ArchiveDocument> archiveDocumentHelper = new RepositoryEasyModelHelper<>();
+
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void delete(Long id) {
@@ -44,17 +45,31 @@ public class ArchiveDAOImpl implements ArchiveDAO {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Archive save(Archive archive) {
-        if (archive.getId() != null)
+        if (archive.getId() != null) {
             throw new IllegalArgumentException("Cannot save archive with id");
-        saveArchiveDocumentsIfNotExist(archive.getArchiveDocuments());
-        return archiveRepository.save(archive);
+        }
+        List<ArchiveDocument> archiveDocument = archive.getArchiveDocuments();
+        archive.setArchiveDocuments(Collections.emptyList());
+        Archive savedArchive = archiveRepository.save(archive);
+        if (archiveDocument != null && !archiveDocument.isEmpty()) {
+            RepositoryEasyModelHelper<ArchiveDocument> repositoryEasyModelHelper = new RepositoryEasyModelHelper<>();
+            archiveDocument.forEach(ad -> ad.setArchive(savedArchive));
+            archive.setArchiveDocuments(repositoryEasyModelHelper.saveEntitiesIfNotExist(
+                    archiveDocument, archiveDocumentRepository, ArchiveDocument::getId));
+        }
+        return savedArchive;
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Archive update(Archive archive) {
+        if (archive.getId() == null)
+            throw new IllegalArgumentException("Cannot update archive without id");
         Archive updatedArchive = archiveRepository.update(archive);
-        return updateArchiveDocuments(updatedArchive, archive.getArchiveDocuments());
+        updatedArchive.setArchiveDocuments(archiveDocumentHelper.updateEntities(
+                updatedArchive.getId(), updatedArchive.getArchiveDocuments(), archive.getArchiveDocuments(), ArchiveDocument::getId,
+                archiveDocumentRepository, archiveDocumentRepository::updateArchiveIdById));
+        return updatedArchive;
     }
 
     @Override
@@ -77,43 +92,5 @@ public class ArchiveDAOImpl implements ArchiveDAO {
         }
         cq.select(aRoot).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();
-    }
-
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    protected Archive updateArchiveDocuments(Archive archive, List<ArchiveDocument> archiveDocuments) {
-        archiveDocuments = saveArchiveDocumentsIfNotExist(archiveDocuments);
-        Set<Long> newIds = archiveDocuments.stream().map(ArchiveDocument::getId).collect(Collectors.toSet());
-        Set<Long> existIds = archive.getArchiveDocuments().stream().map(ArchiveDocument::getId).collect(Collectors.toSet());
-
-        Set<Long> idsForDelete = existIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        idsForDelete.forEach(id -> archiveDocumentRepository.updateArchiveIdById(id, null));
-
-        List<ArchiveDocument> resultArchiveDocument = archive.getArchiveDocuments().stream()
-                .filter(ad -> !idsForDelete.contains(ad.getId()))
-                .collect(Collectors.toList());
-
-        archiveDocuments.stream()
-                .filter(ad -> newIds.contains(ad.getId()) && !existIds.contains(ad.getId()))
-                .forEach(ad -> {
-                    archiveDocumentRepository.updateArchiveIdById(ad.getId(), archive.getId());
-                    resultArchiveDocument.add(ad);
-                });
-
-        archive.setArchiveDocuments(resultArchiveDocument);
-        return archive;
-    }
-
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    protected List<ArchiveDocument> saveArchiveDocumentsIfNotExist(List<ArchiveDocument> archiveDocuments) {
-        if (archiveDocuments == null || archiveDocuments.isEmpty()) return Collections.emptyList();
-        List<ArchiveDocument> resultArchiveDocuments = new ArrayList<>(archiveDocuments.size());
-        for (ArchiveDocument archiveDocument : archiveDocuments) {
-            if (archiveDocument.getId() == null) {
-                resultArchiveDocuments.add(archiveDocumentRepository.save(archiveDocument));
-            } else {
-                archiveDocumentRepository.findById(archiveDocument.getId()).ifPresent(resultArchiveDocuments::add);
-            }
-        }
-        return resultArchiveDocuments;
     }
 }

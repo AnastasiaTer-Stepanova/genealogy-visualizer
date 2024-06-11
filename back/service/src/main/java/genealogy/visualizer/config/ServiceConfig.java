@@ -2,7 +2,10 @@ package genealogy.visualizer.config;
 
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.ArchiveMapper;
+import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveMapper;
+import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
@@ -23,6 +26,8 @@ import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
+import genealogy.visualizer.service.archive.ArchiveDocumentService;
+import genealogy.visualizer.service.archive.ArchiveDocumentServiceImpl;
 import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.archive.ArchiveServiceImpl;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
@@ -50,8 +55,9 @@ public class ServiceConfig {
     public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
                                                        ArchiveDocumentDAO archiveDocumentDAO,
                                                        FamilyRevisionMapper familyRevisionMapper,
-                                                       ArchiveDocumentMapper archiveDocumentMapper) {
-        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper, archiveDocumentMapper);
+                                                       EasyFamilyRevisionMapper easyFamilyRevisionMapper,
+                                                       EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper, easyFamilyRevisionMapper, easyArchiveDocumentMapper);
     }
 
     @Bean
@@ -101,8 +107,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, PersonMapper personMapper) {
-        return new GenealogyVisualizeServiceImpl(personDAO, personMapper);
+    public GenealogyVisualizeService genealogyVisualize(PersonDAO personDAO, EasyPersonMapper easyPersonMapper) {
+        return new GenealogyVisualizeServiceImpl(personDAO, easyPersonMapper);
     }
 
     @Bean
@@ -113,5 +119,12 @@ public class ServiceConfig {
     @Bean
     public ArchiveService archiveService(ArchiveDAO archiveDAO, ArchiveMapper archiveMapper, EasyArchiveMapper easyArchiveMapper) {
         return new ArchiveServiceImpl(archiveDAO, archiveMapper, easyArchiveMapper);
+    }
+
+    @Bean
+    public ArchiveDocumentService archiveDocumentService(ArchiveDocumentDAO archiveDocumentDAO,
+                                                         ArchiveDocumentMapper archiveDocumentMapper,
+                                                         EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
+        return new ArchiveDocumentServiceImpl(archiveDocumentDAO, archiveDocumentMapper, easyArchiveDocumentMapper);
     }
 }

@@ -13,3 +13,23 @@ allOf:
         type: array
         items:
           $ref: "easy-archive-document.yaml"
+      familyRevisions:
+        description: Переписи
+        type: array
+        items:
+          $ref: "./../family.revision/easy-family-member.yaml"
+      christenings:
+        description: Крещения
+        type: array
+        items:
+          $ref: "./../christening/easy-christening.yaml"
+      deaths:
+        description: Смерти
+        type: array
+        items:
+          $ref: "./../death/easy-death.yaml"
+      marriages:
+        description: Браки
+        type: array
+        items:
+          $ref: "./../marriage/easy-marriage.yaml"

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import genealogy.visualizer.controller.ArchiveController;
+import genealogy.visualizer.controller.ArchiveDocumentController;
 import genealogy.visualizer.controller.FamilyRevisionController;
 import genealogy.visualizer.controller.GenealogyVisualizeController;
 import genealogy.visualizer.controller.PersonController;
+import genealogy.visualizer.service.archive.ArchiveDocumentService;
 import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
@@ -48,6 +50,11 @@ public class ControllerConfig {
     @Bean
     public ArchiveController archiveController(ArchiveService archiveService) {
         return new ArchiveController(archiveService);
+    }
+
+    @Bean
+    public ArchiveDocumentController archiveDocumentController(ArchiveDocumentService archiveDocumentService) {
+        return new ArchiveDocumentController(archiveDocumentService);
     }
 
 }

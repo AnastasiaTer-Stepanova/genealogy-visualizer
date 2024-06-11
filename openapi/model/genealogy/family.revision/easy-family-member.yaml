@@ -7,7 +7,6 @@ required:
   - isHeadOfYard
   - isLastNameClearlyStated
   - sex
-  - archiveDocument
 properties:
   id:
     description: Идентификатор

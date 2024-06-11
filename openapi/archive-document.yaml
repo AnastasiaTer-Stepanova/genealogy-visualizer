@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: API для работы с данными документа архива
+  version: "1.0.0"
+tags:
+  - name: ArchiveDocument
+    description: API для работы с данными документа архива
+paths:
+  /archive-document/{id}:
+    get:
+      tags:
+        - ArchiveDocument
+      operationId: getById
+      summary: "Request data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchiveDocument"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    delete:
+      tags:
+        - ArchiveDocument
+      operationId: delete
+      summary: "Delete data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: "OK"
+  /archive-document:
+    post:
+      tags:
+        - ArchiveDocument
+      operationId: save
+      summary: "Saving data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveDocument"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchiveDocument"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    put:
+      tags:
+        - ArchiveDocument
+      operationId: update
+      summary: "Update only the ArchiveDocument entity, not intended for updating other entities (like Archive and others)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveDocument"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchiveDocument"
+        404:
+          description: "Failed to update data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+  /archive-document/filter:
+    get:
+      tags:
+        - ArchiveDocument
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveDocumentFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyArchiveDocument"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+
+components:
+  schemas:
+    ArchiveDocument:
+      $ref: "./model/genealogy/archive/archive-document.yaml"
+    EasyArchiveDocument:
+      $ref: "./model/genealogy/archive/easy-archive-document.yaml"
+    ArchiveDocumentFilter:
+      $ref: "./model/genealogy/archive/archive-document-filter.yaml"

@@ -7,7 +7,9 @@ import genealogy.visualizer.dto.ArchiveFilterDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, unmappedSourcePolicy = ReportingPolicy.ERROR,
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {EasyArchiveDocumentMapper.class})
 public interface ArchiveMapper extends CommonMapper {
 

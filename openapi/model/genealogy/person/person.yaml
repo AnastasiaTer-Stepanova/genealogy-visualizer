@@ -12,16 +12,16 @@ allOf:
         description: Список ревизий, в которых упоминается человек
         type: array
         items:
-          $ref: "./../family.revision/family-member.yaml"
+          $ref: "./../family.revision/easy-family-member.yaml"
       marriages:
         description: Список браков
         type: array
         items:
-          $ref: "./../marriage/marriage.yaml"
+          $ref: "./../marriage/easy-marriage.yaml"
       christening:
-        $ref: "./../christening/christening.yaml"
+        $ref: "./../christening/easy-christening.yaml"
       death:
-        $ref: "./../death/death.yaml"
+        $ref: "./../death/easy-death.yaml"
       partners:
         description: Список партнеров
         type: array

@@ -1,40 +1,25 @@
 package genealogy.visualizer.mapper;
 
-import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.FamilyMember;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class, AgeMapper.class, ArchiveDocumentMapper.class, PersonMapper.class})
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        unmappedSourcePolicy = ReportingPolicy.ERROR,
+        uses = {AgeMapper.class,
+                EasyArchiveDocumentMapper.class,
+                EasyFamilyRevisionMapper.class,
+                EasyPersonMapper.class,
+                FullNameMapper.class})
 public interface FamilyRevisionMapper {
 
     @Mapping(target = "headOfYard", source = "isHeadOfYard")
     @Mapping(target = "lastNameClearlyStated", source = "isLastNameClearlyStated")
-    @Mapping(target = "person", ignore = true)
-    @Mapping(target = "partner", expression = "java(this.fromEasyDTO(familyMember.getPartner()))")
     genealogy.visualizer.entity.FamilyRevision toEntity(FamilyMember familyMember);
 
     @Mapping(target = "isHeadOfYard", source = "headOfYard")
     @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
-    @Mapping(target = "partner", expression = "java(this.toEasyDTO(familyMember.getPartner()))")
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
-
-    @Mapping(target = "isHeadOfYard", source = "headOfYard")
-    @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
-    EasyFamilyMember toEasyDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
-
-    @Mapping(target = "headOfYard", source = "isHeadOfYard")
-    @Mapping(target = "lastNameClearlyStated", source = "isLastNameClearlyStated")
-    @Mapping(target = "person", ignore = true)
-    @Mapping(target = "partner", ignore = true)
-    @Mapping(target = "archiveDocument", ignore = true)
-    genealogy.visualizer.entity.FamilyRevision fromEasyDTO(EasyFamilyMember familyMember);
-
-    List<FamilyMember> toListDTO(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
-
-    List<EasyFamilyMember> toEasyListDTO(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
 }

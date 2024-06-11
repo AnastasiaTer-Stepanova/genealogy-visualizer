@@ -14,6 +14,16 @@ import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapperImpl;
 import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.mapper.EasyArchiveMapperImpl;
+import genealogy.visualizer.mapper.EasyChristeningMapper;
+import genealogy.visualizer.mapper.EasyChristeningMapperImpl;
+import genealogy.visualizer.mapper.EasyDeathMapper;
+import genealogy.visualizer.mapper.EasyDeathMapperImpl;
+import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyFamilyRevisionMapperImpl;
+import genealogy.visualizer.mapper.EasyMarriageMapper;
+import genealogy.visualizer.mapper.EasyMarriageMapperImpl;
+import genealogy.visualizer.mapper.EasyPersonMapper;
+import genealogy.visualizer.mapper.EasyPersonMapperImpl;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapperImpl;
 import genealogy.visualizer.mapper.FullNameMapper;
@@ -102,4 +112,35 @@ public class MapperConfig {
     public EasyArchiveMapper easyArchiveMapper() {
         return new EasyArchiveMapperImpl();
     }
+
+    @Bean
+    @Primary
+    public EasyDeathMapper easyDeathMapper() {
+        return new EasyDeathMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyMarriageMapper easyMarriageMapper() {
+        return new EasyMarriageMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyChristeningMapper easyChristeningMapper() {
+        return new EasyChristeningMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyFamilyRevisionMapper easyFamilyRevisionMapper() {
+        return new EasyFamilyRevisionMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyPersonMapper easyPersonMapper() {
+        return new EasyPersonMapperImpl();
+    }
+
 }

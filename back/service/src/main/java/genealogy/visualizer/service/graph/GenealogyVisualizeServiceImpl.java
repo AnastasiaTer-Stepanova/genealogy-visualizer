@@ -5,7 +5,7 @@ import genealogy.visualizer.api.model.GenealogyVisualizeGraph;
 import genealogy.visualizer.api.model.GenealogyVisualizeRq;
 import genealogy.visualizer.api.model.GraphLinks;
 import genealogy.visualizer.entity.Person;
-import genealogy.visualizer.mapper.PersonMapper;
+import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.service.PersonDAO;
 
 import java.util.HashSet;
@@ -18,11 +18,11 @@ import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
 public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService {
 
     private final PersonDAO personDAO;
-    private final PersonMapper personMapper;
+    private final EasyPersonMapper easyPersonMapper;
 
-    public GenealogyVisualizeServiceImpl(PersonDAO personDAO, PersonMapper personMapper) {
+    public GenealogyVisualizeServiceImpl(PersonDAO personDAO, EasyPersonMapper easyPersonMapper) {
         this.personDAO = personDAO;
-        this.personMapper = personMapper;
+        this.easyPersonMapper = easyPersonMapper;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
         if (entities == null) {
             throw new RuntimeException(NOT_FOUND_ERROR);
         }
-        Set<EasyPerson> easyPersonSet = personMapper.toEasyPersonDTO(entities);
+        Set<EasyPerson> easyPersonSet = easyPersonMapper.toDTOs(entities);
         return new GenealogyVisualizeGraph().persons(easyPersonSet).links(graphLinksSet(entities));
     }
 
