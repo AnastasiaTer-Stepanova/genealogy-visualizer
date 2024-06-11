@@ -1,10 +1,16 @@
 package genealogy.visualizer.service.impl;
 
+import genealogy.visualizer.dto.ArchiveFilterDTO;
 import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.service.ArchiveDAO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +26,12 @@ public class ArchiveDAOImpl implements ArchiveDAO {
 
     private final ArchiveDocumentRepository archiveDocumentRepository;
 
-    public ArchiveDAOImpl(ArchiveRepository archiveRepository, ArchiveDocumentRepository archiveDocumentRepository) {
+    private final EntityManager entityManager;
+
+    public ArchiveDAOImpl(ArchiveRepository archiveRepository, ArchiveDocumentRepository archiveDocumentRepository, EntityManager entityManager) {
         this.archiveRepository = archiveRepository;
         this.archiveDocumentRepository = archiveDocumentRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -52,6 +61,22 @@ public class ArchiveDAOImpl implements ArchiveDAO {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Archive findFullInfoById(Long id) {
         return archiveRepository.findByIdWithArchiveDocuments(id).orElse(null);
+    }
+
+    @Override
+    public List<Archive> filter(ArchiveFilterDTO filter) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Archive> cq = cb.createQuery(Archive.class);
+        Root<Archive> aRoot = cq.from(Archive.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.getAbbreviation() != null) {
+            predicates.add(cb.like(cb.lower(aRoot.get("abbreviation")), "%" + filter.getAbbreviation().toLowerCase() + "%"));
+        }
+        if (filter.getName() != null) {
+            predicates.add(cb.like(cb.lower(aRoot.get("name")), "%" + filter.getName().toLowerCase() + "%"));
+        }
+        cq.select(aRoot).where(predicates.toArray(new Predicate[0]));
+        return entityManager.createQuery(cq).getResultList();
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

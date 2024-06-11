@@ -81,8 +81,9 @@ public class DaoConfig {
 
     @Bean
     public ArchiveDAO archiveDAO(@Autowired ArchiveRepository archiveRepository,
-                                 @Autowired ArchiveDocumentRepository archiveDocumentRepository) {
-        return new ArchiveDAOImpl(archiveRepository, archiveDocumentRepository);
+                                 @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                 @Autowired EntityManager entityManager) {
+        return new ArchiveDAOImpl(archiveRepository, archiveDocumentRepository, entityManager);
     }
 
     @Bean

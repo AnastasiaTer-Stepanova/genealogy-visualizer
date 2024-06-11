@@ -2,8 +2,11 @@ package genealogy.visualizer.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Archive;
+import genealogy.visualizer.api.model.ArchiveFilter;
+import genealogy.visualizer.api.model.EasyArchive;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
+import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,8 +35,7 @@ class ArchiveControllerTest extends IntegrationTest {
         Archive archiveSave = generator.nextObject(Archive.class);
         List<EasyArchiveDocument> archiveDocumentsSave = generator.objects(EasyArchiveDocument.class, generator.nextInt(5, 10)).toList();
         archiveSave.setArchiveDocuments(archiveDocumentsSave);
-        String requestJson = objectMapper.writeValueAsString(archiveSave);
-        String responseJson = postRequest(PATH, requestJson);
+        String responseJson = postRequest(PATH, objectMapper.writeValueAsString(archiveSave));
         Archive response = getArchiveFromJson(responseJson);
         assertNotNull(response);
         assertArchive(response, archiveSave);
@@ -59,8 +63,7 @@ class ArchiveControllerTest extends IntegrationTest {
             }
         }
         archiveUpdate.setArchiveDocuments(archiveDocumentsUpdates);
-        String requestJson = objectMapper.writeValueAsString(archiveUpdate);
-        String responseJson = putRequest(PATH, requestJson);
+        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
         Archive response = getArchiveFromJson(responseJson);
         assertNotNull(response);
         assertArchive(response, archiveUpdate);
@@ -75,6 +78,47 @@ class ArchiveControllerTest extends IntegrationTest {
         for (genealogy.visualizer.entity.ArchiveDocument ad : archiveExist.getArchiveDocuments()) {
             assertFalse(archiveDocumentRepository.findById(ad.getId()).isEmpty());
 
+        }
+    }
+
+    @Test
+    void findByFilterTest() throws Exception {
+        StringRandomizer stringRandomizer = new StringRandomizer(5);
+        ArchiveFilter filter = new ArchiveFilter().abbreviation("ГАРО").name("гос архив");
+        List<genealogy.visualizer.entity.Archive> archivesSave = generator.objects(genealogy.visualizer.entity.Archive.class, generator.nextInt(5, 10)).toList();
+        byte count = 0;
+        for (genealogy.visualizer.entity.Archive archive : archivesSave) {
+            byte localCount = 0;
+            archive.setId(null);
+            archive.setArchiveDocuments(null);
+            if (generator.nextBoolean()) {
+                archive.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? filter.getName() : filter.getName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                localCount++;
+            }
+            if (generator.nextBoolean()) {
+                archive.setAbbreviation(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? filter.getAbbreviation() : filter.getAbbreviation().toLowerCase()) +
+                        stringRandomizer.getRandomValue());
+                localCount++;
+            }
+            if (localCount == 2) {
+                count++;
+            }
+        }
+        List<genealogy.visualizer.entity.Archive> archivesExist = archiveRepository.saveAllAndFlush(archivesSave);
+        archivesExist.forEach(archive -> archiveIds.add(archive.getId()));
+        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
+        List<EasyArchive> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyArchive.class));
+        assertNotNull(response);
+        assertEquals(response.size(), count);
+        Set<Long> findIds = response.stream().map(EasyArchive::getId).collect(Collectors.toSet());
+        for (genealogy.visualizer.entity.Archive archive : archivesExist) {
+            if (archive.getAbbreviation().toLowerCase().contains(filter.getAbbreviation().toLowerCase()) &&
+                    archive.getName().toLowerCase().contains(filter.getName().toLowerCase())) {
+                assertTrue(findIds.contains(archive.getId()));
+            }
         }
     }
 

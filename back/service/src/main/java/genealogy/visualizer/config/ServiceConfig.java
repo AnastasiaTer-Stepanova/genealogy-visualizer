@@ -2,6 +2,7 @@ package genealogy.visualizer.config;
 
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.ArchiveMapper;
+import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
@@ -110,7 +111,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ArchiveService archiveService(ArchiveDAO archiveDAO, ArchiveMapper archiveMapper) {
-        return new ArchiveServiceImpl(archiveDAO, archiveMapper);
+    public ArchiveService archiveService(ArchiveDAO archiveDAO, ArchiveMapper archiveMapper, EasyArchiveMapper easyArchiveMapper) {
+        return new ArchiveServiceImpl(archiveDAO, archiveMapper, easyArchiveMapper);
     }
 }

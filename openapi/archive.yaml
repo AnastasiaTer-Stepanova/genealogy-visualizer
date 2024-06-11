@@ -96,8 +96,39 @@ paths:
             application/json:
               schema:
                 $ref: "./model/common/error-response.yaml"
+  /archive/filter:
+    get:
+      tags:
+        - Archive
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyArchive"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
 
 components:
   schemas:
     Archive:
       $ref: "./model/genealogy/archive/archive.yaml"
+    EasyArchive:
+      $ref: "./model/genealogy/archive/easy-archive.yaml"
+    ArchiveFilter:
+      $ref: "./model/genealogy/archive/archive-filter.yaml"

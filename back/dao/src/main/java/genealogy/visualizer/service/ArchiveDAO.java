@@ -1,6 +1,9 @@
 package genealogy.visualizer.service;
 
+import genealogy.visualizer.dto.ArchiveFilterDTO;
 import genealogy.visualizer.entity.Archive;
+
+import java.util.List;
 
 public interface ArchiveDAO {
 
@@ -11,5 +14,7 @@ public interface ArchiveDAO {
     Archive update(Archive archive);
 
     Archive findFullInfoById(Long id);
+
+    List<Archive> filter(ArchiveFilterDTO filter);
 
 }

@@ -32,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -171,9 +172,18 @@ class IntegrationTest {
     }
 
     String getRequest(String path) throws Exception {
+        return getRequest(path, null);
+    }
+
+    String getRequest(String path, String requestJson) throws Exception {
         System.out.println("----------------------Start request------------------------");
+        MockHttpServletRequestBuilder requestBuilder = requestJson == null ?
+                get(path) :
+                get(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson);
         String responseJson = mockMvc.perform(
-                        get(path))
+                        requestBuilder)
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON))
