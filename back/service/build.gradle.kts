@@ -13,6 +13,9 @@ dependencies {
     implementation(project(":back:dao"))
 
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.14.0-rc2") // для избавлени от warning: unknown enum constant Shape.STRING
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.20") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
     implementation("org.apache.commons:commons-compress:1.26.1")
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
@@ -22,8 +25,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter:3.2.5")
     implementation("org.springframework.data:spring-data-commons:3.2.5")
 
-
     testImplementation(testFixtures(project(":back:dao")))
+    testImplementation("jakarta.persistence:jakarta.persistence-api:3.1.0") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
     testImplementation("org.jeasy:easy-random-core:5.0.0")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
