@@ -28,4 +28,6 @@ public interface EasyFamilyRevisionMapper {
 
     List<EasyFamilyMember> toDTOs(List<genealogy.visualizer.entity.FamilyRevision> familyMembers);
 
+    List<genealogy.visualizer.entity.FamilyRevision> toEntities(List<EasyFamilyMember> christening);
+
 }

@@ -6,4 +6,4 @@ properties:
   relative:
     $ref: "./../../common/full-name.yaml"
   locality:
-    $ref: "./../../common/locality.yaml"
+    $ref: "./../../locality/easy-locality.yaml"

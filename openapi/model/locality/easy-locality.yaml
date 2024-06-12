@@ -1,4 +1,4 @@
-description: Возраст
+description: Населенный пункт
 type: object
 required:
   - name
@@ -15,12 +15,7 @@ properties:
     maximum: 50
     example: Павелец
   type:
-    type: string
-    enum:
-      - город
-      - село
-      - деревня
-    x-enum-varnames: [ TOWN, VILLAGE, HAMLET ]
+    $ref: "./../common/locality-type.yaml"
   address:
     description: Адрес населенного пункта
     type: string

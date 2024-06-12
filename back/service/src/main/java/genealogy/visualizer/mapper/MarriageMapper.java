@@ -12,7 +12,7 @@ import org.mapstruct.ReportingPolicy;
                 EasyArchiveDocumentMapper.class,
                 EasyPersonMapper.class,
                 FullNameMapper.class,
-                LocalityMapper.class,
+                EasyLocalityMapper.class,
                 WitnessMapper.class})
 public interface MarriageMapper extends CommonMapper {
 

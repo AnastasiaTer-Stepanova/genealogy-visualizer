@@ -12,7 +12,7 @@ import org.mapstruct.ReportingPolicy;
                 EasyMarriageMapper.class,
                 EasyPersonMapper.class,
                 FullNameMapper.class,
-                LocalityMapper.class})
+                EasyLocalityMapper.class})
 public interface PersonMapper {
 
     Person toDTO(genealogy.visualizer.entity.Person person);

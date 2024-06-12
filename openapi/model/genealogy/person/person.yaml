@@ -5,9 +5,9 @@ allOf:
   - type: object
     properties:
       birthLocality:
-        $ref: "./../../common/locality.yaml"
+        $ref: "./../../locality/easy-locality.yaml"
       deathLocality:
-        $ref: "./../../common/locality.yaml"
+        $ref: "./../../locality/easy-locality.yaml"
       revisions:
         description: Список ревизий, в которых упоминается человек
         type: array

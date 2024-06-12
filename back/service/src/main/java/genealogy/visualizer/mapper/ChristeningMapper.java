@@ -10,7 +10,7 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {EasyArchiveDocumentMapper.class,
                 EasyPersonMapper.class,
-                LocalityMapper.class,
+                EasyLocalityMapper.class,
                 FullNameMapper.class})
 public interface ChristeningMapper extends CommonMapper {
 

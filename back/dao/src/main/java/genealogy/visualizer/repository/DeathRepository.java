@@ -40,4 +40,12 @@ public interface DeathRepository extends JpaRepository<Death, Long> {
             "left join fetch d.locality where d.id = :id")
     Optional<Death> findFullInfoById(@Param("id") Long id);
 
+    @Modifying
+    @Query(value = "update death set locality_id = :newLocalityId where locality_id = :localityId", nativeQuery = true)
+    void updateLocalityId(@Param("localityId") Long localityId, @Param("newLocalityId") Long newLocalityId);
+
+    @Modifying
+    @Query(value = "update death set locality_id = :newLocalityId where id = :id", nativeQuery = true)
+    void updateLocalityIdById(@Param("id") Long id, @Param("newLocalityId") Long newLocalityId);
+
 }

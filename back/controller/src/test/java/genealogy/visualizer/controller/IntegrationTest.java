@@ -7,14 +7,14 @@ import genealogy.visualizer.api.model.DateInfo;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
-import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
 import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyLocalityMapper;
 import genealogy.visualizer.mapper.EasyMarriageMapper;
-import genealogy.visualizer.mapper.LocalityMapper;
+import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
@@ -49,7 +49,6 @@ import static org.jeasy.random.FieldPredicates.named;
 import static org.jeasy.random.FieldPredicates.ofType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -84,6 +83,9 @@ class IntegrationTest {
     EasyFamilyRevisionMapper easyFamilyRevisionMapper;
 
     @Autowired
+    EasyPersonMapper easyPersonMapper;
+
+    @Autowired
     EasyChristeningMapper easyChristeningMapper;
 
     @Autowired
@@ -108,7 +110,7 @@ class IntegrationTest {
     FamilyRevisionRepository familyRevisionRepository;
 
     @Autowired
-    LocalityMapper localityMapper;
+    EasyLocalityMapper localityMapper;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -269,33 +271,6 @@ class IntegrationTest {
         assertNotNull(age2);
         assertEquals(0, age1.getAge().compareTo(age2.getAge()));
         assertEquals(age1.getType().getValue(), age2.getType().getValue());
-    }
-
-    static void assertLocality(Locality locality1, Locality locality2) {
-        if (locality1 == null || locality2 == null) {
-            assertNull(locality1);
-            assertNull(locality2);
-            return;
-        }
-        assertNotNull(locality1);
-        assertNotNull(locality2);
-        assertEquals(locality1.getName(), locality2.getName());
-        assertEquals(locality1.getAddress(), locality2.getAddress());
-        assertEquals(locality1.getType(), locality2.getType());
-        assertEquals(locality1.getAnotherNames().size(), locality2.getAnotherNames().size());
-        locality1.getAnotherNames().
-                forEach(anotherName -> assertTrue(locality2.getAnotherNames().contains(anotherName)));
-    }
-
-    static void assertLocality(Locality locality1, genealogy.visualizer.entity.Locality locality2) {
-        assertNotNull(locality1);
-        assertNotNull(locality2);
-        assertEquals(locality1.getName(), locality2.getName());
-        assertEquals(locality1.getAddress(), locality2.getAddress());
-        assertEquals(locality1.getType().name(), locality2.getType().name());
-        assertEquals(locality1.getAnotherNames().size(), locality2.getAnotherNames().size());
-        locality1.getAnotherNames().
-                forEach(anotherName -> assertTrue(locality2.getAnotherNames().contains(anotherName)));
     }
 
     static void assertDateInfo(DateInfo dateInfo1, genealogy.visualizer.entity.model.DateInfo dateInfo2) {

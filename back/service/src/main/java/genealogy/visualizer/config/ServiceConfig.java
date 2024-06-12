@@ -9,9 +9,11 @@ import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
 import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyLocalityMapper;
 import genealogy.visualizer.mapper.EasyMarriageMapper;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import genealogy.visualizer.mapper.LocalityMapper;
 import genealogy.visualizer.mapper.MarriageMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
@@ -30,6 +32,7 @@ import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
@@ -44,6 +47,8 @@ import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeServiceImpl;
+import genealogy.visualizer.service.locality.LocalityService;
+import genealogy.visualizer.service.locality.LocalityServiceImpl;
 import genealogy.visualizer.service.marriage.MarriageService;
 import genealogy.visualizer.service.marriage.MarriageServiceImpl;
 import genealogy.visualizer.service.person.PersonService;
@@ -159,5 +164,12 @@ public class ServiceConfig {
                                            MarriageMapper marriageMapper,
                                            EasyMarriageMapper easyMarriageMapper) {
         return new MarriageServiceImpl(marriageDAO, marriageMapper, easyMarriageMapper);
+    }
+
+    @Bean
+    public LocalityService localityService(LocalityDAO localityDAO,
+                                           LocalityMapper localityMapper,
+                                           EasyLocalityMapper easyLocalityMapper) {
+        return new LocalityServiceImpl(localityDAO, localityMapper, easyLocalityMapper);
     }
 }

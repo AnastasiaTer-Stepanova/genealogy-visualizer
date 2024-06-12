@@ -1,0 +1,7 @@
+description: Тип населенного пункта
+type: string
+enum:
+  - город
+  - село
+  - деревня
+x-enum-varnames: [ TOWN, VILLAGE, HAMLET ]

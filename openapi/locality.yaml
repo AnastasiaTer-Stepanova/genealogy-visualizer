@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: API для работы с данными населенных пунктов
+  version: "1.0.0"
+tags:
+  - name: Locality
+    description: API для работы с данными населенных пунктов
+paths:
+  /locality/{id}:
+    get:
+      tags:
+        - Locality
+      operationId: getById
+      summary: "Request data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Locality"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    delete:
+      tags:
+        - Locality
+      operationId: delete
+      summary: "Delete data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: "OK"
+  /locality:
+    post:
+      tags:
+        - Locality
+      operationId: save
+      summary: "Saving data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Locality"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Locality"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    put:
+      tags:
+        - Locality
+      operationId: update
+      summary: "Update only the Locality entity, not intended for updating other entities (like Marriage and others)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Locality"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Locality"
+        404:
+          description: "Failed to update data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+  /locality/filter:
+    get:
+      tags:
+        - Locality
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocalityFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyLocality"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+
+components:
+  schemas:
+    Locality:
+      $ref: "./model/locality/locality.yaml"
+    EasyLocality:
+      $ref: "./model/locality/easy-locality.yaml"
+    LocalityFilter:
+      $ref: "./model/locality/locality-filter.yaml"

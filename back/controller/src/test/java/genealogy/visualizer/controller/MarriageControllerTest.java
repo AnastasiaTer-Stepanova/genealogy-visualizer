@@ -2,9 +2,9 @@ package genealogy.visualizer.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
+import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.MarriageFilter;
 import genealogy.visualizer.api.model.Witness;
@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
+import static genealogy.visualizer.controller.LocalityControllerTest.assertLocality;
 import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,11 +48,11 @@ class MarriageControllerTest extends IntegrationTest {
         marriageSave.setArchiveDocument(archiveDocumentSave);
         List<EasyPerson> personsSave = generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList();
         marriageSave.setPersons(personsSave);
-        Locality localitySave = generator.nextObject(Locality.class);
+        EasyLocality localitySave = generator.nextObject(EasyLocality.class);
         marriageSave.setHusbandLocality(localitySave);
         marriageSave.setWifeLocality(localityMapper.toDTO(localityExisting));
         List<Witness> witnessesSave = generator.objects(Witness.class, generator.nextInt(5, 10)).toList();
-        witnessesSave.forEach(w -> w.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(Locality.class)));
+        witnessesSave.forEach(w -> w.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(EasyLocality.class)));
         marriageSave.setWitnesses(witnessesSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(marriageSave));
         Marriage response = getMarriageFromJson(responseJson);
@@ -72,11 +73,11 @@ class MarriageControllerTest extends IntegrationTest {
         marriageUpdate.setArchiveDocument(archiveDocumentUpdate);
         List<EasyPerson> personsUpdate = generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList();
         marriageUpdate.setPersons(personsUpdate);
-        Locality localityUpdate = generator.nextObject(Locality.class);
+        EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
         marriageUpdate.setHusbandLocality(localityUpdate);
         marriageUpdate.setWifeLocality(localityUpdate);
         List<Witness> witnessesUpdate = new ArrayList<>(generator.objects(Witness.class, generator.nextInt(5, 10)).toList());
-        witnessesUpdate.forEach(w -> w.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(Locality.class)));
+        witnessesUpdate.forEach(w -> w.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(EasyLocality.class)));
         marriageExist.getWitnesses().forEach(w -> {
             if (generator.nextBoolean()) {
                 witnessesUpdate.add(witnessMapper.toDTO(w));

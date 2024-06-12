@@ -56,4 +56,20 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query(value = "delete from person_marriage where person_id = :id", nativeQuery = true)
     void deleteMarriageLinkById(@Param("id") Long id);
 
+    @Modifying
+    @Query(value = "update person set birth_locality_id = :newBirthLocalityId where birth_locality_id = :birthLocalityId", nativeQuery = true)
+    void updateBirthLocalityId(@Param("birthLocalityId") Long birthLocalityId, @Param("newBirthLocalityId") Long newBirthLocalityId);
+
+    @Modifying
+    @Query(value = "update person set death_locality_id = :newDeathLocalityId where death_locality_id = :deathLocalityId", nativeQuery = true)
+    void updateDeathLocalityId(@Param("deathLocalityId") Long deathLocalityId, @Param("newDeathLocalityId") Long newDeathLocalityId);
+
+    @Modifying
+    @Query(value = "update person set birth_locality_id = :newBirthLocalityId where id = :id", nativeQuery = true)
+    void updateBirthLocalityIdById(@Param("id") Long id, @Param("newBirthLocalityId") Long newBirthLocalityId);
+
+    @Modifying
+    @Query(value = "update person set death_locality_id = :newDeathLocalityId where id = :id", nativeQuery = true)
+    void updateDeathLocalityIdById(@Param("id") Long id, @Param("newDeathLocalityId") Long newDeathLocalityId);
+
 }

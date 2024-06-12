@@ -7,7 +7,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class, LocalityMapper.class})
+        uses = {FullNameMapper.class, EasyLocalityMapper.class})
 public interface GodParentMapper extends CommonMapper {
 
     genealogy.visualizer.entity.model.GodParent toEntity(GodParent godParent);

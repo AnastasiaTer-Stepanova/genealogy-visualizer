@@ -1,6 +1,5 @@
 package genealogy.visualizer.repository;
 
-import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.Marriage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -49,5 +48,25 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
 
     @Query("select m from Marriage m left join fetch m.persons where m.id = :id")
     Optional<Marriage> findFullInfoWithPersons(@Param("id") Long id);
+
+    @Modifying
+    @Query(value = "update marriage set husband_locality_id = :newHusbandLocalityId where husband_locality_id = :husbandLocalityId", nativeQuery = true)
+    void updateHusbandLocalityId(@Param("husbandLocalityId") Long birthLocalityId, @Param("newHusbandLocalityId") Long newHusbandLocalityId);
+
+    @Modifying
+    @Query(value = "update marriage set wife_locality_id = :newWifeLocalityId where wife_locality_id = :wifeLocalityId", nativeQuery = true)
+    void updateWifeLocalityId(@Param("wifeLocalityId") Long wifeLocalityId, @Param("newWifeLocalityId") Long newWifeLocalityId);
+
+    @Modifying
+    @Query(value = "update marriage set husband_locality_id = :newHusbandLocalityId where id = :id", nativeQuery = true)
+    void updateHusbandLocalityIdById(@Param("id") Long id, @Param("newHusbandLocalityId") Long newHusbandLocalityId);
+
+    @Modifying
+    @Query(value = "update marriage set wife_locality_id = :newWifeLocalityId where id = :id", nativeQuery = true)
+    void updateWifeLocalityIdById(@Param("id") Long id, @Param("newWifeLocalityId") Long newWifeLocalityId);
+
+    @Modifying
+    @Query(value = "update witness set locality_id = :newLocalityId where locality_id = :localityId", nativeQuery = true)
+    void updateWitnessLocalityId(@Param("localityId") Long localityId, @Param("newLocalityId") Long newLocalityId);
 
 }

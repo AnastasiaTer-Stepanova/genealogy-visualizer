@@ -5,8 +5,8 @@ import genealogy.visualizer.api.model.Death;
 import genealogy.visualizer.api.model.DeathFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyDeath;
+import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.service.DeathDAO;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
+import static genealogy.visualizer.controller.LocalityControllerTest.assertLocality;
 import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,7 +41,7 @@ class DeathControllerTest extends IntegrationTest {
         deathSave.setArchiveDocument(archiveDocumentSave);
         EasyPerson personSave = generator.nextObject(EasyPerson.class);
         deathSave.setPerson(personSave);
-        Locality localitySave = generator.nextObject(Locality.class);
+        EasyLocality localitySave = generator.nextObject(EasyLocality.class);
         deathSave.setLocality(localitySave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(deathSave));
         Death response = getDeathFromJson(responseJson);
@@ -61,7 +62,7 @@ class DeathControllerTest extends IntegrationTest {
         deathUpdate.setArchiveDocument(archiveDocumentUpdate);
         EasyPerson personUpdate = generator.nextObject(EasyPerson.class);
         deathUpdate.setPerson(personUpdate);
-        Locality localityUpdate = generator.nextObject(Locality.class);
+        EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
         deathUpdate.setLocality(localityUpdate);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
         Death response = getDeathFromJson(responseJson);

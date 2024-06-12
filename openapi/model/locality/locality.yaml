@@ -1,0 +1,36 @@
+description: Населенный пункт
+type: object
+allOf:
+  - $ref: "easy-locality.yaml"
+  - type: object
+    properties:
+      christenings:
+        description: Список крещений
+        type: array
+        items:
+          $ref: "./../genealogy/christening/easy-christening.yaml"
+      deaths:
+        description: Список смертей
+        type: array
+        items:
+          $ref: "./../genealogy/death/easy-death.yaml"
+      personsWithBirthLocality:
+        description: Список персонов, рожденных в этом населенном пункте
+        type: array
+        items:
+          $ref: "./../genealogy/person/easy-person.yaml"
+      personsWithDeathLocality:
+        description: Список персонов, умерших в этом населенном пункте
+        type: array
+        items:
+          $ref: "./../genealogy/person/easy-person.yaml"
+      marriagesWithHusbandLocality:
+        description: Список свадеб, у которых муж из этого населенного пункта
+        type: array
+        items:
+          $ref: "./../genealogy/marriage/easy-marriage.yaml"
+      marriagesWithWifeLocality:
+        description: Список свадеб, у которых муж из этого населенного пункта
+        type: array
+        items:
+          $ref: "./../genealogy/marriage/easy-marriage.yaml"

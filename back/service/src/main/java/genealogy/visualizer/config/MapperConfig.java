@@ -20,6 +20,8 @@ import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.mapper.EasyDeathMapperImpl;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapperImpl;
+import genealogy.visualizer.mapper.EasyLocalityMapper;
+import genealogy.visualizer.mapper.EasyLocalityMapperImpl;
 import genealogy.visualizer.mapper.EasyMarriageMapper;
 import genealogy.visualizer.mapper.EasyMarriageMapperImpl;
 import genealogy.visualizer.mapper.EasyPersonMapper;
@@ -145,6 +147,12 @@ public class MapperConfig {
     @Primary
     public EasyPersonMapper easyPersonMapper() {
         return new EasyPersonMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public EasyLocalityMapper easyLocalityMapper() {
+        return new EasyLocalityMapperImpl();
     }
 
     @Bean

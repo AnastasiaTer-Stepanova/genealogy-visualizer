@@ -17,4 +17,40 @@ public interface LocalityRepository extends JpaRepository<Locality, Long> {
     Optional<Locality> findLocality(@Param("name") String name,
                                     @Param("type") LocalityType type,
                                     @Param("address") String address);
+
+    @Query(value = "update locality c set " +
+            "address = :#{#entity.address}, name = :#{#entity.name}, type = :#{#entity.type?.name} " +
+            "where id = :#{#entity.id} returning *", nativeQuery = true)
+    Locality update(@Param("entity") Locality entity);
+
+    @Query("select l from Locality l left join fetch l.anotherNames " +
+            "where l.id = :id")
+    Optional<Locality> findFullInfoById(@Param("id") Long id);
+
+    @Query("select l from Locality l " +
+            "left join fetch l.marriagesWithWifeLocality " +
+            "where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithMarriageWifeLocality(@Param("id") Long id);
+
+    @Query("select l from Locality l " +
+            "left join fetch l.marriagesWithHusbandLocality " +
+            "where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithMarriageHusbandLocality(@Param("id") Long id);
+
+    @Query("select l from Locality l " +
+            "left join fetch l.personsWithDeathLocality " +
+            "where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithPersonDeathLocality(@Param("id") Long id);
+
+    @Query("select l from Locality l " +
+            "left join fetch l.personsWithBirthLocality " +
+            "where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithPersonBirthLocality(@Param("id") Long id);
+
+    @Query("select l from Locality l left join fetch l.christenings where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithChristening(@Param("id") Long id);
+
+    @Query("select l from Locality l left join fetch l.deaths where l.id = :id")
+    Optional<Locality> findFullInfoByIdWithDeath(@Param("id") Long id);
+
 }

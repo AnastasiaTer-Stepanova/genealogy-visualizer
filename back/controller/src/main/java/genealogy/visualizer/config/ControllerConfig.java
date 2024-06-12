@@ -9,6 +9,7 @@ import genealogy.visualizer.controller.ChristeningController;
 import genealogy.visualizer.controller.DeathController;
 import genealogy.visualizer.controller.FamilyRevisionController;
 import genealogy.visualizer.controller.GenealogyVisualizeController;
+import genealogy.visualizer.controller.LocalityController;
 import genealogy.visualizer.controller.MarriageController;
 import genealogy.visualizer.controller.PersonController;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
@@ -17,6 +18,7 @@ import genealogy.visualizer.service.christening.ChristeningService;
 import genealogy.visualizer.service.death.DeathService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
+import genealogy.visualizer.service.locality.LocalityService;
 import genealogy.visualizer.service.marriage.MarriageService;
 import genealogy.visualizer.service.person.PersonService;
 import org.springframework.context.annotation.Bean;
@@ -76,6 +78,11 @@ public class ControllerConfig {
     @Bean
     public MarriageController marriageController(MarriageService marriageService) {
         return new MarriageController(marriageService);
+    }
+
+    @Bean
+    public LocalityController localityController(LocalityService localityService) {
+        return new LocalityController(localityService);
     }
 
 }

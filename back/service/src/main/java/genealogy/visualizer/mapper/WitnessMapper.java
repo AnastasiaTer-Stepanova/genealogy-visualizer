@@ -7,7 +7,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class, LocalityMapper.class})
+        uses = {FullNameMapper.class, EasyLocalityMapper.class})
 public interface WitnessMapper extends CommonMapper {
 
     genealogy.visualizer.entity.model.Witness toEntity(Witness witness);

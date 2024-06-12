@@ -23,4 +23,6 @@ public interface EasyChristeningMapper extends CommonMapper {
     EasyChristening toDTO(genealogy.visualizer.entity.Christening christening);
 
     List<EasyChristening> toDTOs(List<genealogy.visualizer.entity.Christening> christening);
+
+    List<genealogy.visualizer.entity.Christening> toEntities(List<EasyChristening> christening);
 }

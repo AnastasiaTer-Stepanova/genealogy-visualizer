@@ -9,4 +9,4 @@ allOf:
       person:
         $ref: "./../person/easy-person.yaml"
       locality:
-        $ref: "./../../common/locality.yaml"
+        $ref: "./../../locality/easy-locality.yaml"

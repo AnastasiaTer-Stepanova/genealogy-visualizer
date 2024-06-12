@@ -12,9 +12,9 @@ allOf:
         items:
           $ref: "./../person/easy-person.yaml"
       husbandLocality:
-        $ref: "./../../common/locality.yaml"
+        $ref: "./../../locality/easy-locality.yaml"
       wifeLocality:
-        $ref: "./../../common/locality.yaml"
+        $ref: "./../../locality/easy-locality.yaml"
       witnesses:
         description: Свидетели на свадьбе
         type: array

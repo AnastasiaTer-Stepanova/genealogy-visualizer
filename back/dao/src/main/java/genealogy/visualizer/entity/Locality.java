@@ -69,6 +69,12 @@ public class Locality implements Serializable {
     @OneToMany(mappedBy = "deathLocality", fetch = FetchType.LAZY)
     private List<Person> personsWithDeathLocality = new ArrayList<>();
 
+    @OneToMany(mappedBy = "husbandLocality", fetch = FetchType.LAZY)
+    private List<Marriage> marriagesWithHusbandLocality = new ArrayList<>();
+
+    @OneToMany(mappedBy = "wifeLocality", fetch = FetchType.LAZY)
+    private List<Marriage> marriagesWithWifeLocality = new ArrayList<>();
+
     public Locality() {
     }
 
@@ -84,7 +90,7 @@ public class Locality implements Serializable {
         this.anotherNames = anotherNames;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality) {
+    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality, List<Marriage> marriagesWithHusbandLocality, List<Marriage> marriagesWithWifeLocality) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -94,6 +100,8 @@ public class Locality implements Serializable {
         this.deaths = deaths;
         this.personsWithBirthLocality = personsWithBirthLocality;
         this.personsWithDeathLocality = personsWithDeathLocality;
+        this.marriagesWithHusbandLocality = marriagesWithHusbandLocality;
+        this.marriagesWithWifeLocality = marriagesWithWifeLocality;
     }
 
     public Long getId() {
@@ -166,5 +174,21 @@ public class Locality implements Serializable {
 
     public void setPersonsWithDeathLocality(List<Person> personsWithDeathLocality) {
         this.personsWithDeathLocality = personsWithDeathLocality;
+    }
+
+    public List<Marriage> getMarriagesWithHusbandLocality() {
+        return marriagesWithHusbandLocality;
+    }
+
+    public void setMarriagesWithHusbandLocality(List<Marriage> marriagesWithHusbandLocality) {
+        this.marriagesWithHusbandLocality = marriagesWithHusbandLocality;
+    }
+
+    public List<Marriage> getMarriagesWithWifeLocality() {
+        return marriagesWithWifeLocality;
+    }
+
+    public void setMarriagesWithWifeLocality(List<Marriage> marriagesWithWifeLocality) {
+        this.marriagesWithWifeLocality = marriagesWithWifeLocality;
     }
 }

@@ -5,9 +5,9 @@ import genealogy.visualizer.api.model.Christening;
 import genealogy.visualizer.api.model.ChristeningFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyChristening;
+import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.GodParent;
-import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.api.model.Sex;
 import genealogy.visualizer.mapper.GodParentMapper;
 import genealogy.visualizer.service.ChristeningDAO;
@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
+import static genealogy.visualizer.controller.LocalityControllerTest.assertLocality;
 import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,10 +49,10 @@ class ChristeningControllerTest extends IntegrationTest {
         christeningSave.setArchiveDocument(archiveDocumentSave);
         EasyPerson personSave = generator.nextObject(EasyPerson.class);
         christeningSave.setPerson(personSave);
-        Locality localitySave = generator.nextObject(Locality.class);
+        EasyLocality localitySave = generator.nextObject(EasyLocality.class);
         christeningSave.setLocality(localitySave);
         List<GodParent> godParentsSave = generator.objects(GodParent.class, generator.nextInt(5, 10)).toList();
-        godParentsSave.forEach(gp -> gp.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(Locality.class)));
+        godParentsSave.forEach(gp -> gp.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(EasyLocality.class)));
         christeningSave.setGodParents(godParentsSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(christeningSave));
         Christening response = getChristeningFromJson(responseJson);
@@ -72,10 +73,10 @@ class ChristeningControllerTest extends IntegrationTest {
         christeningUpdate.setArchiveDocument(archiveDocumentUpdate);
         EasyPerson personUpdate = generator.nextObject(EasyPerson.class);
         christeningUpdate.setPerson(personUpdate);
-        Locality localityUpdate = generator.nextObject(Locality.class);
+        EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
         christeningUpdate.setLocality(localityUpdate);
         List<GodParent> godParentsUpdate = new ArrayList<>(generator.objects(GodParent.class, generator.nextInt(2, 3)).toList());
-        godParentsUpdate.forEach(gp -> gp.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(Locality.class)));
+        godParentsUpdate.forEach(gp -> gp.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(EasyLocality.class)));
         christeningExist.getGodParents().forEach(gp -> {
             if (generator.nextBoolean()) {
                 godParentsUpdate.add(godParentMapper.toDTO(gp));
@@ -273,7 +274,7 @@ class ChristeningControllerTest extends IntegrationTest {
         assertEquals(christening1.getComment(), christening2.getComment());
         assertFullName(christening1.getFather(), christening2.getFather());
         assertFullName(christening1.getMother(), christening2.getMother());
-            assertLocality(christening1.getLocality(), christening2.getLocality());
+        assertLocality(christening1.getLocality(), christening2.getLocality());
         if (christening2.getGodParents() != null) {
             assertEquals(christening1.getGodParents().size(), christening2.getGodParents().size());
             List<GodParent> godParents1 = christening1.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();

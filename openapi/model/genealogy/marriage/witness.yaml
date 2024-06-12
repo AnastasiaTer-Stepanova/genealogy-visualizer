@@ -7,6 +7,6 @@ properties:
   fullName:
     $ref: "./../../common/full-name.yaml"
   locality:
-    $ref: "./../../common/locality.yaml"
+    $ref: "./../../locality/easy-locality.yaml"
   witnessType:
     $ref: "witness-type.yaml"

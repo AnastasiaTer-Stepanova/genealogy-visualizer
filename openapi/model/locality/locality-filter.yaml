@@ -1,0 +1,16 @@
+description: Фильтр для поиска данных о населенном пункте
+type: object
+properties:
+  name:
+    description: Наименование населенного пункта
+    type: string
+    minimum: 0
+    maximum: 50
+    example: Павелец
+  type:
+    $ref: "./../common/locality-type.yaml"
+  address:
+    description: Адрес населенного пункта
+    type: string
+    maximum: 255
+    example: Россия, Рязанская область

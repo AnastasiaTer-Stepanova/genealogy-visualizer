@@ -24,4 +24,7 @@ public interface EasyDeathMapper extends CommonMapper {
     EasyDeath toDTO(genealogy.visualizer.entity.Death death);
 
     List<EasyDeath> toDTOs(List<genealogy.visualizer.entity.Death> death);
+
+    List<genealogy.visualizer.entity.Death> toEntities(List<EasyDeath> christening);
+
 }

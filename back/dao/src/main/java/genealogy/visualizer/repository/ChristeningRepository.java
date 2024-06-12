@@ -40,4 +40,16 @@ public interface ChristeningRepository extends JpaRepository<Christening, Long> 
             "left join fetch c.locality where c.id = :id")
     Optional<Christening> findFullInfoById(@Param("id") Long id);
 
+    @Modifying
+    @Query(value = "update christening set locality_id = :newLocalityId where locality_id = :localityId", nativeQuery = true)
+    void updateLocalityId(@Param("localityId") Long localityId, @Param("newLocalityId") Long newLocalityId);
+
+    @Modifying
+    @Query(value = "update god_parent set locality_id = :newLocalityId where locality_id = :localityId", nativeQuery = true)
+    void updateGodParentLocalityId(@Param("localityId") Long localityId, @Param("newLocalityId") Long newLocalityId);
+
+    @Modifying
+    @Query(value = "update christening set locality_id = :newLocalityId where id = :id", nativeQuery = true)
+    void updateLocalityIdById(@Param("id") Long id, @Param("newLocalityId") Long newLocalityId);
+
 }

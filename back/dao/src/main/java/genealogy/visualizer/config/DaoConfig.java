@@ -68,8 +68,14 @@ public class DaoConfig {
     }
 
     @Bean
-    public LocalityDAO localityDAO(@Autowired LocalityRepository localityRepository) {
-        return new LocalityDAOImpl(localityRepository);
+    public LocalityDAO localityDAO(@Autowired LocalityRepository localityRepository,
+                                   @Autowired ChristeningRepository christeningRepository,
+                                   @Autowired DeathRepository deathRepository,
+                                   @Autowired PersonRepository personRepository,
+                                   @Autowired MarriageRepository marriageRepository,
+                                   @Autowired EntityManager entityManager) {
+        return new LocalityDAOImpl(localityRepository, christeningRepository, deathRepository, personRepository,
+                marriageRepository, entityManager);
     }
 
     @Bean

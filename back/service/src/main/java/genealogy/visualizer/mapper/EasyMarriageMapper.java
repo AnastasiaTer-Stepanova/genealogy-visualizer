@@ -26,4 +26,7 @@ public interface EasyMarriageMapper extends CommonMapper {
     EasyMarriage toDTO(genealogy.visualizer.entity.Marriage marriage);
 
     List<EasyMarriage> toDTOs(List<genealogy.visualizer.entity.Marriage> marriage);
+
+    List<genealogy.visualizer.entity.Marriage> toEntities(List<EasyMarriage> christening);
+
 }
