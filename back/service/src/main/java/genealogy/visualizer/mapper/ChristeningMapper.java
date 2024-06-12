@@ -1,23 +1,22 @@
 package genealogy.visualizer.mapper;
 
+import genealogy.visualizer.api.model.Christening;
+import genealogy.visualizer.api.model.ChristeningFilter;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-//TODO Раскомментить при реализации ChristeningController
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
-        unmappedSourcePolicy = ReportingPolicy.ERROR)
+        unmappedSourcePolicy = ReportingPolicy.ERROR,
+        uses = {EasyArchiveDocumentMapper.class,
+                EasyPersonMapper.class,
+                LocalityMapper.class,
+                FullNameMapper.class})
 public interface ChristeningMapper extends CommonMapper {
-//
-//    @Mapping(target = "father", ignore = true)
-//    @Mapping(target = "mother", ignore = true)
-//    @Mapping(target = "comment", ignore = true)
-//    @Mapping(target = "locality", ignore = true)
-//    @Mapping(target = "godParents", ignore = true)
-//    @Mapping(target = "person", ignore = true)
-//    @Mapping(target = "archiveDocument", ignore = true)
-//    genealogy.visualizer.entity.Christening toEntity(Christening christening);
-//
-//    @BeanMapping(ignoreUnmappedSourceProperties = {"father", "mother", "comment", "locality", "godParents", "person", "archiveDocument"})
-//    Christening toDTO(genealogy.visualizer.entity.Christening christening);
+
+    genealogy.visualizer.entity.Christening toEntity(Christening christening);
+
+    Christening toDTO(genealogy.visualizer.entity.Christening christening);
+
+    genealogy.visualizer.dto.ChristeningFilterDTO toFilter(ChristeningFilter filter);
 }

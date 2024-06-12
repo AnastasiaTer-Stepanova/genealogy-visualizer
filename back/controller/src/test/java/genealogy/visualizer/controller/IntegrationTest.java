@@ -7,7 +7,7 @@ import genealogy.visualizer.api.model.DateInfo;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
-import genealogy.visualizer.entity.Locality;
+import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -48,6 +49,7 @@ import static org.jeasy.random.FieldPredicates.named;
 import static org.jeasy.random.FieldPredicates.ofType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -113,7 +115,7 @@ class IntegrationTest {
 
     genealogy.visualizer.entity.ArchiveDocument archiveDocumentExisting;
 
-    Locality localityExisting;
+    genealogy.visualizer.entity.Locality localityExisting;
 
     genealogy.visualizer.entity.Archive archiveExisting;
 
@@ -143,7 +145,11 @@ class IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        localityExisting = localityRepository.save(generator.nextObject(genealogy.visualizer.entity.Locality.class));
+        localityExisting = generator.nextObject(genealogy.visualizer.entity.Locality.class);
+        localityExisting.setChristenings(Collections.emptyList());
+        localityExisting.setPersonsWithBirthLocality(Collections.emptyList());
+        localityExisting.setPersonsWithDeathLocality(Collections.emptyList());
+        localityExisting = localityRepository.save(localityExisting);
         localityIds.add(localityExisting.getId());
         archiveExisting = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveExisting = archiveRepository.saveAndFlush(archiveExisting);
@@ -265,7 +271,12 @@ class IntegrationTest {
         assertEquals(age1.getType().getValue(), age2.getType().getValue());
     }
 
-    static void assertLocality(genealogy.visualizer.api.model.Locality locality1, genealogy.visualizer.api.model.Locality locality2) {
+    static void assertLocality(Locality locality1, Locality locality2) {
+        if (locality1 == null || locality2 == null) {
+            assertNull(locality1);
+            assertNull(locality2);
+            return;
+        }
         assertNotNull(locality1);
         assertNotNull(locality2);
         assertEquals(locality1.getName(), locality2.getName());
@@ -274,5 +285,30 @@ class IntegrationTest {
         assertEquals(locality1.getAnotherNames().size(), locality2.getAnotherNames().size());
         locality1.getAnotherNames().
                 forEach(anotherName -> assertTrue(locality2.getAnotherNames().contains(anotherName)));
+    }
+
+    static void assertLocality(Locality locality1, genealogy.visualizer.entity.Locality locality2) {
+        assertNotNull(locality1);
+        assertNotNull(locality2);
+        assertEquals(locality1.getName(), locality2.getName());
+        assertEquals(locality1.getAddress(), locality2.getAddress());
+        assertEquals(locality1.getType().name(), locality2.getType().name());
+        assertEquals(locality1.getAnotherNames().size(), locality2.getAnotherNames().size());
+        locality1.getAnotherNames().
+                forEach(anotherName -> assertTrue(locality2.getAnotherNames().contains(anotherName)));
+    }
+
+    static void assertDateInfo(DateInfo dateInfo1, genealogy.visualizer.entity.model.DateInfo dateInfo2) {
+        assertNotNull(dateInfo1);
+        assertNotNull(dateInfo2);
+        assertEquals(dateInfo1.getDate(), dateInfo2.getDate());
+        assertEquals(dateInfo1.getDateRangeType().getValue(), dateInfo2.getDateRangeType().getName());
+    }
+
+    static void assertDateInfo(DateInfo dateInfo1, DateInfo dateInfo2) {
+        assertNotNull(dateInfo1);
+        assertNotNull(dateInfo2);
+        assertEquals(dateInfo1.getDate(), dateInfo2.getDate());
+        assertEquals(dateInfo1.getDateRangeType(), dateInfo2.getDateRangeType());
     }
 }

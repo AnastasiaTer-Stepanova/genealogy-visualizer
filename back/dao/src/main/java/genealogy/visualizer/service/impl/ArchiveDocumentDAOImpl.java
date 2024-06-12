@@ -89,14 +89,12 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
         archiveDocument.setDeaths(Collections.emptyList());
         archiveDocument.setMarriages(Collections.emptyList());
         archiveDocument.setPreviousRevisions(Collections.emptyList());
-        if (archiveDocument.getArchive() != null) {
-            archiveDocument.setArchive(archiveHelper.saveEntityIfNotExist(
-                    archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository));
-        }
-        if (archiveDocument.getNextRevision() != null) {
-            archiveDocument.setNextRevision(archiveDocumentHelper.saveEntityIfNotExist(
-                    archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository));
-        }
+        archiveDocument.setArchive(archiveDocument.getArchive() != null ?
+                archiveHelper.saveEntityIfNotExist(archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository) :
+                null);
+        archiveDocument.setNextRevision(archiveDocument.getNextRevision() != null ?
+                archiveDocumentHelper.saveEntityIfNotExist(archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository) :
+                null);
         ArchiveDocument savedArchiveDocument = archiveDocumentRepository.save(archiveDocument);
         if (familyRevisions != null && !familyRevisions.isEmpty()) {
             familyRevisions.forEach(fr -> fr.setArchiveDocument(savedArchiveDocument));
@@ -130,12 +128,14 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public ArchiveDocument update(ArchiveDocument archiveDocument) {
         if (archiveDocument.getId() == null)
-            throw new IllegalArgumentException("Cannot save archive document without id");
+            throw new IllegalArgumentException("Cannot update archive document without id");
 
-        archiveDocument.setArchive(archiveHelper.saveEntityIfNotExist(
-                archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository));
-        archiveDocument.setNextRevision(archiveDocumentHelper.saveEntityIfNotExist(
-                archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository));
+        archiveDocument.setArchive(archiveDocument.getArchive() != null ?
+                archiveHelper.saveEntityIfNotExist(archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository) :
+                null);
+        archiveDocument.setNextRevision(archiveDocument.getNextRevision() != null ?
+                archiveDocumentHelper.saveEntityIfNotExist(archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository) :
+                null);
 
         ArchiveDocument updatedArchiveDocument = archiveDocumentRepository.update(archiveDocument);
 
@@ -159,6 +159,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ArchiveDocument findFullInfoById(Long id) {
         ArchiveDocument archiveDocument = archiveDocumentRepository.findFullInfoById(id).orElse(null);
         if (archiveDocument == null) return null;

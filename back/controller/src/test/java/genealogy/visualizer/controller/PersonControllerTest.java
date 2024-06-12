@@ -179,9 +179,9 @@ class PersonControllerTest extends IntegrationTest {
     }
 
     static void assertPerson(Person expected, Person actual) {
-        assertEquals(expected.getBirthDate(), actual.getBirthDate());
-        assertEquals(expected.getDeathDate(), actual.getDeathDate());
-        assertEquals(expected.getFullName(), actual.getFullName());
+        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
+        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
+        assertFullName(expected.getFullName(), actual.getFullName());
         if (expected.getBirthLocality() != null) {
             assertLocality(expected.getBirthLocality(), actual.getBirthLocality());
         } else {
@@ -214,21 +214,21 @@ class PersonControllerTest extends IntegrationTest {
         expected.getParents().sort(Comparator.comparing(r -> r.getFullName().getName()));
         List<EasyPerson> actualParents = actual.getParents().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
         for (int i = 0; i < expected.getParents().size(); i++) {
-            assertEasyPerson(expected.getParents().get(i), actualParents.get(i));
+            assertPerson(expected.getParents().get(i), actualParents.get(i));
         }
 
         assertEquals(expected.getChildren().size(), actual.getChildren().size());
         expected.getChildren().sort(Comparator.comparing(r -> r.getFullName().getName()));
         List<EasyPerson> actualChildren = actual.getChildren().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
         for (int i = 0; i < expected.getChildren().size(); i++) {
-            assertEasyPerson(expected.getChildren().get(i), actualChildren.get(i));
+            assertPerson(expected.getChildren().get(i), actualChildren.get(i));
         }
 
         assertEquals(expected.getPartners().size(), actual.getPartners().size());
         expected.getPartners().sort(Comparator.comparing(r -> r.getFullName().getName()));
         List<EasyPerson> actualPartners = actual.getPartners().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
         for (int i = 0; i < expected.getPartners().size(); i++) {
-            assertEasyPerson(expected.getPartners().get(i), actualPartners.get(i));
+            assertPerson(expected.getPartners().get(i), actualPartners.get(i));
         }
 
         assertEquals(expected.getRevisions().size(), actual.getRevisions().size());
@@ -239,11 +239,84 @@ class PersonControllerTest extends IntegrationTest {
         }
     }
 
-    protected static void assertEasyPerson(EasyPerson expected, EasyPerson actual) {
-        assertEquals(expected.getBirthDate(), actual.getBirthDate());
-        assertEquals(expected.getDeathDate(), actual.getDeathDate());
-        assertEquals(expected.getFullName(), actual.getFullName());
+    static void assertPerson(Person expected, genealogy.visualizer.entity.Person actual) {
+        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
+        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
+        assertFullName(expected.getFullName(), actual.getFullName());
+        if (expected.getBirthLocality() != null) {
+            assertLocality(expected.getBirthLocality(), actual.getBirthLocality());
+        } else {
+            assertNull(actual.getBirthLocality());
+        }
+        if (expected.getDeathLocality() != null) {
+            assertLocality(expected.getDeathLocality(), actual.getDeathLocality());
+        } else {
+            assertNull(actual.getDeathLocality());
+        }
+        if (expected.getChristening() != null) {
+            assertChristening(expected.getChristening(), actual.getChristening());
+        } else {
+            assertNull(actual.getChristening());
+        }
+        if (expected.getDeath() != null) {
+            assertDeath(expected.getDeath(), actual.getDeath());
+        } else {
+            assertNull(actual.getDeath());
+        }
+
+        assertEquals(expected.getMarriages().size(), actual.getMarriages().size());
+        expected.getMarriages().sort(Comparator.comparing(r -> r.getWife().getName()));
+        List<genealogy.visualizer.entity.Marriage> actualMarriages = actual.getMarriages().stream().sorted(Comparator.comparing(r -> r.getWife().getName())).toList();
+        for (int i = 0; i < expected.getMarriages().size(); i++) {
+            assertMarriage(expected.getMarriages().get(i), actualMarriages.get(i));
+        }
+
+        assertEquals(expected.getParents().size(), actual.getParents().size());
+        expected.getParents().sort(Comparator.comparing(r -> r.getFullName().getName()));
+        List<genealogy.visualizer.entity.Person> actualParents = actual.getParents().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
+        for (int i = 0; i < expected.getParents().size(); i++) {
+            assertPerson(expected.getParents().get(i), actualParents.get(i));
+        }
+
+        assertEquals(expected.getChildren().size(), actual.getChildren().size());
+        expected.getChildren().sort(Comparator.comparing(r -> r.getFullName().getName()));
+        List<genealogy.visualizer.entity.Person> actualChildren = actual.getChildren().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
+        for (int i = 0; i < expected.getChildren().size(); i++) {
+            assertPerson(expected.getChildren().get(i), actualChildren.get(i));
+        }
+
+        assertEquals(expected.getPartners().size(), actual.getPartners().size());
+        expected.getPartners().sort(Comparator.comparing(r -> r.getFullName().getName()));
+        List<genealogy.visualizer.entity.Person> actualPartners = actual.getPartners().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
+        for (int i = 0; i < expected.getPartners().size(); i++) {
+            assertPerson(expected.getPartners().get(i), actualPartners.get(i));
+        }
+
+        assertEquals(expected.getRevisions().size(), actual.getRevisions().size());
+        expected.getRevisions().sort(Comparator.comparing(r -> r.getFullName().getName()));
+        List<genealogy.visualizer.entity.FamilyRevision> actualRevisions = actual.getRevisions().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
+        for (int i = 0; i < expected.getRevisions().size(); i++) {
+            assertFamilyRevision(expected.getRevisions().get(i), actualRevisions.get(i));
+        }
+    }
+
+    protected static void assertPerson(EasyPerson expected, EasyPerson actual) {
+        if (expected == null || actual == null) {
+            assertNull(expected);
+            assertNull(actual);
+            return;
+        }
+        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
+        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
+        assertFullName(expected.getFullName(), actual.getFullName());
         assertEquals(expected.getSex(), actual.getSex());
+    }
+
+    protected static void assertPerson(EasyPerson expected, genealogy.visualizer.entity.Person actual) {
+        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
+        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
+        assertFullName(expected.getFullName(), actual.getFullName());
+        assertEquals(expected.getSex().name(), actual.getSex().name());
     }
 
     private Person getPersonFromJson(String responseJson) throws JsonProcessingException {

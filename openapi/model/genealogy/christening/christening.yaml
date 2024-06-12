@@ -2,3 +2,9 @@ description: Данные о рождении
 type: object
 allOf:
   - $ref: "easy-christening.yaml"
+  - type: object
+    properties:
+      archiveDocument:
+        $ref: "./../archive/easy-archive-document.yaml"
+      person:
+        $ref: "./../person/easy-person.yaml"

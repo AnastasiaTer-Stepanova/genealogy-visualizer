@@ -1,0 +1,9 @@
+description: Данные о крестном
+type: object
+properties:
+  fullName:
+    $ref: "./../../common/full-name.yaml"
+  relative:
+    $ref: "./../../common/full-name.yaml"
+  locality:
+    $ref: "./../../common/locality.yaml"

@@ -60,9 +60,11 @@ public class DaoConfig {
 
     @Bean
     public ChristeningDAO christeningDAO(@Autowired ChristeningRepository christeningRepository,
-                                         LocalityDAO localityDAO,
-                                         ArchiveDocumentDAO archiveDocumentDAO) {
-        return new ChristeningDAOImpl(christeningRepository, localityDAO, archiveDocumentDAO);
+                                         @Autowired PersonRepository personRepository,
+                                         @Autowired LocalityRepository localityRepository,
+                                         @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                         @Autowired EntityManager entityManager) {
+        return new ChristeningDAOImpl(christeningRepository, personRepository, localityRepository, archiveDocumentRepository, entityManager);
     }
 
     @Bean

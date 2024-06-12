@@ -36,3 +36,19 @@ properties:
     example: Иван
   sex:
     $ref: "./../../common/sex.yaml"
+  father:
+    $ref: "./../../common/full-name.yaml"
+  mother:
+    $ref: "./../../common/full-name.yaml"
+  comment:
+    description: Комментарий
+    type: string
+    maxLength: 255
+    example: незаконнорожденный
+  locality:
+    $ref: "./../../common/locality.yaml"
+  godParents:
+    description: Крестные
+    type: array
+    items:
+      $ref: "god-parent.yaml"

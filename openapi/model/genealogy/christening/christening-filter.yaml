@@ -1,0 +1,22 @@
+description: Фильтр для поиска данных о рождении
+type: object
+properties:
+  archiveDocumentId:
+    description: Идентификатор документа в архиве
+    type: integer
+    format: int64
+    example: 124353
+  christeningYear:
+    description: Год крещения
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 1858
+  name:
+    description: Имя данное при рождении
+    type: string
+    maxLength: 50
+    example: Иван
+  sex:
+    $ref: "./../../common/sex.yaml"

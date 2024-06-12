@@ -19,6 +19,7 @@ import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.asse
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ArchiveControllerTest extends IntegrationTest {
@@ -162,6 +163,11 @@ class ArchiveControllerTest extends IntegrationTest {
     }
 
     protected static void assertArchive(EasyArchive archive1, EasyArchive archive2) {
+        if (archive1 == null || archive2 == null) {
+            assertNull(archive1);
+            assertNull(archive2);
+            return;
+        }
         assertNotNull(archive1);
         assertNotNull(archive2);
         if (archive1.getId() != null && archive2.getId() != null) {

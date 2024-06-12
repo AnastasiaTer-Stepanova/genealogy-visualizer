@@ -31,6 +31,7 @@ import static genealogy.visualizer.controller.MarriageControllerTest.assertMarri
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ArchiveDocumentControllerTest extends IntegrationTest {
@@ -52,6 +53,10 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         List<EasyFamilyMember> familyRevisionsSave = generator.objects(EasyFamilyMember.class, generator.nextInt(5, 10)).toList();
         archiveDocumentSave.setFamilyRevisions(familyRevisionsSave);
         List<EasyChristening> christeningsSave = generator.objects(EasyChristening.class, generator.nextInt(5, 10)).toList();
+        christeningsSave.forEach(c -> {
+            c.setLocality(localityMapper.toDTO(localityExisting));
+            c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting)));
+        });
         archiveDocumentSave.setChristenings(christeningsSave);
         List<EasyDeath> deathsSave = generator.objects(EasyDeath.class, generator.nextInt(5, 10)).toList();
         archiveDocumentSave.setDeaths(deathsSave);
@@ -91,6 +96,10 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         });
         archiveDocumentSave.setFamilyRevisions(familyRevisionsSave);
         List<EasyChristening> christeningsSave = new ArrayList<>(generator.objects(EasyChristening.class, generator.nextInt(2, 5)).toList());
+        christeningsSave.forEach(c -> {
+            c.setLocality(localityMapper.toDTO(localityExisting));
+            c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting)));
+        });
         archiveDocumentExist.getChristenings().forEach(c -> {
             if (generator.nextBoolean()) {
                 christeningsSave.add(easyChristeningMapper.toDTO(c));
@@ -122,11 +131,33 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
     }
 
     @Test
+    void updateWithNullFieldTest() throws Exception {
+        genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = generateRandomExistArchiveDocument();
+        ArchiveDocument archiveDocumentSave = generator.nextObject(ArchiveDocument.class);
+        archiveDocumentSave.setId(archiveDocumentExist.getId());
+        archiveDocumentSave.setArchive(null);
+        archiveDocumentSave.setNextRevision(null);
+        archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
+        archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
+        archiveDocumentSave.setChristenings(Collections.emptyList());
+        archiveDocumentSave.setDeaths(Collections.emptyList());
+        archiveDocumentSave.setMarriages(Collections.emptyList());
+        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveDocumentSave));
+        ArchiveDocument response = getArchiveDocumentFromJson(responseJson);
+        assertNotNull(response);
+        assertArchiveDocument(response, archiveDocumentSave);
+        String responseJsonGet = getRequest(PATH + "/" + archiveDocumentSave.getId());
+        ArchiveDocument responseGet = getArchiveDocumentFromJson(responseJsonGet);
+        assertNotNull(responseGet);
+        assertArchiveDocument(responseGet, archiveDocumentSave);
+    }
+
+    @Test
     void deleteTest() throws Exception {
         genealogy.visualizer.entity.ArchiveDocument archiveDocument = generateRandomExistArchiveDocument();
         String responseJson = deleteRequest(PATH + "/" + archiveDocument.getId());
         assertTrue(responseJson.isEmpty());
-        assertTrue(personRepository.findById(archiveDocument.getId()).isEmpty());
+        assertTrue(archiveDocumentRepository.findById(archiveDocument.getId()).isEmpty());
         archiveDocument.getDeaths().forEach(p -> assertFalse(deathRepository.findById(p.getId()).isEmpty()));
         archiveDocument.getChristenings().forEach(p -> assertFalse(christeningRepository.findById(p.getId()).isEmpty()));
         archiveDocument.getFamilyRevisions().forEach(p -> assertFalse(familyRevisionRepository.findById(p.getId()).isEmpty()));
@@ -291,6 +322,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
     }
 
     protected static void assertArchiveDocument(EasyArchiveDocument archiveDocument1, EasyArchiveDocument archiveDocument2) {
+        if (archiveDocument1 == null || archiveDocument2 == null) {
+            assertNull(archiveDocument1);
+            assertNull(archiveDocument2);
+            return;
+        }
         assertNotNull(archiveDocument1);
         assertNotNull(archiveDocument2);
         assertEquals(archiveDocument1.getFund(), archiveDocument2.getFund());
@@ -302,6 +338,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
     }
 
     protected static void assertArchiveDocument(EasyArchiveDocument archiveDocument1, genealogy.visualizer.entity.ArchiveDocument archiveDocument2) {
+        if (archiveDocument1 == null || archiveDocument2 == null) {
+            assertNull(archiveDocument1);
+            assertNull(archiveDocument2);
+            return;
+        }
         assertNotNull(archiveDocument1);
         assertNotNull(archiveDocument2);
         assertEquals(archiveDocument1.getFund(), archiveDocument2.getFund());
@@ -365,7 +406,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         }
     }
 
-    protected genealogy.visualizer.entity.ArchiveDocument generateRandomExistArchiveDocument() {
+    private genealogy.visualizer.entity.ArchiveDocument generateRandomExistArchiveDocument() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
         genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
@@ -417,6 +458,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         List<genealogy.visualizer.entity.Christening> christeningsSave = generator.objects(genealogy.visualizer.entity.Christening.class, generator.nextInt(5, 10)).toList();
         List<genealogy.visualizer.entity.Christening> christeningsExist = new ArrayList<>(christeningsSave.size());
         for (genealogy.visualizer.entity.Christening entity : christeningsSave) {
+            entity.getGodParents().forEach(gp -> localityMapper.toDTO(localityExisting));
             entity.setArchiveDocument(archiveDocumentExist);
             entity.setLocality(localityExisting);
             genealogy.visualizer.entity.Christening result = christeningRepository.saveAndFlush(entity);

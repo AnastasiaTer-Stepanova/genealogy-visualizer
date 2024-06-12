@@ -6,20 +6,20 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
-        unmappedSourcePolicy = ReportingPolicy.ERROR)
+        unmappedSourcePolicy = ReportingPolicy.ERROR,
+        uses = {FullNameMapper.class, GodParentMapper.class, LocalityMapper.class})
 public interface EasyChristeningMapper extends CommonMapper {
 
-    @Mapping(target = "father", ignore = true)
-    @Mapping(target = "mother", ignore = true)
-    @Mapping(target = "comment", ignore = true)
-    @Mapping(target = "locality", ignore = true)
-    @Mapping(target = "godParents", ignore = true)
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
     genealogy.visualizer.entity.Christening toEntity(EasyChristening christening);
 
-    @BeanMapping(ignoreUnmappedSourceProperties = {"father", "mother", "comment", "locality", "godParents", "person", "archiveDocument"})
+    @BeanMapping(ignoreUnmappedSourceProperties = {"person", "archiveDocument"})
     EasyChristening toDTO(genealogy.visualizer.entity.Christening christening);
+
+    List<EasyChristening> toDTOs(List<genealogy.visualizer.entity.Christening> christening);
 }
