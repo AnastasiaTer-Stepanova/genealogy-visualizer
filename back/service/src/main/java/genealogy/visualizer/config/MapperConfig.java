@@ -36,6 +36,8 @@ import genealogy.visualizer.mapper.MarriageMapper;
 import genealogy.visualizer.mapper.MarriageMapperImpl;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.mapper.PersonMapperImpl;
+import genealogy.visualizer.mapper.WitnessMapper;
+import genealogy.visualizer.mapper.WitnessMapperImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -149,6 +151,12 @@ public class MapperConfig {
     @Primary
     public GodParentMapper godParentMapper() {
         return new GodParentMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public WitnessMapper witnessMapper() {
+        return new WitnessMapperImpl();
     }
 
 }

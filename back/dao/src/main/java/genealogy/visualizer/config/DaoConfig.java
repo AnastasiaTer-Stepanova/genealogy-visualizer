@@ -74,9 +74,11 @@ public class DaoConfig {
 
     @Bean
     public MarriageDAO marriageDAO(@Autowired MarriageRepository marriageRepository,
-                                   LocalityDAO localityDAO,
-                                   ArchiveDocumentDAO archiveDocumentDAO) {
-        return new MarriageDAOImpl(marriageRepository, localityDAO, archiveDocumentDAO);
+                                   @Autowired PersonRepository personRepository,
+                                   @Autowired LocalityRepository localityRepository,
+                                   @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                   @Autowired EntityManager entityManager) {
+        return new MarriageDAOImpl(marriageRepository, personRepository, localityRepository, archiveDocumentRepository, entityManager);
     }
 
     @Bean

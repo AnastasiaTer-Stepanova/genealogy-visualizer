@@ -180,7 +180,7 @@ class ChristeningControllerTest extends IntegrationTest {
             if (christening.getName().toLowerCase().contains(filter.getName().toLowerCase()) &&
                     christening.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
                     christening.getSex().name().equals(filter.getSex().name()) &&
-                    christening.getBirthDate().getYear() == filter.getChristeningYear()) {
+                    christening.getChristeningDate().getYear() == filter.getChristeningYear()) {
                 assertTrue(findIds.contains(christening.getId()));
             }
         }

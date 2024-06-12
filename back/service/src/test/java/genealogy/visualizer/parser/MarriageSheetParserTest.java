@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 class MarriageSheetParserTest extends AbstractTest {
 
@@ -83,7 +83,7 @@ class MarriageSheetParserTest extends AbstractTest {
 
     @Test
     void checkParseTest() throws IOException {
-        doNothing().when(marriageDAO).save(any());
+        when(marriageDAO.save(any())).thenReturn(marriages.getFirst());
         Sheet sheet = createXSSFWorkbook(marriages);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);

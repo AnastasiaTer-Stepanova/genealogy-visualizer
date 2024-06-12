@@ -1,10 +1,13 @@
 package genealogy.visualizer.repository;
 
+import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.Marriage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
 
 public interface MarriageRepository extends JpaRepository<Marriage, Long> {
 
@@ -15,5 +18,36 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Modifying
     @Query(value = "update marriage set archive_document_id = :newArchiveDocumentId where id = :id", nativeQuery = true)
     void updateArchiveDocumentIdById(@Param("id") Long id, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
+
+    @Query(value = "update marriage c set " +
+            "comment = :#{#entity.comment}, date = :#{#entity.date}, husband_last_name = :#{#entity.husband?.lastName}, " +
+            "husband_name = :#{#entity.husband?.name}, husband_status = :#{#entity.husband?.status}, husband_surname = :#{#entity.husband?.surname}, " +
+            "husband_age = :#{#entity.husbandAge?.age}, husband_age_type = :#{#entity.husbandAge?.type?.name}, " +
+            "husband_marriage_number = :#{#entity.husbandMarriageNumber}, husbands_father_last_name = :#{#entity.husbandsFather?.lastName}, " +
+            "husbands_father_name = :#{#entity.husbandsFather?.name}, husbands_father_status = :#{#entity.husbandsFather?.status}, " +
+            "husbands_father_surname = :#{#entity.husbandsFather?.surname}, wife_last_name = :#{#entity.wife?.lastName}, " +
+            "wife_name = :#{#entity.wife?.name}, wife_status = :#{#entity.wife?.status}, wife_surname = :#{#entity.wife?.surname}, " +
+            "wife_age = :#{#entity.wifeAge?.age}, wife_age_type = :#{#entity.wifeAge?.type?.name}, wife_marriage_number = :#{#entity.wifeMarriageNumber}, " +
+            "wifes_father_last_name = :#{#entity.wifesFather?.lastName}, wifes_father_name = :#{#entity.wifesFather?.name}, " +
+            "wifes_father_status = :#{#entity.wifesFather?.status}, wifes_father_surname = :#{#entity.wifesFather?.surname}, " +
+            "archive_document_id = :#{#entity.archiveDocument?.id}, husband_locality_id = :#{#entity.husbandLocality?.id}, " +
+            "wife_locality_id = :#{#entity.wifeLocality?.id} " +
+            "where id = :#{#entity.id} returning *", nativeQuery = true)
+    Marriage update(@Param("entity") Marriage entity);
+
+    @Modifying
+    @Query(value = "delete from person_marriage where person_id = :personId and marriage_id = :marriageId", nativeQuery = true)
+    void deletePersonMarriageLinkByPersonIdAndMarriageId(@Param("personId") Long personId, @Param("marriageId") Long marriageId);
+
+    @Modifying
+    @Query(value = "insert into person_marriage (person_id, marriage_id) values (:personId, :marriageId)", nativeQuery = true)
+    void insertPersonMarriageLink(@Param("personId") Long personId, @Param("marriageId") Long marriageId);
+
+    @Query("select m from Marriage m left join fetch m.archiveDocument left join fetch m.witnesses " +
+            "left join fetch m.wifeLocality left join fetch m.husbandLocality where m.id = :id")
+    Optional<Marriage> findFullInfoById(@Param("id") Long id);
+
+    @Query("select m from Marriage m left join fetch m.persons where m.id = :id")
+    Optional<Marriage> findFullInfoWithPersons(@Param("id") Long id);
 
 }

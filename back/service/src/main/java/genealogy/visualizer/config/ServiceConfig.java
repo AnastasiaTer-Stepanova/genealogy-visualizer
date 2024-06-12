@@ -9,8 +9,10 @@ import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
 import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
+import genealogy.visualizer.mapper.EasyMarriageMapper;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import genealogy.visualizer.mapper.MarriageMapper;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.parser.FileParser;
 import genealogy.visualizer.parser.SheetParser;
@@ -42,6 +44,8 @@ import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeServiceImpl;
+import genealogy.visualizer.service.marriage.MarriageService;
+import genealogy.visualizer.service.marriage.MarriageServiceImpl;
 import genealogy.visualizer.service.person.PersonService;
 import genealogy.visualizer.service.person.PersonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,5 +152,12 @@ public class ServiceConfig {
                                      DeathMapper deathMapper,
                                      EasyDeathMapper easyDeathMapper) {
         return new DeathServiceImpl(deathDAO, deathMapper, easyDeathMapper);
+    }
+
+    @Bean
+    public MarriageService marriageService(MarriageDAO marriageDAO,
+                                           MarriageMapper marriageMapper,
+                                           EasyMarriageMapper easyMarriageMapper) {
+        return new MarriageServiceImpl(marriageDAO, marriageMapper, easyMarriageMapper);
     }
 }

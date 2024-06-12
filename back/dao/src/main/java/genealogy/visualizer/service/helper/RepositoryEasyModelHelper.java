@@ -67,4 +67,31 @@ public class RepositoryEasyModelHelper<E> {
         }
         return result;
     }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public List<E> updateEntitiesWithLinkTable(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
+                                               JpaRepository<E, Long> repository, BiConsumer<Long, Long> deleteLinkFunction,
+                                               BiConsumer<Long, Long> insertLinkFunction) {
+        newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
+        if (entities == null || entities.isEmpty()) return newEntities;
+
+        Set<Long> newIds = newEntities != null ? newEntities.stream().map(getIdFunction).collect(Collectors.toSet()) : Collections.emptySet();
+        Set<Long> existIds = entities.stream().map(getIdFunction).collect(Collectors.toSet());
+
+        Set<Long> idsForDelete = existIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
+        idsForDelete.forEach(id -> deleteLinkFunction.accept(id, parentId));
+
+        List<E> result = entities.stream().filter(entity -> !idsForDelete.contains(getIdFunction.apply(entity))).collect(Collectors.toList());
+
+        if (newEntities != null) {
+            newEntities.stream().filter(entity -> newIds.contains(getIdFunction.apply(entity)) && !existIds.contains(getIdFunction.apply(entity)))
+                    .forEach(entity -> {
+                        if (insertLinkFunction != null) {
+                            insertLinkFunction.accept(getIdFunction.apply(entity), parentId);
+                        }
+                        result.add(entity);
+                    });
+        }
+        return result;
+    }
 }

@@ -1,0 +1,6 @@
+type: string
+description: Тип свидетеля на свадьбе
+enum:
+  - по жениху
+  - по невесте
+x-enum-varnames: [ HUSBAND, WIFE ]

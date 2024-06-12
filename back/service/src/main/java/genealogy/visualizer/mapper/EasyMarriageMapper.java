@@ -6,25 +6,24 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class})
+        uses = {AgeMapper.class,
+                FullNameMapper.class})
 public interface EasyMarriageMapper extends CommonMapper {
 
-    @Mapping(target = "husbandLocality", ignore = true)
-    @Mapping(target = "husbandsFather", ignore = true)
-    @Mapping(target = "husbandAge", ignore = true)
-    @Mapping(target = "wifeLocality", ignore = true)
-    @Mapping(target = "wifesFather", ignore = true)
-    @Mapping(target = "wifeAge", ignore = true)
-    @Mapping(target = "comment", ignore = true)
     @Mapping(target = "witnesses", ignore = true)
+    @Mapping(target = "wifeLocality", ignore = true)
+    @Mapping(target = "husbandLocality", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
     @Mapping(target = "persons", ignore = true)
     genealogy.visualizer.entity.Marriage toEntity(EasyMarriage marriage);
 
-    @BeanMapping(ignoreUnmappedSourceProperties = {"husbandLocality", "husbandsFather", "husbandAge", "wifeLocality",
-            "wifesFather", "wifeAge", "comment", "witnesses", "archiveDocument", "persons"})
+    @BeanMapping(ignoreUnmappedSourceProperties = {"witnesses", "wifeLocality", "husbandLocality", "archiveDocument", "persons"})
     EasyMarriage toDTO(genealogy.visualizer.entity.Marriage marriage);
+
+    List<EasyMarriage> toDTOs(List<genealogy.visualizer.entity.Marriage> marriage);
 }

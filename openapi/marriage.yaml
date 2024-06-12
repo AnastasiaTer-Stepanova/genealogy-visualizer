@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: API для работы с данными брака
+  version: "1.0.0"
+tags:
+  - name: Marriage
+    description: API для работы с данными брака
+paths:
+  /marriage/{id}:
+    get:
+      tags:
+        - Marriage
+      operationId: getById
+      summary: "Request data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Marriage"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    delete:
+      tags:
+        - Marriage
+      operationId: delete
+      summary: "Delete data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: "OK"
+  /marriage:
+    post:
+      tags:
+        - Marriage
+      operationId: save
+      summary: "Saving data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Marriage"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Marriage"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    put:
+      tags:
+        - Marriage
+      operationId: update
+      summary: "Update only the Marriage entity, not intended for updating other entities (like ArchiveDocument and others)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Marriage"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Marriage"
+        404:
+          description: "Failed to update data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+  /marriage/filter:
+    get:
+      tags:
+        - Marriage
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarriageFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyMarriage"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+
+components:
+  schemas:
+    Marriage:
+      $ref: "./model/genealogy/marriage/marriage.yaml"
+    EasyMarriage:
+      $ref: "./model/genealogy/marriage/easy-marriage.yaml"
+    MarriageFilter:
+      $ref: "./model/genealogy/marriage/marriage-filter.yaml"

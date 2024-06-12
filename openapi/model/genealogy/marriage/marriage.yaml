@@ -2,3 +2,21 @@ description: Данные брака
 type: object
 allOf:
   - $ref: "easy-marriage.yaml"
+  - type: object
+    properties:
+      archiveDocument:
+        $ref: "./../archive/easy-archive-document.yaml"
+      persons:
+        description: Персоны, связанные с браком
+        type: array
+        items:
+          $ref: "./../person/easy-person.yaml"
+      husbandLocality:
+        $ref: "./../../common/locality.yaml"
+      wifeLocality:
+        $ref: "./../../common/locality.yaml"
+      witnesses:
+        description: Свидетели на свадьбе
+        type: array
+        items:
+          $ref: "witness.yaml"

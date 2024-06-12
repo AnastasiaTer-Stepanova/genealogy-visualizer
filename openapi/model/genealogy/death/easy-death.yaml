@@ -28,10 +28,10 @@ properties:
     maxLength: 255
     example: от болезни
   comment:
-    description: Причина смерти
+    description: Комментарий
     type: string
     maxLength: 255
-    example: от болезни
+    example: умер на фронте
   burialPlace:
     description: Место погребения
     type: string

@@ -1,0 +1,12 @@
+description: Данные свидетеля брака
+type: object
+required:
+  - fullName
+  - witnessType
+properties:
+  fullName:
+    $ref: "./../../common/full-name.yaml"
+  locality:
+    $ref: "./../../common/locality.yaml"
+  witnessType:
+    $ref: "witness-type.yaml"

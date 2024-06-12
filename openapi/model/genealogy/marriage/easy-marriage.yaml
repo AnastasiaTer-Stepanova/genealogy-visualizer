@@ -29,5 +29,18 @@ properties:
     example: 1
   wife:
     $ref: "./../../common/full-name.yaml"
+  wifesFather:
+    $ref: "./../../common/full-name.yaml"
+  wifeAge:
+    $ref: "./../../common/age.yaml"
   husband:
     $ref: "./../../common/full-name.yaml"
+  husbandsFather:
+    $ref: "./../../common/full-name.yaml"
+  husbandAge:
+    $ref: "./../../common/age.yaml"
+  comment:
+    description: Комментарий
+    type: string
+    maxLength: 255
+    example: поженились из-за беременности
