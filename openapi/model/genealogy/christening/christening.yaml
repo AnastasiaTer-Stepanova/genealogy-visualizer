@@ -8,3 +8,5 @@ allOf:
         $ref: "./../archive/easy-archive-document.yaml"
       person:
         $ref: "./../person/easy-person.yaml"
+      locality:
+        $ref: "./../../common/locality.yaml"

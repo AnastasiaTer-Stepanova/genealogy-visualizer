@@ -18,3 +18,22 @@ properties:
     x-field-extra-annotation: '@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")'
   fullName:
     $ref: "./../../common/full-name.yaml"
+  relative:
+    $ref: "./../../common/full-name.yaml"
+  age:
+    $ref: "./../../common/age.yaml"
+  cause:
+    description: Причина смерти
+    type: string
+    maxLength: 255
+    example: от болезни
+  comment:
+    description: Причина смерти
+    type: string
+    maxLength: 255
+    example: от болезни
+  burialPlace:
+    description: Место погребения
+    type: string
+    maxLength: 255
+    example: кладбище при церкви

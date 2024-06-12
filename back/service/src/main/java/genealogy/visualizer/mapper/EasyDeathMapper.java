@@ -6,22 +6,22 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class})
+        uses = {AgeMapper.class,
+                FullNameMapper.class})
 public interface EasyDeathMapper extends CommonMapper {
 
-    @Mapping(target = "relative", ignore = true)
-    @Mapping(target = "age", ignore = true)
-    @Mapping(target = "cause", ignore = true)
-    @Mapping(target = "burialPlace", ignore = true)
-    @Mapping(target = "comment", ignore = true)
     @Mapping(target = "locality", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
     @Mapping(target = "person", ignore = true)
     genealogy.visualizer.entity.Death toEntity(EasyDeath death);
 
-    @BeanMapping(ignoreUnmappedSourceProperties = {"relative", "age", "cause", "burialPlace", "comment", "locality", "archiveDocument", "person"})
+    @BeanMapping(ignoreUnmappedSourceProperties = {"locality", "archiveDocument", "person"})
     EasyDeath toDTO(genealogy.visualizer.entity.Death death);
+
+    List<EasyDeath> toDTOs(List<genealogy.visualizer.entity.Death> death);
 }

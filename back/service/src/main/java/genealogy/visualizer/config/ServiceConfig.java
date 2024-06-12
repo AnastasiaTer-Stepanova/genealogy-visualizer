@@ -3,9 +3,11 @@ package genealogy.visualizer.config;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.ArchiveMapper;
 import genealogy.visualizer.mapper.ChristeningMapper;
+import genealogy.visualizer.mapper.DeathMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
+import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
@@ -34,6 +36,8 @@ import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.archive.ArchiveServiceImpl;
 import genealogy.visualizer.service.christening.ChristeningService;
 import genealogy.visualizer.service.christening.ChristeningServiceImpl;
+import genealogy.visualizer.service.death.DeathService;
+import genealogy.visualizer.service.death.DeathServiceImpl;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionServiceImpl;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
@@ -137,5 +141,12 @@ public class ServiceConfig {
                                                  ChristeningMapper christeningMapper,
                                                  EasyChristeningMapper easyChristeningMapper) {
         return new ChristeningServiceImpl(christeningDAO, christeningMapper, easyChristeningMapper);
+    }
+
+    @Bean
+    public DeathService deathService(DeathDAO deathDAO,
+                                     DeathMapper deathMapper,
+                                     EasyDeathMapper easyDeathMapper) {
+        return new DeathServiceImpl(deathDAO, deathMapper, easyDeathMapper);
     }
 }

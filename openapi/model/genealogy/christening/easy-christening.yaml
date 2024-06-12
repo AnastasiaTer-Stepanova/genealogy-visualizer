@@ -45,8 +45,6 @@ properties:
     type: string
     maxLength: 255
     example: незаконнорожденный
-  locality:
-    $ref: "./../../common/locality.yaml"
   godParents:
     description: Крестные
     type: array

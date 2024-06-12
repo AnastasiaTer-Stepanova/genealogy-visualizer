@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: API для работы с данными смерти
+  version: "1.0.0"
+tags:
+  - name: Death
+    description: API для работы с данными смерти
+paths:
+  /death/{id}:
+    get:
+      tags:
+        - Death
+      operationId: getById
+      summary: "Request data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Death"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    delete:
+      tags:
+        - Death
+      operationId: delete
+      summary: "Delete data by ID"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: "OK"
+  /death:
+    post:
+      tags:
+        - Death
+      operationId: save
+      summary: "Saving data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Death"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Death"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+    put:
+      tags:
+        - Death
+      operationId: update
+      summary: "Update only the Death entity, not intended for updating other entities (like ArchiveDocument and others)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Death"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Death"
+        404:
+          description: "Failed to update data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+  /death/filter:
+    get:
+      tags:
+        - Death
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeathFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyDeath"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+
+components:
+  schemas:
+    Death:
+      $ref: "./model/genealogy/death/death.yaml"
+    EasyDeath:
+      $ref: "./model/genealogy/death/easy-death.yaml"
+    DeathFilter:
+      $ref: "./model/genealogy/death/death-filter.yaml"

@@ -231,7 +231,6 @@ class ChristeningControllerTest extends IntegrationTest {
         assertEquals(christening1.getComment(), christening2.getComment());
         assertFullName(christening1.getFather(), christening2.getFather());
         assertFullName(christening1.getMother(), christening2.getMother());
-        assertLocality(christening1.getLocality(), christening2.getLocality());
         if (christening2.getGodParents() != null) {
             assertEquals(christening1.getGodParents().size(), christening2.getGodParents().size());
             List<GodParent> godParents1 = christening1.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
@@ -253,7 +252,6 @@ class ChristeningControllerTest extends IntegrationTest {
         assertEquals(christening1.getComment(), christening2.getComment());
         assertFullName(christening1.getFather(), christening2.getFather());
         assertFullName(christening1.getMother(), christening2.getMother());
-        assertLocality(christening1.getLocality(), christening2.getLocality());
         if (christening2.getGodParents() != null) {
             assertEquals(christening1.getGodParents().size(), christening2.getGodParents().size());
             List<GodParent> godParents1 = christening1.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();

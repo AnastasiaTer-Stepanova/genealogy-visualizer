@@ -28,6 +28,8 @@ import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapperImpl;
 import genealogy.visualizer.mapper.FullNameMapper;
 import genealogy.visualizer.mapper.FullNameMapperImpl;
+import genealogy.visualizer.mapper.GodParentMapper;
+import genealogy.visualizer.mapper.GodParentMapperImpl;
 import genealogy.visualizer.mapper.LocalityMapper;
 import genealogy.visualizer.mapper.LocalityMapperImpl;
 import genealogy.visualizer.mapper.MarriageMapper;
@@ -141,6 +143,12 @@ public class MapperConfig {
     @Primary
     public EasyPersonMapper easyPersonMapper() {
         return new EasyPersonMapperImpl();
+    }
+
+    @Bean
+    @Primary
+    public GodParentMapper godParentMapper() {
+        return new GodParentMapperImpl();
     }
 
 }

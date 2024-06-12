@@ -2,3 +2,11 @@ description: Данные о смерти
 type: object
 allOf:
   - $ref: "easy-death.yaml"
+  - type: object
+    properties:
+      archiveDocument:
+        $ref: "./../archive/easy-archive-document.yaml"
+      person:
+        $ref: "./../person/easy-person.yaml"
+      locality:
+        $ref: "./../../common/locality.yaml"

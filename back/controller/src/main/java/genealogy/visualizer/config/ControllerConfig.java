@@ -6,12 +6,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import genealogy.visualizer.controller.ArchiveController;
 import genealogy.visualizer.controller.ArchiveDocumentController;
 import genealogy.visualizer.controller.ChristeningController;
+import genealogy.visualizer.controller.DeathController;
 import genealogy.visualizer.controller.FamilyRevisionController;
 import genealogy.visualizer.controller.GenealogyVisualizeController;
 import genealogy.visualizer.controller.PersonController;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
 import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.christening.ChristeningService;
+import genealogy.visualizer.service.death.DeathService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
 import genealogy.visualizer.service.graph.GenealogyVisualizeService;
 import genealogy.visualizer.service.person.PersonService;
@@ -62,6 +64,11 @@ public class ControllerConfig {
     @Bean
     public ChristeningController christeningController(ChristeningService christeningService) {
         return new ChristeningController(christeningService);
+    }
+
+    @Bean
+    public DeathController deathController(DeathService deathService) {
+        return new DeathController(deathService);
     }
 
 }

@@ -81,9 +81,11 @@ public class DaoConfig {
 
     @Bean
     public DeathDAO deathDAO(@Autowired DeathRepository deathRepository,
-                             ArchiveDocumentDAO archiveDocumentDAO,
-                             LocalityDAO localityDAO) {
-        return new DeathDAOImpl(deathRepository, archiveDocumentDAO, localityDAO);
+                             @Autowired PersonRepository personRepository,
+                             @Autowired LocalityRepository localityRepository,
+                             @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                             @Autowired EntityManager entityManager) {
+        return new DeathDAOImpl(deathRepository, personRepository, localityRepository, archiveDocumentRepository, entityManager);
     }
 
     @Bean

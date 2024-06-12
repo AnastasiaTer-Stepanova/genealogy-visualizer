@@ -58,6 +58,9 @@ public class ChristeningDAOImpl implements ChristeningDAO {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Christening save(Christening christening) {
+        if (christening.getId() != null)
+            throw new IllegalArgumentException("Cannot save christening with id");
+
         christening.setArchiveDocument(christening.getArchiveDocument() != null ?
                 archiveDocumentHelper.saveEntityIfNotExist(christening.getArchiveDocument(), christening.getArchiveDocument().getId(), archiveDocumentRepository) :
                 null);
@@ -107,7 +110,6 @@ public class ChristeningDAOImpl implements ChristeningDAO {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Christening findFullInfoById(Long id) {
         return christeningRepository.findFullInfoById(id).orElse(null);
     }

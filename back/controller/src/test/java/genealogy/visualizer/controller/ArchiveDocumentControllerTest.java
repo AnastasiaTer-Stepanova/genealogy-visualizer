@@ -53,10 +53,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         List<EasyFamilyMember> familyRevisionsSave = generator.objects(EasyFamilyMember.class, generator.nextInt(5, 10)).toList();
         archiveDocumentSave.setFamilyRevisions(familyRevisionsSave);
         List<EasyChristening> christeningsSave = generator.objects(EasyChristening.class, generator.nextInt(5, 10)).toList();
-        christeningsSave.forEach(c -> {
-            c.setLocality(localityMapper.toDTO(localityExisting));
-            c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting)));
-        });
+        christeningsSave.forEach(c -> c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting))));
         archiveDocumentSave.setChristenings(christeningsSave);
         List<EasyDeath> deathsSave = generator.objects(EasyDeath.class, generator.nextInt(5, 10)).toList();
         archiveDocumentSave.setDeaths(deathsSave);
@@ -96,10 +93,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         });
         archiveDocumentSave.setFamilyRevisions(familyRevisionsSave);
         List<EasyChristening> christeningsSave = new ArrayList<>(generator.objects(EasyChristening.class, generator.nextInt(2, 5)).toList());
-        christeningsSave.forEach(c -> {
-            c.setLocality(localityMapper.toDTO(localityExisting));
-            c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting)));
-        });
+        christeningsSave.forEach(c -> c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting))));
         archiveDocumentExist.getChristenings().forEach(c -> {
             if (generator.nextBoolean()) {
                 christeningsSave.add(easyChristeningMapper.toDTO(c));
