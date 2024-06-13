@@ -1,13 +1,23 @@
 package genealogy.visualizer.service.impl;
 
+import genealogy.visualizer.dto.FamilyRevisionFilterDTO;
+import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,11 +25,14 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
     private final FamilyRevisionRepository familyRevisionRepository;
     private final ArchiveDocumentDAO archiveDocumentDAO;
+    private final EntityManager entityManager;
 
     public FamilyRevisionDAOImpl(FamilyRevisionRepository familyRevisionRepository,
-                                 ArchiveDocumentDAO archiveDocumentDAO) {
+                                 ArchiveDocumentDAO archiveDocumentDAO,
+                                 EntityManager entityManager) {
         this.familyRevisionRepository = familyRevisionRepository;
         this.archiveDocumentDAO = archiveDocumentDAO;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -88,6 +101,35 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     @Override
     public FamilyRevision findFullInfoById(Long id) {
         return familyRevisionRepository.findFullInfoById(id).orElse(null);
+    }
+
+    @Override
+    public List<FamilyRevision> filter(FamilyRevisionFilterDTO filter) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<FamilyRevision> cq = cb.createQuery(FamilyRevision.class);
+        Root<FamilyRevision> root = cq.from(FamilyRevision.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.getFullName() != null) {
+            FullNameFilterDTO fullName = filter.getFullName();
+            if (fullName.getName() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("name")), "%" + fullName.getName().toLowerCase() + "%"));
+            }
+            if (fullName.getLastName() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("lastName")), "%" + fullName.getLastName().toLowerCase() + "%"));
+            }
+            if (fullName.getSurname() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("surname")), "%" + fullName.getSurname().toLowerCase() + "%"));
+            }
+        }
+        if (filter.getFamilyRevisionNumber() != null) {
+            predicates.add(cb.equal(root.get("familyRevisionNumber"), filter.getFamilyRevisionNumber()));
+        }
+        if (filter.getArchiveDocumentId() != null) {
+            Join<FamilyRevision, ArchiveDocument> join = root.join("archiveDocument", JoinType.LEFT);
+            predicates.add(cb.equal(join.get("id"), filter.getArchiveDocumentId()));
+        }
+        cq.select(root).where(predicates.toArray(new Predicate[0]));
+        return entityManager.createQuery(cq).getResultList();
     }
 
     @Override

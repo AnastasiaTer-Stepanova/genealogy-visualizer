@@ -1,6 +1,8 @@
 package genealogy.visualizer.controller;
 
 import genealogy.visualizer.api.FamilyRevisionApi;
+import genealogy.visualizer.api.model.EasyFamilyMember;
+import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
@@ -26,6 +28,11 @@ public class FamilyRevisionController implements FamilyRevisionApi {
     }
 
     @Override
+    public ResponseEntity<List<EasyFamilyMember>> filter(FamilyMemberFilter familyMemberFilter) {
+        return ResponseEntity.ok(familyRevisionService.filter(familyMemberFilter));
+    }
+
+    @Override
     public ResponseEntity<FamilyMember> getById(Long id) {
         return ResponseEntity.ok(familyRevisionService.getById(id));
     }
@@ -41,7 +48,7 @@ public class FamilyRevisionController implements FamilyRevisionApi {
     }
 
     @Override
-    public ResponseEntity<List<FamilyMemberFullInfo>> getFamilyRevisionByNum(FamilyMemberFilter familyMemberFilter) {
-        return ResponseEntity.ok(familyRevisionService.getFamilyMemberFullInfoList(familyMemberFilter));
+    public ResponseEntity<List<FamilyMemberFullInfo>> getFamilyRevisionByNum(FamilyFilter familyFilter) {
+        return ResponseEntity.ok(familyRevisionService.getFamilyMemberFullInfoList(familyFilter));
     }
 }

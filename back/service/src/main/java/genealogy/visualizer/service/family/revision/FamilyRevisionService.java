@@ -1,5 +1,7 @@
 package genealogy.visualizer.service.family.revision;
 
+import genealogy.visualizer.api.model.EasyFamilyMember;
+import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
@@ -16,5 +18,7 @@ public interface FamilyRevisionService {
 
     FamilyMember update(FamilyMember familyMember);
 
-    List<FamilyMemberFullInfo> getFamilyMemberFullInfoList(FamilyMemberFilter familyMemberFilter);
+    List<EasyFamilyMember> filter(FamilyMemberFilter filter);
+
+    List<FamilyMemberFullInfo> getFamilyMemberFullInfoList(FamilyFilter familyFilter);
 }

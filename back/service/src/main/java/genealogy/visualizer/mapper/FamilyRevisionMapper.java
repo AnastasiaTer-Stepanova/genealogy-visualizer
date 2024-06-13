@@ -1,6 +1,8 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.FamilyMember;
+import genealogy.visualizer.api.model.FamilyMemberFilter;
+import genealogy.visualizer.dto.FamilyRevisionFilterDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -22,4 +24,6 @@ public interface FamilyRevisionMapper {
     @Mapping(target = "isHeadOfYard", source = "headOfYard")
     @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
+
+    FamilyRevisionFilterDTO toFilter(FamilyMemberFilter filter);
 }

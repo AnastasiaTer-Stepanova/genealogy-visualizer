@@ -54,8 +54,9 @@ public class DaoConfig {
 
     @Bean
     public FamilyRevisionDAO familyRevisionDAO(@Autowired FamilyRevisionRepository familyRevisionRepository,
-                                               ArchiveDocumentDAO archiveDocumentDAO) {
-        return new FamilyRevisionDAOImpl(familyRevisionRepository, archiveDocumentDAO);
+                                               ArchiveDocumentDAO archiveDocumentDAO,
+                                               @Autowired EntityManager entityManager) {
+        return new FamilyRevisionDAOImpl(familyRevisionRepository, archiveDocumentDAO, entityManager);
     }
 
     @Bean

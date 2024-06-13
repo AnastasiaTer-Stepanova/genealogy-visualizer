@@ -106,7 +106,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/family.revision/family-member-filter.yaml"
+              $ref: "#/components/schemas/FamilyFilter"
         required: true
       responses:
         200:
@@ -123,15 +123,48 @@ paths:
             application/json:
               schema:
                 $ref: "./model/common/error-response.yaml"
+  /family-revision/filter:
+    get:
+      tags:
+        - FamilyRevision
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FamilyMemberFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyFamilyMember"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
 
 components:
   schemas:
     FamilyMember:
       $ref: "./model/genealogy/family.revision/family-member.yaml"
+    EasyFamilyMember:
+      $ref: "./model/genealogy/family.revision/easy-family-member.yaml"
+    FamilyFilter:
+      $ref: "./model/genealogy/family.revision/family-filter.yaml"
+    FamilyMemberFilter:
+      $ref: "./model/genealogy/family.revision/family-member-filter.yaml"
     FamilyMemberFullInfo:
       properties:
         familyMember:
-          $ref: "#/components/schemas/FamilyMember"
+          $ref: "#/components/schemas/EasyFamilyMember"
         anotherFamilies:
           description: Список архивов с вложенным списком семей
           type: array

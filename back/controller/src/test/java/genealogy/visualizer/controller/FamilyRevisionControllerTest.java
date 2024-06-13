@@ -5,11 +5,15 @@ import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.ErrorResponse;
+import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
+import genealogy.visualizer.api.model.FullNameFilter;
+import genealogy.visualizer.api.model.Sex;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -18,9 +22,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
@@ -241,7 +247,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 })
                 .toList();
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false, true);
+        FamilyFilter filterRequest = new FamilyFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false, true);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
         String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = getFamilyMemberFullInfosFromJson(responseJson);
@@ -252,7 +258,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId()))
                 .toList();
         assertEquals(existFamilyRevisionList.size(), response.size());
-        List<FamilyMember> responseFamilyRevisions = response.stream()
+        List<EasyFamilyMember> responseFamilyRevisions = response.stream()
                 .map(FamilyMemberFullInfo::getFamilyMember)
                 .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId())).toList();
         assertEquals(existFamilyRevisionList.size(), responseFamilyRevisions.size());
@@ -265,7 +271,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Disabled
     void findFamilyRevisionNullTest() throws Exception {
         generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false, true);
+        FamilyFilter filterRequest = new FamilyFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false, true);
         String objectString = objectMapper.writeValueAsString(filterRequest);
         String responseJson = mockMvc.perform(
                         post("/family-revision/family")
@@ -400,7 +406,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
             }
         }
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
-        FamilyMemberFilter filterRequest = new FamilyMemberFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true, isFindWithHavePerson);
+        FamilyFilter filterRequest = new FamilyFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true, isFindWithHavePerson);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
         String responseJson = postRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
@@ -462,6 +468,72 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 for (int j = 0; j < familyMembers.size(); j++) {
                     assertFamilyRevision(existFamilyRevision.get(j), familyMembers.get(j));
                 }
+            }
+        }
+    }
+
+    @Test
+    void findByFilterTest() throws Exception {
+        StringRandomizer stringRandomizer = new StringRandomizer(3);
+        FullNameFilter fullNameFilter = new FullNameFilter()
+                .name("Иван")
+                .surname("Иванович")
+                .lastName("Иванов");
+        FamilyMemberFilter filter = new FamilyMemberFilter()
+                .fullName(fullNameFilter)
+                .archiveDocumentId(archiveDocumentExisting.getId())
+                .familyRevisionNumber(40)
+                .sex(Sex.MALE);
+        List<genealogy.visualizer.entity.FamilyRevision> familyRevisionsSave = generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(5, 10)).toList();
+        byte count = 0;
+        for (genealogy.visualizer.entity.FamilyRevision familyRevision : familyRevisionsSave) {
+            familyRevision.setPerson(null);
+            familyRevision.setPartner(null);
+            if (generator.nextBoolean()) {
+                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
+                fullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getName() : fullNameFilter.getName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getSurname() : fullNameFilter.getSurname().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getLastName() : fullNameFilter.getLastName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                familyRevision.setFullName(fullName);
+                familyRevision.setSex(genealogy.visualizer.entity.enums.Sex.MALE);
+                familyRevision.setFamilyRevisionNumber(filter.getFamilyRevisionNumber().shortValue());
+                familyRevision.setArchiveDocument(archiveDocumentExisting);
+                count++;
+            } else {
+                genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
+                archiveDocumentSave.setArchive(null);
+                archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
+                archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
+                archiveDocumentSave.setChristenings(Collections.emptyList());
+                archiveDocumentSave.setMarriages(Collections.emptyList());
+                archiveDocumentSave.setDeaths(Collections.emptyList());
+                archiveDocumentSave.setNextRevision(null);
+                genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
+                archiveDocumentIds.add(archiveDocumentExist.getId());
+                familyRevision.setArchiveDocument(archiveDocumentExist);
+            }
+        }
+        List<genealogy.visualizer.entity.FamilyRevision> familyRevisionsExist = familyRevisionRepository.saveAllAndFlush(familyRevisionsSave);
+        familyRevisionsExist.forEach(fr -> familyRevisionIds.add(fr.getId()));
+        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
+        List<EasyFamilyMember> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyFamilyMember.class));
+        assertNotNull(response);
+        assertEquals(response.size(), count);
+        Set<Long> findIds = response.stream().map(EasyFamilyMember::getId).collect(Collectors.toSet());
+        for (genealogy.visualizer.entity.FamilyRevision familyRevision : familyRevisionsExist) {
+            if (familyRevision.getFullName().getName().toLowerCase().contains(filter.getFullName().getName().toLowerCase()) &&
+                    familyRevision.getFullName().getSurname().toLowerCase().contains(filter.getFullName().getSurname().toLowerCase()) &&
+                    familyRevision.getFullName().getLastName().toLowerCase().contains(filter.getFullName().getLastName().toLowerCase()) &&
+                    familyRevision.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
+                    familyRevision.getFamilyRevisionNumber().intValue() == filter.getFamilyRevisionNumber() &&
+                    familyRevision.getSex().name().equals(filter.getSex().name())) {
+                assertTrue(findIds.contains(familyRevision.getId()));
             }
         }
     }

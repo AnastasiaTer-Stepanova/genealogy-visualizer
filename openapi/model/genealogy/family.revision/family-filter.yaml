@@ -1,0 +1,30 @@
+description: Фильтр для поиска данных по номеру семьи в ревиизиях
+type: object
+required:
+  - familyRevisionNumber
+  - archiveDocumentId
+  - isFindInAllRevision
+  - isFindWithHavePerson
+properties:
+  familyRevisionNumber:
+    description: Номер семьи в текущей ревизии
+    type: integer
+    format: short
+    minimum: 1
+    maximum: 32767
+    example: 124
+  archiveDocumentId:
+    description: Идентификатор документа в архиве
+    type: integer
+    format: int64
+    example: 124353
+  isFindInAllRevision:
+    description: Искать ли семью по связкам во всех ревизиях, true - искать, false - не искать
+    type: boolean
+    default: false
+    example: true
+  isFindWithHavePerson:
+    description: Добавлять ли для вывода данные по члену семьи, если у него уже есть связка с Person, true - добавлять, false - не добавлять
+    type: boolean
+    default: false
+    example: true

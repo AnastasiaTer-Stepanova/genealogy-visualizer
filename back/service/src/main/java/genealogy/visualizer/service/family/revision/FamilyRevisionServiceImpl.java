@@ -2,6 +2,7 @@ package genealogy.visualizer.service.family.revision;
 
 import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
 import genealogy.visualizer.api.model.EasyFamilyMember;
+import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
@@ -72,34 +73,39 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
     }
 
     @Override
-    public List<FamilyMemberFullInfo> getFamilyMemberFullInfoList(FamilyMemberFilter familyMemberFilter) {
-        if (familyMemberFilter.getArchiveDocumentId() == null || familyMemberFilter.getFamilyRevisionNumber() == null) {
+    public List<EasyFamilyMember> filter(FamilyMemberFilter filter) {
+        return easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter)));
+    }
+
+    @Override
+    public List<FamilyMemberFullInfo> getFamilyMemberFullInfoList(FamilyFilter familyFilter) {
+        if (familyFilter.getArchiveDocumentId() == null || familyFilter.getFamilyRevisionNumber() == null) {
             throw new RuntimeException(BAD_REQUEST_ERROR);
         }
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = archiveDocumentDAO.findArchiveDocumentWithFamilyRevisionByNumberFamily(
-                familyMemberFilter.getArchiveDocumentId(),
-                familyMemberFilter.getFamilyRevisionNumber().shortValue());
+                familyFilter.getArchiveDocumentId(),
+                familyFilter.getFamilyRevisionNumber().shortValue());
         if (archiveDocumentEntity == null || archiveDocumentEntity.getFamilyRevisions() == null ||
                 archiveDocumentEntity.getFamilyRevisions().isEmpty()) {
             throw new RuntimeException(BAD_REQUEST_ERROR);
         }
         List<FamilyRevision> familyMembers = archiveDocumentEntity.getFamilyRevisions();
-        if (familyMemberFilter.getIsFindInAllRevision() && (archiveDocumentEntity.getPreviousRevisions() != null &&
+        if (familyFilter.getIsFindInAllRevision() && (archiveDocumentEntity.getPreviousRevisions() != null &&
                 !archiveDocumentEntity.getPreviousRevisions().isEmpty() || archiveDocumentEntity.getNextRevision() != null)) {
             return familyMembers
                     .stream()
-                    .map(fm -> getFamilyMemberFullInfo(fm, familyMemberFilter.getIsFindWithHavePerson()))
+                    .map(fm -> getFamilyMemberFullInfo(fm, familyFilter.getIsFindWithHavePerson()))
                     .toList();
         }
         return familyMembers
                 .stream()
-                .map(fr -> new FamilyMemberFullInfo().familyMember(familyRevisionMapper.toDTO(fr)))
+                .map(fr -> new FamilyMemberFullInfo().familyMember(easyFamilyRevisionMapper.toDTO(fr)))
                 .toList();
     }
 
     private FamilyMemberFullInfo getFamilyMemberFullInfo(FamilyRevision familyMember, Boolean isFindWithHavePerson) {
         FamilyMemberFullInfo fullInfo = new FamilyMemberFullInfo();
-        fullInfo.setFamilyMember(familyRevisionMapper.toDTO(familyMember));
+        fullInfo.setFamilyMember(easyFamilyRevisionMapper.toDTO(familyMember));
         ArchiveDocument archiveDocument = familyMember.getArchiveDocument();
         if (archiveDocument == null || archiveDocument.getNextRevision() == null && (archiveDocument.getPreviousRevisions() == null
                 || archiveDocument.getPreviousRevisions().isEmpty())) {
