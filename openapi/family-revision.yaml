@@ -97,7 +97,7 @@ paths:
               schema:
                 $ref: "./model/common/error-response.yaml"
   /family-revision/family:
-    post:
+    get:
       tags:
         - FamilyRevision
       operationId: getFamilyRevisionByNum

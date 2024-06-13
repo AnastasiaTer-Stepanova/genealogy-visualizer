@@ -249,7 +249,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
         FamilyFilter filterRequest = new FamilyFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false, true);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = postRequest(PATH + "/family", requestJson);
+        String responseJson = getRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = getFamilyMemberFullInfosFromJson(responseJson);
         assertNotNull(response);
         List<genealogy.visualizer.entity.FamilyRevision> existFamilyRevisionList = familyRevisionList.stream()
@@ -408,7 +408,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
         FamilyFilter filterRequest = new FamilyFilter((int) familyRevisionNumberSecondChildLeve1, adSecondChildLevel1Id, true, isFindWithHavePerson);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = postRequest(PATH + "/family", requestJson);
+        String responseJson = getRequest(PATH + "/family", requestJson);
         List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
         response.sort((fr1, fr2) -> fr2.getFamilyMember().getId().compareTo(fr1.getFamilyMember().getId()));
         assertNotNull(response);
