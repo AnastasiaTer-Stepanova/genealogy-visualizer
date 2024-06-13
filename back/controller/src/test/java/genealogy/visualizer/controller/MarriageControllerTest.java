@@ -5,6 +5,7 @@ import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
+import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.MarriageFilter;
 import genealogy.visualizer.api.model.Witness;
@@ -139,9 +140,17 @@ class MarriageControllerTest extends IntegrationTest {
     @Test
     void findByFilterTest() throws Exception {
         StringRandomizer stringRandomizer = new StringRandomizer(3);
+        FullNameFilter husbandFullNameFilter = new FullNameFilter()
+                .name("Иван")
+                .surname("Иванович")
+                .lastName("Иванов");
+        FullNameFilter wifeFullNameFilter = new FullNameFilter()
+                .name("Елена")
+                .surname("Петровна")
+                .lastName("Сидорова");
         MarriageFilter filter = new MarriageFilter()
-                .wifeName("Оля")
-                .husbandName("Иван")
+                .husbandFullName(husbandFullNameFilter)
+                .wifeFullName(wifeFullNameFilter)
                 .archiveDocumentId(archiveDocumentExisting.getId())
                 .marriageYear(1850);
         List<genealogy.visualizer.entity.Marriage> marriagesSave = generator.objects(genealogy.visualizer.entity.Marriage.class, generator.nextInt(5, 10)).toList();
@@ -153,12 +162,28 @@ class MarriageControllerTest extends IntegrationTest {
             marriage.setWitnesses(null);
             if (generator.nextBoolean()) {
                 marriage.setArchiveDocument(archiveDocumentExisting);
-                marriage.getHusband().setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? filter.getHusbandName() : filter.getHusbandName().toUpperCase()) +
+                genealogy.visualizer.entity.model.FullName husbandFullName = new genealogy.visualizer.entity.model.FullName();
+                husbandFullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? husbandFullNameFilter.getName() : husbandFullNameFilter.getName().toUpperCase()) +
                         stringRandomizer.getRandomValue());
-                marriage.getWife().setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? filter.getWifeName() : filter.getWifeName().toUpperCase()) +
+                husbandFullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? husbandFullNameFilter.getSurname() : husbandFullNameFilter.getSurname().toUpperCase()) +
                         stringRandomizer.getRandomValue());
+                husbandFullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? husbandFullNameFilter.getLastName() : husbandFullNameFilter.getLastName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                marriage.setHusband(husbandFullName);
+                genealogy.visualizer.entity.model.FullName wifeFullName = new genealogy.visualizer.entity.model.FullName();
+                wifeFullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? wifeFullNameFilter.getName() : wifeFullNameFilter.getName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                wifeFullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? wifeFullNameFilter.getSurname() : wifeFullNameFilter.getSurname().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                wifeFullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? wifeFullNameFilter.getLastName() : wifeFullNameFilter.getLastName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                marriage.setWife(wifeFullName);
                 LocalDate marriageDate = LocalDate.of(filter.getMarriageYear(), generator.nextInt(1, 12), generator.nextInt(1, 28));
                 marriage.setDate(marriageDate);
                 count++;
@@ -184,8 +209,12 @@ class MarriageControllerTest extends IntegrationTest {
         assertEquals(response.size(), count);
         Set<Long> findIds = response.stream().map(EasyMarriage::getId).collect(Collectors.toSet());
         for (genealogy.visualizer.entity.Marriage marriage : marriagesExist) {
-            if (marriage.getHusband().getName().toLowerCase().contains(filter.getHusbandName().toLowerCase()) &&
-                    marriage.getWife().getName().toLowerCase().contains(filter.getWifeName().toLowerCase()) &&
+            if (marriage.getHusband().getName().toLowerCase().contains(filter.getHusbandFullName().getName().toLowerCase()) &&
+                    marriage.getHusband().getSurname().toLowerCase().contains(filter.getHusbandFullName().getSurname().toLowerCase()) &&
+                    marriage.getHusband().getLastName().toLowerCase().contains(filter.getHusbandFullName().getLastName().toLowerCase()) &&
+                    marriage.getWife().getName().toLowerCase().contains(filter.getWifeFullName().getName().toLowerCase()) &&
+                    marriage.getWife().getSurname().toLowerCase().contains(filter.getWifeFullName().getSurname().toLowerCase()) &&
+                    marriage.getWife().getLastName().toLowerCase().contains(filter.getWifeFullName().getLastName().toLowerCase()) &&
                     marriage.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
                     marriage.getDate().getYear() == filter.getMarriageYear()) {
                 assertTrue(findIds.contains(marriage.getId()));

@@ -9,17 +9,11 @@ properties:
   marriageYear:
     description: Год брака
     type: integer
-    format: short
+    format: int16
     minimum: 1
     maximum: 32767
     example: 1858
-  husbandName:
-    description: Имя мужа
-    type: string
-    maxLength: 50
-    example: Иван
-  wifeName:
-    description: Имя мужа
-    type: string
-    maxLength: 50
-    example: Ольга
+  husbandFullName:
+    $ref: "./../../common/full-name-filter.yaml"
+  wifeFullName:
+    $ref: "./../../common/full-name-filter.yaml"

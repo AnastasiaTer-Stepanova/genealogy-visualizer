@@ -15,8 +15,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
@@ -24,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static genealogy.visualizer.service.helper.FilterHelper.addArchiveDocumentIdFilter;
+import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
 
 public class DeathDAOImpl implements DeathDAO {
 
@@ -102,16 +103,11 @@ public class DeathDAOImpl implements DeathDAO {
         CriteriaQuery<Death> cq = cb.createQuery(Death.class);
         Root<Death> root = cq.from(Death.class);
         List<Predicate> predicates = new ArrayList<>();
-        if (filter.getName() != null) {
-            predicates.add(cb.like(cb.lower(root.get("fullName").get("name")), "%" + filter.getName().toLowerCase() + "%"));
-        }
+        predicates.add(addArchiveDocumentIdFilter(cb, root, filter.getArchiveDocumentId()));
+        predicates.addAll(addFullNameFilter(cb, root, filter.getFullName(), "fullName"));
         if (filter.getDeathYear() != null) {
             Expression<Integer> yearExpression = cb.function("date_part", Integer.class, cb.literal("year"), root.get("date"));
             predicates.add(cb.equal(yearExpression, filter.getDeathYear()));
-        }
-        if (filter.getArchiveDocumentId() != null) {
-            Join<Death, ArchiveDocument> join = root.join("archiveDocument", JoinType.LEFT);
-            predicates.add(cb.equal(join.get("id"), filter.getArchiveDocumentId()));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();

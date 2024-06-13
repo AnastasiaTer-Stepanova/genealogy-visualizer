@@ -15,8 +15,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
@@ -25,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static genealogy.visualizer.service.helper.FilterHelper.addArchiveDocumentIdFilter;
+import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
 
 public class MarriageDAOImpl implements MarriageDAO {
 
@@ -144,19 +145,12 @@ public class MarriageDAOImpl implements MarriageDAO {
         CriteriaQuery<Marriage> cq = cb.createQuery(Marriage.class);
         Root<Marriage> root = cq.from(Marriage.class);
         List<Predicate> predicates = new ArrayList<>();
-        if (filter.getHusbandName() != null) {
-            predicates.add(cb.like(cb.lower(root.get("husband").get("name")), "%" + filter.getHusbandName().toLowerCase() + "%"));
-        }
-        if (filter.getWifeName() != null) {
-            predicates.add(cb.like(cb.lower(root.get("wife").get("name")), "%" + filter.getWifeName().toLowerCase() + "%"));
-        }
+        predicates.add(addArchiveDocumentIdFilter(cb, root, filter.getArchiveDocumentId()));
+        predicates.addAll(addFullNameFilter(cb, root, filter.getHusbandFullName(), "husband"));
+        predicates.addAll(addFullNameFilter(cb, root, filter.getWifeFullName(), "wife"));
         if (filter.getMarriageYear() != null) {
             Expression<Integer> yearExpression = cb.function("date_part", Integer.class, cb.literal("year"), root.get("date"));
             predicates.add(cb.equal(yearExpression, filter.getMarriageYear()));
-        }
-        if (filter.getArchiveDocumentId() != null) {
-            Join<Marriage, ArchiveDocument> join = root.join("archiveDocument", JoinType.LEFT);
-            predicates.add(cb.equal(join.get("id"), filter.getArchiveDocumentId()));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();

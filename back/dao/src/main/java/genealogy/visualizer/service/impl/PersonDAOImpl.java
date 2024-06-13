@@ -1,6 +1,5 @@
 package genealogy.visualizer.service.impl;
 
-import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.Death;
@@ -28,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
 
 public class PersonDAOImpl implements PersonDAO {
 
@@ -113,18 +114,6 @@ public class PersonDAOImpl implements PersonDAO {
         CriteriaQuery<Person> cq = cb.createQuery(Person.class);
         Root<Person> root = cq.from(Person.class);
         List<Predicate> predicates = new ArrayList<>();
-        if (filter.getFullName() != null) {
-            FullNameFilterDTO fullName = filter.getFullName();
-            if (fullName.getName() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("name")), "%" + fullName.getName().toLowerCase() + "%"));
-            }
-            if (fullName.getLastName() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("lastName")), "%" + fullName.getLastName().toLowerCase() + "%"));
-            }
-            if (fullName.getSurname() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("surname")), "%" + fullName.getSurname().toLowerCase() + "%"));
-            }
-        }
         if (filter.getBirthYear() != null) {
             predicates.add(cb.like(cb.lower(root.get("birthDate").get("date")), "%" + filter.getBirthYear() + "%"));
         }
@@ -134,6 +123,7 @@ public class PersonDAOImpl implements PersonDAO {
         if (filter.getSex() != null) {
             predicates.add(cb.equal(cb.lower(root.get("sex")), filter.getSex().getName().toLowerCase()));
         }
+        predicates.addAll(addFullNameFilter(cb, root, filter.getFullName(), "fullName"));
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();
     }

@@ -6,14 +6,14 @@ properties:
   birthYear:
     description: Год рождения
     type: integer
-    format: short
+    format: int16
     minimum: 1
     maximum: 32767
     example: 1858
   deathYear:
     description: Год смерти
     type: integer
-    format: short
+    format: int16
     minimum: 1
     maximum: 32767
     example: 1858

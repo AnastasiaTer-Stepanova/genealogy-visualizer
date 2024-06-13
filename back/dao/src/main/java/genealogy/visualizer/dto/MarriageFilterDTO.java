@@ -6,9 +6,9 @@ public class MarriageFilterDTO {
 
     private Integer marriageYear;
 
-    private String husbandName;
+    private FullNameFilterDTO wifeFullName;
 
-    private String wifeName;
+    private FullNameFilterDTO husbandFullName;
 
     public Long getArchiveDocumentId() {
         return archiveDocumentId;
@@ -26,19 +26,19 @@ public class MarriageFilterDTO {
         this.marriageYear = marriageYear;
     }
 
-    public String getHusbandName() {
-        return husbandName;
+    public FullNameFilterDTO getWifeFullName() {
+        return wifeFullName;
     }
 
-    public void setHusbandName(String husbandName) {
-        this.husbandName = husbandName;
+    public void setWifeFullName(FullNameFilterDTO wifeFullName) {
+        this.wifeFullName = wifeFullName;
     }
 
-    public String getWifeName() {
-        return wifeName;
+    public FullNameFilterDTO getHusbandFullName() {
+        return husbandFullName;
     }
 
-    public void setWifeName(String wifeName) {
-        this.wifeName = wifeName;
+    public void setHusbandFullName(FullNameFilterDTO husbandFullName) {
+        this.husbandFullName = husbandFullName;
     }
 }

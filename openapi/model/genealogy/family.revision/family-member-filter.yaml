@@ -9,7 +9,7 @@ properties:
   familyRevisionNumber:
     description: Номер семьи в текущей ревизии
     type: integer
-    format: short
+    format: int16
     minimum: 1
     maximum: 32767
     example: 124

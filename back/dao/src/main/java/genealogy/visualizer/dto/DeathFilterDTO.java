@@ -6,7 +6,7 @@ public class DeathFilterDTO {
 
     private Integer deathYear;
 
-    private String name;
+    private FullNameFilterDTO fullName;
 
     public Long getArchiveDocumentId() {
         return archiveDocumentId;
@@ -24,11 +24,11 @@ public class DeathFilterDTO {
         this.deathYear = deathYear;
     }
 
-    public String getName() {
-        return name;
+    public FullNameFilterDTO getFullName() {
+        return fullName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFullName(FullNameFilterDTO fullName) {
+        this.fullName = fullName;
     }
 }

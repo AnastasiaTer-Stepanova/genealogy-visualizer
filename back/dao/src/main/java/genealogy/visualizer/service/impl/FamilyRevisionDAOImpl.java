@@ -1,7 +1,6 @@
 package genealogy.visualizer.service.impl;
 
 import genealogy.visualizer.dto.FamilyRevisionFilterDTO;
-import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
@@ -10,8 +9,6 @@ import genealogy.visualizer.service.FamilyRevisionDAO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static genealogy.visualizer.service.helper.FilterHelper.addArchiveDocumentIdFilter;
+import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
 
 public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
@@ -109,24 +109,10 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
         CriteriaQuery<FamilyRevision> cq = cb.createQuery(FamilyRevision.class);
         Root<FamilyRevision> root = cq.from(FamilyRevision.class);
         List<Predicate> predicates = new ArrayList<>();
-        if (filter.getFullName() != null) {
-            FullNameFilterDTO fullName = filter.getFullName();
-            if (fullName.getName() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("name")), "%" + fullName.getName().toLowerCase() + "%"));
-            }
-            if (fullName.getLastName() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("lastName")), "%" + fullName.getLastName().toLowerCase() + "%"));
-            }
-            if (fullName.getSurname() != null) {
-                predicates.add(cb.like(cb.lower(root.get("fullName").get("surname")), "%" + fullName.getSurname().toLowerCase() + "%"));
-            }
-        }
+        predicates.add(addArchiveDocumentIdFilter(cb, root, filter.getArchiveDocumentId()));
+        predicates.addAll(addFullNameFilter(cb, root, filter.getFullName(), "fullName"));
         if (filter.getFamilyRevisionNumber() != null) {
             predicates.add(cb.equal(root.get("familyRevisionNumber"), filter.getFamilyRevisionNumber()));
-        }
-        if (filter.getArchiveDocumentId() != null) {
-            Join<FamilyRevision, ArchiveDocument> join = root.join("archiveDocument", JoinType.LEFT);
-            predicates.add(cb.equal(join.get("id"), filter.getArchiveDocumentId()));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();

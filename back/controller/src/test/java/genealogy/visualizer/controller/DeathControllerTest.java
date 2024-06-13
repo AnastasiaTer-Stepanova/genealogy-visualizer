@@ -7,6 +7,7 @@ import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyDeath;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyPerson;
+import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.service.DeathDAO;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
@@ -116,8 +117,12 @@ class DeathControllerTest extends IntegrationTest {
     @Test
     void findByFilterTest() throws Exception {
         StringRandomizer stringRandomizer = new StringRandomizer(3);
-        DeathFilter filter = new DeathFilter()
+        FullNameFilter fullNameFilter = new FullNameFilter()
                 .name("Иван")
+                .surname("Иванович")
+                .lastName("Иванов");
+        DeathFilter filter = new DeathFilter()
+                .fullName(fullNameFilter)
                 .archiveDocumentId(archiveDocumentExisting.getId())
                 .deathYear(1850);
         List<genealogy.visualizer.entity.Death> deathsSave = generator.objects(genealogy.visualizer.entity.Death.class, generator.nextInt(5, 10)).toList();
@@ -127,9 +132,17 @@ class DeathControllerTest extends IntegrationTest {
             death.setLocality(null);
             if (generator.nextBoolean()) {
                 death.setArchiveDocument(archiveDocumentExisting);
-                death.getFullName().setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? filter.getName() : filter.getName().toUpperCase()) +
+                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
+                fullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getName() : fullNameFilter.getName().toUpperCase()) +
                         stringRandomizer.getRandomValue());
+                fullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getSurname() : fullNameFilter.getSurname().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getLastName() : fullNameFilter.getLastName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                death.setFullName(fullName);
                 LocalDate date = LocalDate.of(filter.getDeathYear(), generator.nextInt(1, 12), generator.nextInt(1, 28));
                 death.setDate(date);
                 count++;
@@ -155,7 +168,9 @@ class DeathControllerTest extends IntegrationTest {
         assertEquals(response.size(), count);
         Set<Long> findIds = response.stream().map(EasyDeath::getId).collect(Collectors.toSet());
         for (genealogy.visualizer.entity.Death death : deathsExist) {
-            if (death.getFullName().getName().toLowerCase().contains(filter.getName().toLowerCase()) &&
+            if (death.getFullName().getName().toLowerCase().contains(filter.getFullName().getName().toLowerCase()) &&
+                    death.getFullName().getSurname().toLowerCase().contains(filter.getFullName().getSurname().toLowerCase()) &&
+                    death.getFullName().getLastName().toLowerCase().contains(filter.getFullName().getLastName().toLowerCase()) &&
                     death.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
                     death.getDate().getYear() == filter.getDeathYear()) {
                 assertTrue(findIds.contains(death.getId()));
