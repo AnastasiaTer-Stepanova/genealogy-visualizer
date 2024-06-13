@@ -129,8 +129,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public PersonService personService(PersonDAO personDAO, PersonMapper personMapper) {
-        return new PersonServiceImpl(personDAO, personMapper);
+    public PersonService personService(PersonDAO personDAO, PersonMapper personMapper, EasyPersonMapper easyPersonMapper) {
+        return new PersonServiceImpl(personDAO, personMapper, easyPersonMapper);
     }
 
     @Bean

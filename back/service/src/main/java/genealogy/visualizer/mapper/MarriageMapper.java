@@ -2,6 +2,7 @@ package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.MarriageFilter;
+import genealogy.visualizer.dto.MarriageFilterDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -20,6 +21,6 @@ public interface MarriageMapper extends CommonMapper {
 
     Marriage toDTO(genealogy.visualizer.entity.Marriage marriage);
 
-    genealogy.visualizer.dto.MarriageFilterDTO toFilter(MarriageFilter filter);
+    MarriageFilterDTO toFilter(MarriageFilter filter);
 
 }

@@ -1,5 +1,6 @@
 package genealogy.visualizer.service;
 
+import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.entity.Person;
 
 import java.util.List;
@@ -15,4 +16,7 @@ public interface PersonDAO {
     Person update(Person person);
 
     Person findFullInfoById(Long id);
+
+    List<Person> filter(PersonFilterDTO filter);
+
 }

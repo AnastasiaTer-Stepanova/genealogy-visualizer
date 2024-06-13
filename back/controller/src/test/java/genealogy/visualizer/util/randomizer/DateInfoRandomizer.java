@@ -22,6 +22,7 @@ public class DateInfoRandomizer implements Randomizer<DateInfo> {
                 dateString.insert(0, integerDayRandomizer.getRandomValue().toString() + "-");
             }
         }
-        return new DateInfo(dateString.toString(), (DateInfo.DateRangeTypeEnum) new EnumRandomizer(DateInfo.DateRangeTypeEnum.class).getRandomValue());
+        EnumRandomizer<DateInfo.DateRangeTypeEnum> enumRandomizer = new EnumRandomizer<>(DateInfo.DateRangeTypeEnum.class);
+        return new DateInfo(dateString.toString(), enumRandomizer.getRandomValue());
     }
 }

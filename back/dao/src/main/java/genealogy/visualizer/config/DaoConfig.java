@@ -104,18 +104,14 @@ public class DaoConfig {
     }
 
     @Bean
-    public PersonDAO personDAO(@Autowired PersonRepository personRepository, LocalityDAO localityDAO, ChristeningDAO christeningDAO,
-                               DeathDAO deathDAO, MarriageDAO marriageDAO, FamilyRevisionDAO familyRevisionDAO) {
-        return new PersonDAOImpl(personRepository, localityDAO, christeningDAO, deathDAO, marriageDAO, familyRevisionDAO);
+    public PersonDAO personDAO(@Autowired PersonRepository personRepository,
+                               LocalityDAO localityDAO,
+                               ChristeningDAO christeningDAO,
+                               DeathDAO deathDAO,
+                               MarriageDAO marriageDAO,
+                               FamilyRevisionDAO familyRevisionDAO,
+                               @Autowired EntityManager entityManager) {
+        return new PersonDAOImpl(personRepository, localityDAO, christeningDAO, deathDAO, marriageDAO, familyRevisionDAO, entityManager);
     }
 
-//    @Bean
-//    public DataSource getDataSource() {
-//        return DataSourceBuilder.create()
-//                .driverClassName("org.postgresql.Driver")
-//                .url("jdbc:postgresql://localhost:5432/genealogy_visualizer")
-//                .username("root")
-//                .password("rootp4ss")
-//                .build();
-//    }
 }

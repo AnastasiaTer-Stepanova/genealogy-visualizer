@@ -1,5 +1,7 @@
 package genealogy.visualizer.service.impl;
 
+import genealogy.visualizer.dto.FullNameFilterDTO;
+import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.Death;
 import genealogy.visualizer.entity.FamilyRevision;
@@ -13,6 +15,11 @@ import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +37,22 @@ public class PersonDAOImpl implements PersonDAO {
     private final DeathDAO deathDAO;
     private final MarriageDAO marriageDAO;
     private final FamilyRevisionDAO familyRevisionDAO;
+    private final EntityManager entityManager;
 
-    public PersonDAOImpl(PersonRepository personRepository, LocalityDAO localityDAO, ChristeningDAO christeningDAO,
-                         DeathDAO deathDAO, MarriageDAO marriageDAO, FamilyRevisionDAO familyRevisionDAO) {
+    public PersonDAOImpl(PersonRepository personRepository,
+                         LocalityDAO localityDAO,
+                         ChristeningDAO christeningDAO,
+                         DeathDAO deathDAO,
+                         MarriageDAO marriageDAO,
+                         FamilyRevisionDAO familyRevisionDAO,
+                         EntityManager entityManager) {
         this.personRepository = personRepository;
         this.localityDAO = localityDAO;
         this.christeningDAO = christeningDAO;
         this.deathDAO = deathDAO;
         this.marriageDAO = marriageDAO;
         this.familyRevisionDAO = familyRevisionDAO;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -91,6 +105,37 @@ public class PersonDAOImpl implements PersonDAO {
         personRepository.findByIdWithParents(id).orElseThrow();
         personRepository.findByIdWithPartners(id).orElseThrow();
         return personRepository.findFullInfoById(id).orElseThrow();
+    }
+
+    @Override
+    public List<Person> filter(PersonFilterDTO filter) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Person> cq = cb.createQuery(Person.class);
+        Root<Person> root = cq.from(Person.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.getFullName() != null) {
+            FullNameFilterDTO fullName = filter.getFullName();
+            if (fullName.getName() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("name")), "%" + fullName.getName().toLowerCase() + "%"));
+            }
+            if (fullName.getLastName() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("lastName")), "%" + fullName.getLastName().toLowerCase() + "%"));
+            }
+            if (fullName.getSurname() != null) {
+                predicates.add(cb.like(cb.lower(root.get("fullName").get("surname")), "%" + fullName.getSurname().toLowerCase() + "%"));
+            }
+        }
+        if (filter.getBirthYear() != null) {
+            predicates.add(cb.like(cb.lower(root.get("birthDate").get("date")), "%" + filter.getBirthYear() + "%"));
+        }
+        if (filter.getDeathYear() != null) {
+            predicates.add(cb.like(cb.lower(root.get("deathDate").get("date")), "%" + filter.getDeathYear() + "%"));
+        }
+        if (filter.getSex() != null) {
+            predicates.add(cb.equal(cb.lower(root.get("sex")), filter.getSex().getName().toLowerCase()));
+        }
+        cq.select(root).where(predicates.toArray(new Predicate[0]));
+        return entityManager.createQuery(cq).getResultList();
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

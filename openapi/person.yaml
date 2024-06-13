@@ -96,8 +96,67 @@ paths:
             application/json:
               schema:
                 $ref: "./model/common/error-response.yaml"
+  /person/filter:
+    get:
+      tags:
+        - Person
+      operationId: filter
+      summary: "Search data by filter"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonFilter"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyPerson"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
+  /person/search:
+    get:
+      tags:
+        - Person
+      operationId: search
+      summary: "Search data"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              example: "Иван Иванович Иванов"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EasyPerson"
+        404:
+          description: "Failed to save data"
+          content:
+            application/json:
+              schema:
+                $ref: "./model/common/error-response.yaml"
 
 components:
   schemas:
     Person:
       $ref: "./model/genealogy/person/person.yaml"
+    EasyPerson:
+      $ref: "./model/genealogy/person/easy-person.yaml"
+    PersonFilter:
+      $ref: "./model/genealogy/person/person-filter.yaml"

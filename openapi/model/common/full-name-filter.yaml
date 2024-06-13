@@ -1,0 +1,15 @@
+description: Модель ФИО для фильтрации
+type: object
+properties:
+  name:
+    description: Имя
+    type: string
+    example: "Иван"
+  surname:
+    description: Отчество
+    type: string
+    example: "Петрович"
+  lastName:
+    description: Фамилия
+    type: string
+    example: "Сидоров"

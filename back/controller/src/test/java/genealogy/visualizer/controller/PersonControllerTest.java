@@ -8,9 +8,16 @@ import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.FullName;
+import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.api.model.Person;
+import genealogy.visualizer.api.model.PersonFilter;
+import genealogy.visualizer.api.model.Sex;
+import genealogy.visualizer.entity.enums.DateRangeType;
 import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.service.PersonDAO;
+import org.apache.commons.lang3.StringUtils;
+import org.jeasy.random.randomizers.misc.EnumRandomizer;
+import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +26,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static genealogy.visualizer.controller.ChristeningControllerTest.assertChristening;
 import static genealogy.visualizer.controller.DeathControllerTest.assertDeath;
@@ -135,6 +144,121 @@ class PersonControllerTest extends IntegrationTest {
         assertNotNull(response);
         assertEquals(response.getId(), personEntity.getId());
         assertPerson(response, person);
+    }
+
+    @Test
+    void findByFilterTest() throws Exception {
+        StringRandomizer stringRandomizer = new StringRandomizer(3);
+        FullNameFilter fullNameFilter = new FullNameFilter()
+                .name("Иван")
+                .surname("Иванович")
+                .lastName("Иванов");
+        PersonFilter filter = new PersonFilter()
+                .fullName(fullNameFilter)
+                .birthYear(1820)
+                .deathYear(1870)
+                .sex(Sex.MALE);
+        List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
+        byte count = 0;
+        EnumRandomizer<DateRangeType> enumRandomizer = new EnumRandomizer<>(DateRangeType.class);
+        genealogy.visualizer.entity.model.DateInfo birthDate = new genealogy.visualizer.entity.model.DateInfo(
+                stringRandomizer.getRandomValue() + filter.getBirthYear() + stringRandomizer.getRandomValue(),
+                enumRandomizer.getRandomValue());
+        genealogy.visualizer.entity.model.DateInfo deathDate = new genealogy.visualizer.entity.model.DateInfo(
+                stringRandomizer.getRandomValue() + filter.getDeathYear() + stringRandomizer.getRandomValue(),
+                enumRandomizer.getRandomValue());
+        for (genealogy.visualizer.entity.Person person : personsSave) {
+            person.setParents(Collections.emptyList());
+            person.setPartners(Collections.emptyList());
+            person.setChildren(Collections.emptyList());
+            person.setRevisions(Collections.emptyList());
+            person.setMarriages(Collections.emptyList());
+            person.setChristening(null);
+            person.setDeath(null);
+            person.setDeathLocality(null);
+            person.setBirthLocality(null);
+            if (generator.nextBoolean()) {
+                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
+                fullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getName() : fullNameFilter.getName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getSurname() : fullNameFilter.getSurname().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? fullNameFilter.getLastName() : fullNameFilter.getLastName().toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                person.setFullName(fullName);
+                person.setSex(genealogy.visualizer.entity.enums.Sex.MALE);
+                person.setBirthDate(birthDate);
+                person.setDeathDate(deathDate);
+                count++;
+            }
+        }
+        List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
+        personsExist.forEach(p -> personIds.add(p.getId()));
+        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
+        List<EasyPerson> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
+        assertNotNull(response);
+        assertEquals(response.size(), count);
+        Set<Long> findIds = response.stream().map(EasyPerson::getId).collect(Collectors.toSet());
+        for (genealogy.visualizer.entity.Person person : personsExist) {
+            if (person.getFullName().getName().toLowerCase().contains(filter.getFullName().getName().toLowerCase()) &&
+                    person.getFullName().getSurname().toLowerCase().contains(filter.getFullName().getSurname().toLowerCase()) &&
+                    person.getFullName().getLastName().toLowerCase().contains(filter.getFullName().getLastName().toLowerCase()) &&
+                    person.getBirthDate().getDate().contains(filter.getBirthYear().toString()) &&
+                    person.getDeathDate().getDate().contains(filter.getDeathYear().toString()) &&
+                    person.getSex().name().equals(filter.getSex().name())) {
+                assertTrue(findIds.contains(person.getId()));
+            }
+        }
+    }
+
+    @Test
+    void searchTest() throws Exception {
+        StringRandomizer stringRandomizer = new StringRandomizer(3);
+        List<String> strings = generator.objects(String.class, 3).toList();
+        List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
+        byte count = 0;
+        for (genealogy.visualizer.entity.Person person : personsSave) {
+            person.setParents(Collections.emptyList());
+            person.setPartners(Collections.emptyList());
+            person.setChildren(Collections.emptyList());
+            person.setRevisions(Collections.emptyList());
+            person.setMarriages(Collections.emptyList());
+            person.setChristening(null);
+            person.setDeath(null);
+            person.setDeathLocality(null);
+            person.setBirthLocality(null);
+            if (generator.nextBoolean()) {
+                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
+                fullName.setName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? strings.get(0) : strings.get(0).toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setSurname(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? strings.get(1) : strings.get(1).toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                fullName.setLastName(stringRandomizer.getRandomValue() +
+                        (generator.nextBoolean() ? strings.get(2) : strings.get(2).toUpperCase()) +
+                        stringRandomizer.getRandomValue());
+                person.setFullName(fullName);
+                count++;
+            }
+        }
+        List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
+        personsExist.forEach(p -> personIds.add(p.getId()));
+        String responseJson = getRequest(PATH + "/search", StringUtils.join(strings, " "));
+        List<EasyPerson> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
+        assertNotNull(response);
+        assertEquals(response.size(), count);
+        Set<Long> findIds = response.stream().map(EasyPerson::getId).collect(Collectors.toSet());
+        for (genealogy.visualizer.entity.Person person : personsExist) {
+            if (person.getFullName().getName().toLowerCase().contains(strings.get(0).toLowerCase()) &&
+                    person.getFullName().getSurname().toLowerCase().contains(strings.get(1).toLowerCase()) &&
+                    person.getFullName().getLastName().toLowerCase().contains(strings.get(2).toLowerCase())) {
+                assertTrue(findIds.contains(person.getId()));
+            }
+        }
     }
 
     @AfterEach

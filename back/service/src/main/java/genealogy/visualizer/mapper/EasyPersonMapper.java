@@ -30,6 +30,8 @@ public interface EasyPersonMapper {
             "christening", "death", "revisions", "marriages"})
     EasyPerson toDTO(genealogy.visualizer.entity.Person person);
 
-    Set<EasyPerson> toDTOs(List<genealogy.visualizer.entity.Person> person);
+    Set<EasyPerson> toSetDTOs(List<genealogy.visualizer.entity.Person> person);
+
+    List<EasyPerson> toDTOs(List<genealogy.visualizer.entity.Person> person);
 
 }

@@ -35,7 +35,7 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
         if (entities == null) {
             throw new RuntimeException(NOT_FOUND_ERROR);
         }
-        Set<EasyPerson> easyPersonSet = easyPersonMapper.toDTOs(entities);
+        Set<EasyPerson> easyPersonSet = easyPersonMapper.toSetDTOs(entities);
         return new GenealogyVisualizeGraph().persons(easyPersonSet).links(graphLinksSet(entities));
     }
 
