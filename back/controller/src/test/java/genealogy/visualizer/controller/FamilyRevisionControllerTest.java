@@ -19,9 +19,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //TODO Включить тесты при реализации ControllerAdvice
 class FamilyRevisionControllerTest extends IntegrationTest {
@@ -120,14 +113,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @Test
     @Disabled
     void getByIdExceptionTest() throws Exception {
-        String responseJson = mockMvc.perform(
-                        get("/family-revision/" + generator.nextInt(10000, 20000)))
-                .andExpectAll(
-                        status().isNotFound(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String responseJson = getRequest(PATH + generator.nextInt(10000, 20000));
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
@@ -161,16 +147,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setArchiveDocument(easyArchiveDocumentMapper.toDTO(archiveDocumentExisting));
         revisionSave.setId(generator.nextLong(20000, 30000));
         String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = mockMvc.perform(
-                        put("/family-revision")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isNotFound(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String responseJson = putRequest(PATH, objectString);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
@@ -273,16 +250,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
         FamilyFilter filterRequest = new FamilyFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false, true);
         String objectString = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = mockMvc.perform(
-                        post("/family-revision/family")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isNotFound(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String responseJson = getRequest(PATH + "/family", objectString);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());

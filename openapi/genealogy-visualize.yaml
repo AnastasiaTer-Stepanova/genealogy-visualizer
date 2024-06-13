@@ -7,7 +7,7 @@ tags:
     description: API для визуализации генеалогического исследования
 paths:
   /genealogy-visualizer/graph:
-    post:
+    get:
       tags:
         - GenealogyVisualize
       operationId: getGenealogyVisualizeGraph

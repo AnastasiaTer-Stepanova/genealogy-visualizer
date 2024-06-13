@@ -9,19 +9,15 @@ import genealogy.visualizer.repository.PersonRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class GenealogyVisualizeControllerTest extends IntegrationTest {
 
@@ -61,17 +57,7 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
         persons = personRepository.saveAllAndFlush(persons);
         persons = persons.stream().sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).toList();
         personIds.addAll(persons.stream().map(Person::getId).toList());
-        String objectString = objectMapper.writeValueAsString(new GenealogyVisualizeRq());
-        String responseJson = mockMvc.perform(
-                        post("/genealogy-visualizer/graph")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectString))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String responseJson = getRequest("/genealogy-visualizer/graph", objectMapper.writeValueAsString(new GenealogyVisualizeRq()));
         GenealogyVisualizeGraph response = objectMapper.readValue(responseJson, GenealogyVisualizeGraph.class);
         assertNotNull(response);
         assertEquals(response.getPersons().size(), persons.size());
@@ -91,14 +77,5 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
         System.out.println("----------------------End test------------------------");
         personRepository.deleteAllById(personIds);
         super.tearDown();
-    }
-
-    private void assertPerson(EasyPerson person1, Person person2) {
-        assertEquals(person1.getId(), person2.getId());
-        assertEquals(person1.getBirthDate().getDate(), person2.getBirthDate().getDate());
-        assertEquals(person1.getBirthDate().getDateRangeType().getValue(), person2.getBirthDate().getDateRangeType().getName());
-        assertEquals(person1.getDeathDate().getDate(), person2.getDeathDate().getDate());
-        assertEquals(person1.getDeathDate().getDateRangeType().getValue(), person2.getDeathDate().getDateRangeType().getName());
-        assertFullName(person1.getFullName(), person2.getFullName());
     }
 }
