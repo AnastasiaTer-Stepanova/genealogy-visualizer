@@ -3,8 +3,10 @@ package genealogy.visualizer.controller;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.User;
 import genealogy.visualizer.model.exception.ForbiddenException;
+import genealogy.visualizer.service.ParamDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -20,6 +22,10 @@ class AuthorizationControllerTest extends IntegrationTest {
 
     private static final String AUTHORIZATION_PATH = "/authorization";
     private static final String REGISTRATION_PATH = "/registration";
+    private static final String REGISTRATION_ENABLE_PARAM_NAME = "registration_enable";
+
+    @Autowired
+    ParamDAO paramDAO;
 
     @Test
     void authorizationTest() throws Exception {
@@ -47,6 +53,7 @@ class AuthorizationControllerTest extends IntegrationTest {
 
     @Test
     void registrationTest() throws Exception {
+        paramDAO.updateValueByName(REGISTRATION_ENABLE_PARAM_NAME, Boolean.TRUE.toString());
         User user = generator.nextObject(User.class);
         String responseJson = mockMvc.perform(
                         post(REGISTRATION_PATH)
@@ -62,6 +69,7 @@ class AuthorizationControllerTest extends IntegrationTest {
 
     @Test
     void registrationForbiddenTest() throws Exception {
+        paramDAO.updateValueByName(REGISTRATION_ENABLE_PARAM_NAME, Boolean.TRUE.toString());
         User user = generator.nextObject(User.class);
         user.setLogin(userExisting.getLogin());
         String responseJson = mockMvc.perform(
@@ -77,6 +85,27 @@ class AuthorizationControllerTest extends IntegrationTest {
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getMessage(), String.format("Пользователь с логином: %s уже существует", user.getLogin()));
+        assertEquals(response.getCode(), HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    void registrationForbiddenParamTest() throws Exception {
+        paramDAO.updateValueByName(REGISTRATION_ENABLE_PARAM_NAME, Boolean.FALSE.toString());
+        User user = generator.nextObject(User.class);
+        user.setLogin(userExisting.getLogin());
+        String responseJson = mockMvc.perform(
+                        post(REGISTRATION_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(user)))
+                .andExpectAll(
+                        status().isForbidden(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
+        assertNotNull(response);
+        assertEquals(response.getMessage(), "Регистрация в данный момент недоступна.");
         assertEquals(response.getCode(), HttpStatus.FORBIDDEN.value());
     }
 

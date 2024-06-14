@@ -46,7 +46,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public void registration(RegistrationInfo registrationInfo) {
-        if (paramDAO.getBooleanParamOrDefault(REGISTRATION_ENABLE_PARAM_NAME, Boolean.FALSE)) {
+        if (!paramDAO.getBooleanParamOrDefault(REGISTRATION_ENABLE_PARAM_NAME, Boolean.FALSE)) {
             throw new ForbiddenException("Регистрация в данный момент недоступна.");
         }
         userService.createUser(new User(registrationInfo.getLogin(), registrationInfo.getPassword()));

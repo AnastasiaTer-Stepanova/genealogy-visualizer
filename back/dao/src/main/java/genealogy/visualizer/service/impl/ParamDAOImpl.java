@@ -2,6 +2,8 @@ package genealogy.visualizer.service.impl;
 
 import genealogy.visualizer.repository.ParamRepository;
 import genealogy.visualizer.service.ParamDAO;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ParamDAOImpl implements ParamDAO {
 
@@ -16,5 +18,11 @@ public class ParamDAOImpl implements ParamDAO {
         return paramRepository.findByName(paramName)
                 .map(param -> Boolean.parseBoolean(param.getValue()))
                 .orElse(defaultValue);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void updateValueByName(String name, String newValue) {
+        paramRepository.updateValueByName(name, newValue);
     }
 }
