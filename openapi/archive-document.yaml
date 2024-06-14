@@ -31,7 +31,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
         - ArchiveDocument
@@ -47,6 +47,12 @@ paths:
       responses:
         204:
           description: "OK"
+        401:
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /archive-document:
     post:
       tags:
@@ -66,12 +72,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArchiveDocument"
-        404:
+        400:
           description: "Failed to save data"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     put:
       tags:
         - ArchiveDocument
@@ -90,12 +102,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArchiveDocument"
-        404:
+        400:
           description: "Failed to update data"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /archive-document/filter:
     get:
       tags:
@@ -118,11 +136,11 @@ paths:
                 items:
                   $ref: "#/components/schemas/EasyArchiveDocument"
         404:
-          description: "Failed to save data"
+          description: "Data not found"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -132,3 +150,5 @@ components:
       $ref: "./model/genealogy/archive/easy-archive-document.yaml"
     ArchiveDocumentFilter:
       $ref: "./model/genealogy/archive/archive-document-filter.yaml"
+    ErrorResponse:
+      $ref: "./model/common/error-response.yaml"

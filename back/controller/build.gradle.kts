@@ -31,6 +31,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.5")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:3.2.5")
     testImplementation("org.springframework.data:spring-data-jpa:3.2.5")
+    testImplementation("org.springframework.security:spring-security-crypto:6.2.4")
 }
 
 tasks.named<BootJar>("bootJar") {

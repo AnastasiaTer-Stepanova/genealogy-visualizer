@@ -1,0 +1,16 @@
+description: Данные для авторизации
+type: object
+required:
+  - login
+  - password
+properties:
+  login:
+    description: Логин
+    type: string
+    minLength: 3
+    maxLength: 255
+  password:
+    description: Пароль
+    type: string
+    minLength: 6
+    maxLength: 20

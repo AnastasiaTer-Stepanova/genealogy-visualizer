@@ -125,6 +125,24 @@ class ArchiveControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        Archive archiveSave = generator.nextObject(Archive.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveSave));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        Archive archiveUpdate = generator.nextObject(Archive.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        Archive archiveUpdate = generator.nextObject(Archive.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

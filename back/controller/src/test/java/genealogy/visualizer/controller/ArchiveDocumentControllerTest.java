@@ -222,6 +222,24 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        ArchiveDocument object = generator.nextObject(ArchiveDocument.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        ArchiveDocument object = generator.nextObject(ArchiveDocument.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        ArchiveDocument object = generator.nextObject(ArchiveDocument.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

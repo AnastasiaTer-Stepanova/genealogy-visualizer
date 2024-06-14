@@ -11,6 +11,8 @@ import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 
@@ -19,9 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
@@ -50,44 +50,47 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
     @Override
     public FamilyMember getById(Long id) {
-        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return familyRevisionMapper.toDTO(entity);
+        return Optional.ofNullable(familyRevisionMapper.toDTO(familyRevisionDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public FamilyMember save(FamilyMember familyMember) {
-        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.save(familyRevisionMapper.toEntity(familyMember));
-        return familyRevisionMapper.toDTO(entity);
+        if (familyMember == null || familyMember.getId() != null) {
+            throw new BadRequestException("FamilyMember must not have an id");
+        }
+        return familyRevisionMapper.toDTO(familyRevisionDAO.save(familyRevisionMapper.toEntity(familyMember)));
     }
 
     @Override
     public FamilyMember update(FamilyMember familyRevision) {
+        if (familyRevision == null || familyRevision.getId() == null) {
+            throw new BadRequestException("FamilyMember must have an id");
+        }
         genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision));
         if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
+            throw new NotFoundException("Family revision for update not found");
         }
         return familyRevisionMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyFamilyMember> filter(FamilyMemberFilter filter) {
-        return easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter)));
+        return Optional.ofNullable(easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public List<FamilyMemberFullInfo> getFamilyMemberFullInfoList(FamilyFilter familyFilter) {
         if (familyFilter.getArchiveDocumentId() == null || familyFilter.getFamilyRevisionNumber() == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new BadRequestException();
         }
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = archiveDocumentDAO.findArchiveDocumentWithFamilyRevisionByNumberFamily(
                 familyFilter.getArchiveDocumentId(),
                 familyFilter.getFamilyRevisionNumber().shortValue());
         if (archiveDocumentEntity == null || archiveDocumentEntity.getFamilyRevisions() == null ||
                 archiveDocumentEntity.getFamilyRevisions().isEmpty()) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException();
         }
         List<FamilyRevision> familyMembers = archiveDocumentEntity.getFamilyRevisions();
         if (familyFilter.getIsFindInAllRevision() && (archiveDocumentEntity.getPreviousRevisions() != null &&

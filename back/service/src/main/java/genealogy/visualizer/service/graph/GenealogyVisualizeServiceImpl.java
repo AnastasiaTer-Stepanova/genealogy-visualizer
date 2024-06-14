@@ -6,14 +6,13 @@ import genealogy.visualizer.api.model.GenealogyVisualizeRq;
 import genealogy.visualizer.api.model.GraphLinks;
 import genealogy.visualizer.entity.Person;
 import genealogy.visualizer.mapper.EasyPersonMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.PersonDAO;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
 
 public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService {
 
@@ -29,11 +28,11 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
     public GenealogyVisualizeGraph getGenealogyVisualizeGraph(GenealogyVisualizeRq genealogyVisualizeRq) {
         if (genealogyVisualizeRq != null && (genealogyVisualizeRq.getSort() != null || genealogyVisualizeRq.getFilter() != null)) {
             //TODO После добавления фильтрации изменить реализацию
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new BadRequestException("Фильтрация сейчас невозможна");
         }
         List<Person> entities = personDAO.getAllEasyPersons();
         if (entities == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
+            throw new NotFoundException();
         }
         Set<EasyPerson> easyPersonSet = easyPersonMapper.toSetDTOs(entities);
         return new GenealogyVisualizeGraph().persons(easyPersonSet).links(graphLinksSet(entities));

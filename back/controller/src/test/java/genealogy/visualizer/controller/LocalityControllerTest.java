@@ -215,6 +215,24 @@ class LocalityControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        Locality object = generator.nextObject(Locality.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        Locality object = generator.nextObject(Locality.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        Locality object = generator.nextObject(Locality.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

@@ -5,8 +5,10 @@ import genealogy.visualizer.api.model.Age;
 import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.DateInfo;
 import genealogy.visualizer.api.model.EasyPerson;
+import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FullName;
+import genealogy.visualizer.api.model.User;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
@@ -23,6 +25,8 @@ import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.MarriageRepository;
 import genealogy.visualizer.repository.PersonRepository;
+import genealogy.visualizer.repository.UserRepository;
+import genealogy.visualizer.service.authorization.JwtService;
 import genealogy.visualizer.util.randomizer.DateInfoRandomizer;
 import org.apache.commons.lang3.StringUtils;
 import org.jeasy.random.EasyRandom;
@@ -34,9 +38,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.util.MimeType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -110,16 +117,31 @@ class IntegrationTest {
     FamilyRevisionRepository familyRevisionRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    JwtService jwtService;
+
+    @Autowired
     EasyLocalityMapper localityMapper;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     genealogy.visualizer.entity.ArchiveDocument archiveDocumentExisting;
 
     genealogy.visualizer.entity.Locality localityExisting;
 
     genealogy.visualizer.entity.Archive archiveExisting;
+
+    genealogy.visualizer.entity.User userExisting;
+
+    private static final String AUTHORIZATION_PATH = "/authorization";
+
+    String userExistingPassword;
 
     static EasyRandom generator;
 
@@ -131,6 +153,7 @@ class IntegrationTest {
     final Set<Long> deathIds = new HashSet<>();
     final Set<Long> marriageIds = new HashSet<>();
     final Set<Long> familyRevisionIds = new HashSet<>();
+    final Set<Long> userIds = new HashSet<>();
 
     static {
         EasyRandomParameters parameters = getGeneratorParams()
@@ -147,6 +170,11 @@ class IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        userExisting = generator.nextObject(genealogy.visualizer.entity.User.class);
+        userExistingPassword = userExisting.getPassword();
+        userExisting.setPassword(passwordEncoder.encode(userExistingPassword));
+        userExisting = userRepository.save(userExisting);
+        userIds.add(userExisting.getId());
         localityExisting = generator.nextObject(genealogy.visualizer.entity.Locality.class);
         localityExisting.setChristenings(Collections.emptyList());
         localityExisting.setPersonsWithBirthLocality(Collections.emptyList());
@@ -169,6 +197,39 @@ class IntegrationTest {
         archiveDocumentRepository.deleteAllById(archiveDocumentIds);
         archiveRepository.deleteAllById(archiveIds);
         localityRepository.deleteAllById(localityIds);
+        userRepository.deleteAllById(userIds);
+    }
+
+    void postUnauthorizedRequest(String path, String requestJson) throws Exception {
+        unauthorizedRequest(post(path), requestJson);
+    }
+
+    void putUnauthorizedRequest(String path, String requestJson) throws Exception {
+        unauthorizedRequest(put(path), requestJson);
+    }
+
+    void deleteUnauthorizedRequest(String path, String requestJson) throws Exception {
+        unauthorizedRequest(delete(path), requestJson);
+    }
+
+    void unauthorizedRequest(MockHttpServletRequestBuilder requestBuilder, String requestJson) throws Exception {
+        System.out.println("----------------------Start request------------------------");
+        String responseJson = mockMvc.perform(
+                        requestBuilder
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+                .andExpectAll(
+                        status().isUnauthorized(),
+                        content().contentType(new MimeType("application", "json", StandardCharsets.UTF_8).toString()),
+                        content().encoding(StandardCharsets.UTF_8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
+        assertNotNull(response);
+        assertEquals(response.getMessage(), "Доступ запрещен. Пожалуйста, авторизуйтесь.");
+        assertEquals(response.getCode(), HttpStatus.UNAUTHORIZED.value());
+        System.out.println("----------------------End request------------------------");
     }
 
     String postRequest(String path, String requestJson) throws Exception {
@@ -176,7 +237,8 @@ class IntegrationTest {
         String responseJson = mockMvc.perform(
                         post(path)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
+                                .content(requestJson)
+                                .header("Authorization", "Bearer " + authorization()))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON))
@@ -190,7 +252,8 @@ class IntegrationTest {
     String deleteRequest(String path) throws Exception {
         System.out.println("----------------------Start request------------------------");
         String responseJson = mockMvc.perform(
-                        delete(path))
+                        delete(path)
+                                .header("Authorization", "Bearer " + authorization()))
                 .andExpectAll(status().isNoContent())
                 .andReturn()
                 .getResponse()
@@ -222,12 +285,36 @@ class IntegrationTest {
         return responseJson;
     }
 
+    String getNotFoundRequest(String path) throws Exception {
+        return getNotFoundRequest(path, null);
+    }
+
+    String getNotFoundRequest(String path, String requestJson) throws Exception {
+        System.out.println("----------------------Start request------------------------");
+        MockHttpServletRequestBuilder requestBuilder = requestJson == null ?
+                get(path) :
+                get(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson);
+        String responseJson = mockMvc.perform(
+                        requestBuilder)
+                .andExpectAll(
+                        status().isNotFound(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        System.out.println("----------------------End request------------------------");
+        return responseJson;
+    }
+
     String putRequest(String path, String requestJson) throws Exception {
         System.out.println("----------------------Start request------------------------");
         String responseJson = mockMvc.perform(
                         put(path)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestJson))
+                                .content(requestJson)
+                                .header("Authorization", "Bearer " + authorization()))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON))
@@ -235,6 +322,41 @@ class IntegrationTest {
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
         System.out.println("----------------------End request------------------------");
+        return responseJson;
+    }
+
+    String putNotFoundRequest(String path, String requestJson) throws Exception {
+        System.out.println("----------------------Start request------------------------");
+        String responseJson = mockMvc.perform(
+                        put(path)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson)
+                                .header("Authorization", "Bearer " + authorization()))
+                .andExpectAll(
+                        status().isNotFound(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        System.out.println("----------------------End request------------------------");
+        return responseJson;
+    }
+
+    String authorization() throws Exception {
+        User user = new User(userExisting.getLogin(), userExistingPassword);
+        String responseJson = mockMvc.perform(
+                        post(AUTHORIZATION_PATH)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(user)))
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertNotNull(responseJson);
+        assertEquals(jwtService.getLogin(responseJson), userExisting.getLogin());
+        assertTrue(jwtService.isTokenValid(responseJson, user));
         return responseJson;
     }
 

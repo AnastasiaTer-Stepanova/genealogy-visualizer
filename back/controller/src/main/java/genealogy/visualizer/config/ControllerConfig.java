@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import genealogy.visualizer.controller.ArchiveController;
 import genealogy.visualizer.controller.ArchiveDocumentController;
+import genealogy.visualizer.controller.AuthorizationController;
 import genealogy.visualizer.controller.ChristeningController;
 import genealogy.visualizer.controller.DeathController;
 import genealogy.visualizer.controller.FamilyRevisionController;
@@ -14,6 +15,7 @@ import genealogy.visualizer.controller.MarriageController;
 import genealogy.visualizer.controller.PersonController;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
 import genealogy.visualizer.service.archive.ArchiveService;
+import genealogy.visualizer.service.authorization.AuthorizationService;
 import genealogy.visualizer.service.christening.ChristeningService;
 import genealogy.visualizer.service.death.DeathService;
 import genealogy.visualizer.service.family.revision.FamilyRevisionService;
@@ -83,6 +85,11 @@ public class ControllerConfig {
     @Bean
     public LocalityController localityController(LocalityService localityService) {
         return new LocalityController(localityService);
+    }
+
+    @Bean
+    public AuthorizationController authorizationController(AuthorizationService authorizationService) {
+        return new AuthorizationController(authorizationService);
     }
 
 }

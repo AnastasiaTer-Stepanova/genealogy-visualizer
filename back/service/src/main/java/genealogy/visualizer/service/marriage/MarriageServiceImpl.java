@@ -5,12 +5,12 @@ import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.MarriageFilter;
 import genealogy.visualizer.mapper.EasyMarriageMapper;
 import genealogy.visualizer.mapper.MarriageMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.MarriageDAO;
 
 import java.util.List;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class MarriageServiceImpl implements MarriageService {
 
@@ -33,29 +33,33 @@ public class MarriageServiceImpl implements MarriageService {
 
     @Override
     public Marriage getById(Long id) {
-        genealogy.visualizer.entity.Marriage entity = marriageDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return marriageMapper.toDTO(entity);
+        return Optional.ofNullable(marriageMapper.toDTO(marriageDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public Marriage save(Marriage marriage) {
+        if (marriage == null || marriage.getId() != null) {
+            throw new BadRequestException("Marriage must not have an id");
+        }
         return marriageMapper.toDTO(marriageDAO.save(marriageMapper.toEntity(marriage)));
     }
 
     @Override
     public Marriage update(Marriage marriage) {
+        if (marriage == null || marriage.getId() == null) {
+            throw new BadRequestException("Marriage must have an id");
+        }
         genealogy.visualizer.entity.Marriage entity = marriageDAO.update(marriageMapper.toEntity(marriage));
         if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException("Marriage for update not found");
         }
         return marriageMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyMarriage> filter(MarriageFilter filter) {
-        return easyMarriageMapper.toDTOs(marriageDAO.filter(marriageMapper.toFilter(filter)));
+        return Optional.ofNullable(easyMarriageMapper.toDTOs(marriageDAO.filter(marriageMapper.toFilter(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 }

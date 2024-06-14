@@ -1,0 +1,4 @@
+description: Данные для регистрации
+type: object
+allOf:
+  - $ref: "user.yaml"

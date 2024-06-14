@@ -13,9 +13,9 @@ import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.api.model.Sex;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
+import genealogy.visualizer.model.exception.NotFoundException;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//TODO Включить тесты при реализации ControllerAdvice
 class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Autowired
@@ -111,13 +110,12 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     @Test
-    @Disabled
     void getByIdExceptionTest() throws Exception {
-        String responseJson = getRequest(PATH + generator.nextInt(10000, 20000));
+        String responseJson = getNotFoundRequest(PATH + "/" + generator.nextInt(10000, 20000));
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
-        assertEquals(response.getMessage(), "Данные не найдены");
+        assertEquals(response.getMessage(), NotFoundException.MESSAGE);
     }
 
     @Test
@@ -141,17 +139,16 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     @Test
-    @Disabled
     void updateNotExistingTest() throws Exception {
         FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
         revisionSave.setArchiveDocument(easyArchiveDocumentMapper.toDTO(archiveDocumentExisting));
         revisionSave.setId(generator.nextLong(20000, 30000));
         String objectString = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = putRequest(PATH, objectString);
+        String responseJson = putNotFoundRequest(PATH, objectString);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
-        assertEquals(response.getMessage(), "Данные не найдены");
+        assertEquals(response.getMessage(), "Family revision for update not found");
     }
 
     @Test
@@ -245,16 +242,15 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     @Test
-    @Disabled
     void findFamilyRevisionNullTest() throws Exception {
         generateFamilyRevisionList(generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(10, 15)).toList());
         FamilyFilter filterRequest = new FamilyFilter((int) (short) generator.nextInt(10000, 20000), archiveDocumentExisting.getId(), false, true);
         String objectString = objectMapper.writeValueAsString(filterRequest);
-        String responseJson = getRequest(PATH + "/family", objectString);
+        String responseJson = getNotFoundRequest(PATH + "/family", objectString);
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
-        assertEquals(response.getMessage(), "Данные не найдены");
+        assertEquals(response.getMessage(),  NotFoundException.MESSAGE);
     }
 
     @Test
@@ -504,6 +500,24 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 assertTrue(findIds.contains(familyRevision.getId()));
             }
         }
+    }
+
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        FamilyMember object = generator.nextObject(FamilyMember.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        FamilyMember object = generator.nextObject(FamilyMember.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        FamilyMember object = generator.nextObject(FamilyMember.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
     }
 
     @AfterEach

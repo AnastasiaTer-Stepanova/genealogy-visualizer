@@ -16,7 +16,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./model/genealogy/visualizer/genealogy-visualize-rq.yaml"
+              $ref: "#/components/schemas/GenealogyVisualizeRq"
         required: true
       responses:
         200:
@@ -24,10 +24,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
-        404:
-          description: "Failed to find data"
+                $ref: "#/components/schemas/GenealogyVisualizeGraph"
+        400:
+          description: "Bad request"
           content:
             application/json:
               schema:
-                $ref: "./model/common/error-response.yaml"
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: "Data not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    GenealogyVisualizeGraph:
+      $ref: "./model/genealogy/visualizer/genealogy-visualize-graph.yaml"
+    GenealogyVisualizeRq:
+      $ref: "./model/genealogy/visualizer/genealogy-visualize-rq.yaml"
+    ErrorResponse:
+      $ref: "./model/common/error-response.yaml"

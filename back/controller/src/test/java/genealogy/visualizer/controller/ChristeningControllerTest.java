@@ -187,6 +187,24 @@ class ChristeningControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        Christening object = generator.nextObject(Christening.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        Christening object = generator.nextObject(Christening.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        Christening object = generator.nextObject(Christening.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

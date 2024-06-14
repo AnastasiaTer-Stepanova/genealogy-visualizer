@@ -7,12 +7,12 @@ import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.PersonMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.PersonDAO;
 
 import java.util.List;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class PersonServiceImpl implements PersonService {
 
@@ -33,34 +33,34 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public Person getById(Long id) {
-        genealogy.visualizer.entity.Person entity = personDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return personMapper.toDTO(entity);
+        return Optional.ofNullable(personMapper.toDTO(personDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public Person save(Person person) {
-        genealogy.visualizer.entity.Person entity = personDAO.save(personMapper.toEntity(person));
-        if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+        if (person == null || person.getId() != null) {
+            throw new BadRequestException("Person must not have an id");
         }
-        return personMapper.toDTO(entity);
+        return personMapper.toDTO(personDAO.save(personMapper.toEntity(person)));
     }
 
     @Override
     public Person update(Person person) {
+        if (person == null || person.getId() == null) {
+            throw new BadRequestException("Person must have an id");
+        }
         genealogy.visualizer.entity.Person entity = personDAO.update(personMapper.toEntity(person));
         if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException("Person for update not found");
         }
         return personMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyPerson> filter(PersonFilter filter) {
-        return easyPersonMapper.toDTOs(personDAO.filter(personMapper.toFilter(filter)));
+        return Optional.ofNullable(easyPersonMapper.toDTOs(personDAO.filter(personMapper.toFilter(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 
     //TODO Планируется перейти на поиск в elasticSearch
@@ -73,6 +73,7 @@ public class PersonServiceImpl implements PersonService {
         fullName.setLastName(strings.length > 2 ? strings[2] : null);
         PersonFilterDTO filter = new PersonFilterDTO();
         filter.setFullName(fullName);
-        return easyPersonMapper.toDTOs(personDAO.filter(filter));
+        return Optional.ofNullable(easyPersonMapper.toDTOs(personDAO.filter(filter)))
+                .orElseThrow(NotFoundException::new);
     }
 }

@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: API для работы с авторизацией
+  version: "1.0.0"
+tags:
+  - name: Authorization
+    description: API для работы с авторизацией
+paths:
+  /authorization:
+    post:
+      tags:
+        - Authorization
+      operationId: authorization
+      summary: "Authorization"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                description: Токен
+                type: string
+                minLength: 1
+                maxLength: 255
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /registration:
+    post:
+      tags:
+        - Authorization
+      operationId: registration
+      summary: "Registration"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationInfo"
+        required: true
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    User:
+      $ref: "./model/authorization/user.yaml"
+    RegistrationInfo:
+      $ref: "./model/authorization/registration-info.yaml"
+    ErrorResponse:
+      $ref: "./model/common/error-response.yaml"

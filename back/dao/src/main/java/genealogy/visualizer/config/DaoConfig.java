@@ -7,7 +7,9 @@ import genealogy.visualizer.repository.DeathRepository;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.MarriageRepository;
+import genealogy.visualizer.repository.ParamRepository;
 import genealogy.visualizer.repository.PersonRepository;
+import genealogy.visualizer.repository.UserRepository;
 import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
@@ -15,7 +17,9 @@ import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
+import genealogy.visualizer.service.ParamDAO;
 import genealogy.visualizer.service.PersonDAO;
+import genealogy.visualizer.service.UserDAO;
 import genealogy.visualizer.service.impl.ArchiveDAOImpl;
 import genealogy.visualizer.service.impl.ArchiveDocumentDAOImpl;
 import genealogy.visualizer.service.impl.ChristeningDAOImpl;
@@ -23,7 +27,9 @@ import genealogy.visualizer.service.impl.DeathDAOImpl;
 import genealogy.visualizer.service.impl.FamilyRevisionDAOImpl;
 import genealogy.visualizer.service.impl.LocalityDAOImpl;
 import genealogy.visualizer.service.impl.MarriageDAOImpl;
+import genealogy.visualizer.service.impl.ParamDAOImpl;
 import genealogy.visualizer.service.impl.PersonDAOImpl;
+import genealogy.visualizer.service.impl.UserDAOImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -113,6 +119,16 @@ public class DaoConfig {
                                FamilyRevisionDAO familyRevisionDAO,
                                @Autowired EntityManager entityManager) {
         return new PersonDAOImpl(personRepository, localityDAO, christeningDAO, deathDAO, marriageDAO, familyRevisionDAO, entityManager);
+    }
+
+    @Bean
+    public ParamDAO paramDAO(@Autowired ParamRepository paramRepository) {
+        return new ParamDAOImpl(paramRepository);
+    }
+
+    @Bean
+    public UserDAO userDAO(@Autowired UserRepository userRepository) {
+        return new UserDAOImpl(userRepository);
     }
 
 }

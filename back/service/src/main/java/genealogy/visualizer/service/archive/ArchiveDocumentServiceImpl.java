@@ -5,12 +5,12 @@ import genealogy.visualizer.api.model.ArchiveDocumentFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.mapper.ArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 
 import java.util.List;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
 
@@ -31,29 +31,33 @@ public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
 
     @Override
     public ArchiveDocument getById(Long id) {
-        genealogy.visualizer.entity.ArchiveDocument entity = archiveDocumentDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return archiveDocumentMapper.toDTO(entity);
+        return Optional.ofNullable(archiveDocumentMapper.toDTO(archiveDocumentDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public ArchiveDocument save(ArchiveDocument archiveDocument) {
+        if (archiveDocument == null || archiveDocument.getId() != null) {
+            throw new BadRequestException("Archive document must not have an id");
+        }
         return archiveDocumentMapper.toDTO(archiveDocumentDAO.save(archiveDocumentMapper.toEntity(archiveDocument)));
     }
 
     @Override
     public ArchiveDocument update(ArchiveDocument archiveDocument) {
+        if (archiveDocument == null || archiveDocument.getId() == null) {
+            throw new BadRequestException("Archive document must have an id");
+        }
         genealogy.visualizer.entity.ArchiveDocument entity = archiveDocumentDAO.update(archiveDocumentMapper.toEntity(archiveDocument));
         if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException("Archive document for update not found");
         }
         return archiveDocumentMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyArchiveDocument> filter(ArchiveDocumentFilter filter) {
-        return easyArchiveDocumentMapper.toDTOs(archiveDocumentDAO.filter(archiveDocumentMapper.toFilterDTO(filter)));
+        return Optional.ofNullable(easyArchiveDocumentMapper.toDTOs(archiveDocumentDAO.filter(archiveDocumentMapper.toFilterDTO(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 }

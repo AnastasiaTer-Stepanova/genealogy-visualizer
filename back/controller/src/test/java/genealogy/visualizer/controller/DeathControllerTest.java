@@ -178,6 +178,24 @@ class DeathControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        Death object = generator.nextObject(Death.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        Death object = generator.nextObject(Death.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        Death object = generator.nextObject(Death.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

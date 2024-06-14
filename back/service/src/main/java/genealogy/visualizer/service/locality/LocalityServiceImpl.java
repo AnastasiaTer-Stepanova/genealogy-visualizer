@@ -5,12 +5,12 @@ import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.api.model.LocalityFilter;
 import genealogy.visualizer.mapper.EasyLocalityMapper;
 import genealogy.visualizer.mapper.LocalityMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.LocalityDAO;
 
 import java.util.List;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class LocalityServiceImpl implements LocalityService {
 
@@ -33,29 +33,33 @@ public class LocalityServiceImpl implements LocalityService {
 
     @Override
     public Locality getById(Long id) {
-        genealogy.visualizer.entity.Locality entity = localityDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return localityMapper.toDTO(entity);
+        return Optional.ofNullable(localityMapper.toDTO(localityDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public Locality save(Locality locality) {
+        if (locality == null || locality.getId() != null) {
+            throw new BadRequestException("Locality must not have an id");
+        }
         return localityMapper.toDTO(localityDAO.save(localityMapper.toEntity(locality)));
     }
 
     @Override
     public Locality update(Locality locality) {
+        if (locality == null || locality.getId() == null) {
+            throw new BadRequestException("Locality must have an id");
+        }
         genealogy.visualizer.entity.Locality entity = localityDAO.update(localityMapper.toEntity(locality));
         if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException("Locality for update not found");
         }
         return localityMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyLocality> filter(LocalityFilter filter) {
-        return easyLocalityMapper.toDTOs(localityDAO.filter(localityMapper.toFilter(filter)));
+        return Optional.ofNullable(easyLocalityMapper.toDTOs(localityDAO.filter(localityMapper.toFilter(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 }

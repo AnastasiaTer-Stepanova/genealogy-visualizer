@@ -222,6 +222,24 @@ class MarriageControllerTest extends IntegrationTest {
         }
     }
 
+    @Test
+    void saveUnauthorizedTest() throws Exception {
+        Marriage object = generator.nextObject(Marriage.class);
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void updateUnauthorizedTest() throws Exception {
+        Marriage object = generator.nextObject(Marriage.class);
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
+    @Test
+    void deleteUnauthorizedTest() throws Exception {
+        Marriage object = generator.nextObject(Marriage.class);
+        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    }
+
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");

@@ -30,15 +30,23 @@ import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
+import genealogy.visualizer.service.ParamDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
 import genealogy.visualizer.service.PersonDAO;
+import genealogy.visualizer.service.UserDAO;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
 import genealogy.visualizer.service.archive.ArchiveDocumentServiceImpl;
 import genealogy.visualizer.service.archive.ArchiveService;
 import genealogy.visualizer.service.archive.ArchiveServiceImpl;
+import genealogy.visualizer.service.authorization.AuthorizationService;
+import genealogy.visualizer.service.authorization.AuthorizationServiceImpl;
+import genealogy.visualizer.service.authorization.JwtService;
+import genealogy.visualizer.service.authorization.JwtServiceImpl;
+import genealogy.visualizer.service.authorization.UserService;
+import genealogy.visualizer.service.authorization.UserServiceImpl;
 import genealogy.visualizer.service.christening.ChristeningService;
 import genealogy.visualizer.service.christening.ChristeningServiceImpl;
 import genealogy.visualizer.service.death.DeathService;
@@ -54,10 +62,14 @@ import genealogy.visualizer.service.marriage.MarriageServiceImpl;
 import genealogy.visualizer.service.person.PersonService;
 import genealogy.visualizer.service.person.PersonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -171,5 +183,24 @@ public class ServiceConfig {
                                            LocalityMapper localityMapper,
                                            EasyLocalityMapper easyLocalityMapper) {
         return new LocalityServiceImpl(localityDAO, localityMapper, easyLocalityMapper);
+    }
+
+    @Bean
+    public AuthorizationService authorizationService(ParamDAO paramDAO,
+                                                     UserService userDetailsService,
+                                                     JwtService jwtService,
+                                                     AuthenticationManager authenticationManager) {
+        return new AuthorizationServiceImpl(paramDAO, userDetailsService, jwtService, authenticationManager);
+    }
+
+    @Bean
+    public UserService userDetailsService(UserDAO userDAO, PasswordEncoder passwordEncoder) {
+        return new UserServiceImpl(userDAO, passwordEncoder);
+    }
+
+    @Bean
+    public JwtService jwtService(@Value("${jwt.secret}") String secret,
+                                 @Value("${jwt.duration}") Duration duration) {
+        return new JwtServiceImpl(secret, duration);
     }
 }

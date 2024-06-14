@@ -5,12 +5,12 @@ import genealogy.visualizer.api.model.DeathFilter;
 import genealogy.visualizer.api.model.EasyDeath;
 import genealogy.visualizer.mapper.DeathMapper;
 import genealogy.visualizer.mapper.EasyDeathMapper;
+import genealogy.visualizer.model.exception.BadRequestException;
+import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.DeathDAO;
 
 import java.util.List;
-
-import static genealogy.visualizer.service.util.ErrorHelper.BAD_REQUEST_ERROR;
-import static genealogy.visualizer.service.util.ErrorHelper.NOT_FOUND_ERROR;
+import java.util.Optional;
 
 public class DeathServiceImpl implements DeathService {
 
@@ -33,29 +33,33 @@ public class DeathServiceImpl implements DeathService {
 
     @Override
     public Death getById(Long id) {
-        genealogy.visualizer.entity.Death entity = deathDAO.findFullInfoById(id);
-        if (entity == null) {
-            throw new RuntimeException(NOT_FOUND_ERROR);
-        }
-        return deathMapper.toDTO(entity);
+        return Optional.ofNullable(deathMapper.toDTO(deathDAO.findFullInfoById(id)))
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
     public Death save(Death death) {
+        if (death == null || death.getId() != null) {
+            throw new BadRequestException("Death must not have an id");
+        }
         return deathMapper.toDTO(deathDAO.save(deathMapper.toEntity(death)));
     }
 
     @Override
     public Death update(Death death) {
+        if (death == null || death.getId() == null) {
+            throw new BadRequestException("Archive must have an id");
+        }
         genealogy.visualizer.entity.Death entity = deathDAO.update(deathMapper.toEntity(death));
         if (entity == null) {
-            throw new RuntimeException(BAD_REQUEST_ERROR);
+            throw new NotFoundException("Death for update not found");
         }
         return deathMapper.toDTO(entity);
     }
 
     @Override
     public List<EasyDeath> filter(DeathFilter filter) {
-        return easyDeathMapper.toDTOs(deathDAO.filter(deathMapper.toFilter(filter)));
+        return Optional.ofNullable(easyDeathMapper.toDTOs(deathDAO.filter(deathMapper.toFilter(filter))))
+                .orElseThrow(NotFoundException::new);
     }
 }
