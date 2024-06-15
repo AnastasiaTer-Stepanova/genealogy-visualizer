@@ -282,18 +282,6 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     void findFamilyRevisionsAllInfoTest(boolean isFindWithHavePerson) throws Exception {
-        genealogy.visualizer.entity.Person person = generator.nextObject(genealogy.visualizer.entity.Person.class);
-        person.setBirthLocality(localityExisting);
-        person.setDeathLocality(localityExisting);
-        person.setChristening(null);
-        person.setDeath(null);
-        person.setMarriages(null);
-        person.setRevisions(null);
-        person.setParents(null);
-        person.setPartners(null);
-        person.setChildren(null);
-        person.setId(null);
-        person = personRepository.saveAndFlush(person);
         genealogy.visualizer.entity.ArchiveDocument adParent = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adParent.setArchive(archiveExisting);
         adParent = archiveDocumentRepository.saveAndFlush(adParent);
@@ -328,7 +316,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setArchiveDocument(adParent);
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberParent);
                 if (generator.nextBoolean()) {
-                    familyRevision.setPerson(person);
+                    familyRevision.setPerson(getEmptySavedPerson());
                     if (!isFindWithHavePerson) {
                         continue;
                     }
@@ -341,7 +329,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberChildLevel1);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberParent);
                 if (generator.nextBoolean()) {
-                    familyRevision.setPerson(person);
+                    familyRevision.setPerson(getEmptySavedPerson());
                     if (!isFindWithHavePerson) {
                         continue;
                     }
@@ -354,7 +342,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberSecondChildLeve1);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberParent);
                 if (generator.nextBoolean()) {
-                    familyRevision.setPerson(person);
+                    familyRevision.setPerson(getEmptySavedPerson());
                     if (!isFindWithHavePerson) {
                         continue;
                     }
@@ -367,7 +355,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setFamilyRevisionNumber(familyRevisionNumberChildLeve2);
                 familyRevision.setNextFamilyRevisionNumber(familyRevisionNumberChildLevel1);
                 if (generator.nextBoolean()) {
-                    familyRevision.setPerson(person);
+                    familyRevision.setPerson(getEmptySavedPerson());
                     if (!isFindWithHavePerson) {
                         continue;
                     }
@@ -379,7 +367,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevision.setArchiveDocument(adSecondChildLevel1);
             }
             if (generator.nextBoolean()) {
-                familyRevision.setPerson(person);
+                familyRevision.setPerson(getEmptySavedPerson());
             }
         }
         familyRevisionList = generateFamilyRevisionList(familyRevisionList);
@@ -393,7 +381,8 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 familyRevisionList.stream().collect(Collectors.groupingBy(familyRevision -> familyRevision.getArchiveDocument().getId()));
         List<genealogy.visualizer.entity.FamilyRevision> existFamilyRevisionList = existFamilyRevisionMap
                 .get(adSecondChildLevel1Id).stream()
-                .filter(familyRevision -> familyRevision.getFamilyRevisionNumber().equals(familyRevisionNumberSecondChildLeve1))
+                .filter(familyRevision -> !(!isFindWithHavePerson && familyRevision.getPerson() != null) &&
+                        familyRevision.getFamilyRevisionNumber().equals(familyRevisionNumberSecondChildLeve1))
                 .sorted((fr1, fr2) -> fr2.getId().compareTo(fr1.getId()))
                 .toList();
         assertEquals(existFamilyRevisionList.size(), response.size());
@@ -694,5 +683,19 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                         .toList());
         familyRevisionList = familyRevisionRepository.saveAllAndFlush(familyRevisionList);
         return familyRevisionList;
+    }
+
+    private genealogy.visualizer.entity.Person getEmptySavedPerson() {
+        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
+        personSave.setChristening(null);
+        personSave.setPartners(Collections.emptyList());
+        personSave.setChildren(Collections.emptyList());
+        personSave.setRevisions(Collections.emptyList());
+        personSave.setMarriages(Collections.emptyList());
+        personSave.setParents(Collections.emptyList());
+        personSave.setDeath(null);
+        personSave.setDeathLocality(localityExisting);
+        personSave.setBirthLocality(localityExisting);
+        return personRepository.saveAndFlush(personSave);
     }
 }

@@ -25,5 +25,6 @@ public interface FamilyRevisionMapper {
     @Mapping(target = "isLastNameClearlyStated", source = "lastNameClearlyStated")
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
 
+    @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
     FamilyRevisionFilterDTO toFilter(FamilyMemberFilter filter);
 }

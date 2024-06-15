@@ -6,6 +6,7 @@ import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
 import genealogy.visualizer.api.model.FamilyMemberFilter;
 import genealogy.visualizer.api.model.FamilyMemberFullInfo;
+import genealogy.visualizer.dto.FamilyRevisionFilterDTO;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
@@ -13,7 +14,6 @@ import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
-import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -27,18 +27,15 @@ import java.util.Optional;
 public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
     private final FamilyRevisionDAO familyRevisionDAO;
-    private final ArchiveDocumentDAO archiveDocumentDAO;
     private final FamilyRevisionMapper familyRevisionMapper;
     private final EasyFamilyRevisionMapper easyFamilyRevisionMapper;
     private final EasyArchiveDocumentMapper easyArchiveDocumentMapper;
 
     public FamilyRevisionServiceImpl(FamilyRevisionDAO familyRevisionDAO,
-                                     ArchiveDocumentDAO archiveDocumentDAO,
                                      FamilyRevisionMapper familyRevisionMapper,
                                      EasyFamilyRevisionMapper easyFamilyRevisionMapper,
                                      EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
         this.familyRevisionDAO = familyRevisionDAO;
-        this.archiveDocumentDAO = archiveDocumentDAO;
         this.familyRevisionMapper = familyRevisionMapper;
         this.easyFamilyRevisionMapper = easyFamilyRevisionMapper;
         this.easyArchiveDocumentMapper = easyArchiveDocumentMapper;
@@ -88,24 +85,20 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         if (familyFilter.getArchiveDocumentId() == null || familyFilter.getFamilyRevisionNumber() == null) {
             throw new BadRequestException();
         }
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentEntity = archiveDocumentDAO.findArchiveDocumentWithFamilyRevisionByNumberFamily(
+        List<FamilyRevision> familyMembers = familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
                 familyFilter.getArchiveDocumentId(),
-                familyFilter.getFamilyRevisionNumber().shortValue());
-        if (archiveDocumentEntity == null || archiveDocumentEntity.getFamilyRevisions() == null ||
-                archiveDocumentEntity.getFamilyRevisions().isEmpty()) {
+                familyFilter.getFamilyRevisionNumber().shortValue(),
+                null,
+                null,
+                familyFilter.getIsFindWithHavePerson()));
+        if (familyMembers == null || familyMembers.isEmpty()) {
             throw new NotFoundException();
-        }
-        List<FamilyRevision> familyMembers = archiveDocumentEntity.getFamilyRevisions();
-        if (familyFilter.getIsFindInAllRevision() && (archiveDocumentEntity.getPreviousRevisions() != null &&
-                !archiveDocumentEntity.getPreviousRevisions().isEmpty() || archiveDocumentEntity.getNextRevision() != null)) {
-            return familyMembers
-                    .stream()
-                    .map(fm -> getFamilyMemberFullInfo(fm, familyFilter.getIsFindWithHavePerson()))
-                    .toList();
         }
         return familyMembers
                 .stream()
-                .map(fr -> new FamilyMemberFullInfo().familyMember(easyFamilyRevisionMapper.toDTO(fr)))
+                .map(fr -> familyFilter.getIsFindInAllRevision() ?
+                        getFamilyMemberFullInfo(fr, familyFilter.getIsFindWithHavePerson()) :
+                        new FamilyMemberFullInfo().familyMember(easyFamilyRevisionMapper.toDTO(fr)))
                 .toList();
     }
 
@@ -124,10 +117,12 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 archiveDocument = archiveDocument.getNextRevision();
                 if (familyMember.getNextFamilyRevisionNumber() == null) continue;
                 archiveDocumentMap.put(archiveDocument, easyFamilyRevisionMapper.toDTOs(
-                        familyRevisionDAO.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(
+                        familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
                                 archiveDocument.getId(),
                                 familyMember.getNextFamilyRevisionNumber(),
-                                isFindWithHavePerson)));
+                                null,
+                                null,
+                                isFindWithHavePerson))));
             } while (archiveDocument.getNextRevision() != null);
         }
 
@@ -169,10 +164,12 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         for (ArchiveDocument archiveDocumentPrevious : archiveDocument.getPreviousRevisions()) {
             if (archiveDocumentMap.containsKey(archiveDocumentPrevious)) continue;
             List<EasyFamilyMember> members = easyFamilyRevisionMapper.toDTOs(
-                    familyRevisionDAO.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(
+                    familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
                             archiveDocumentPrevious.getId(),
                             familyRevisionNumber,
-                            isFindWithHavePerson));
+                            null,
+                            null,
+                            isFindWithHavePerson)));
             archiveDocumentMap.put(archiveDocumentPrevious, members);
             if (members != null && !members.isEmpty()) {
                 for (EasyFamilyMember familyMember : members) {

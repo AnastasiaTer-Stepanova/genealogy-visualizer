@@ -162,13 +162,6 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 .orElse(this.save(archiveDocument));
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber) {
-        return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(archiveDocumentId, familyNumber)
-                .orElse(null);
-    }
-
     @Transactional(readOnly = true)
     protected ArchiveDocument findArchiveDocument(ArchiveDocument archiveDocument) {
         if (archiveDocument.getId() != null) {

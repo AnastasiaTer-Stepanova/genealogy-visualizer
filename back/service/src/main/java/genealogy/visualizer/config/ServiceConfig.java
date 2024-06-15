@@ -82,11 +82,10 @@ public class ServiceConfig {
 
     @Bean
     public FamilyRevisionService familyRevisionService(FamilyRevisionDAO familyRevisionDAO,
-                                                       ArchiveDocumentDAO archiveDocumentDAO,
                                                        FamilyRevisionMapper familyRevisionMapper,
                                                        EasyFamilyRevisionMapper easyFamilyRevisionMapper,
                                                        EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
-        return new FamilyRevisionServiceImpl(familyRevisionDAO, archiveDocumentDAO, familyRevisionMapper, easyFamilyRevisionMapper, easyArchiveDocumentMapper);
+        return new FamilyRevisionServiceImpl(familyRevisionDAO, familyRevisionMapper, easyFamilyRevisionMapper, easyArchiveDocumentMapper);
     }
 
     @Bean

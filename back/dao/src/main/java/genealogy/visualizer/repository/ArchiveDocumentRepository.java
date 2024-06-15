@@ -11,11 +11,6 @@ import java.util.Optional;
 
 public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument, Long> {
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.familyRevisions fs " +
-            "where ad.id = :archiveDocumentId and fs.familyRevisionNumber = :number")
-    Optional<ArchiveDocument> findArchiveDocumentWithFamilyRevisionByNumberFamily(@Param("archiveDocumentId") Long archiveDocumentId,
-                                                                                  @Param("number") short number);
-
     @Modifying
     @Query(value = "update archive_document ad set next_revision_id = :nextRevisionId where id = :id", nativeQuery = true)
     void updateNextRevisionIdById(@Param("id") Long id, @Param("nextRevisionId") Long nextRevisionId);

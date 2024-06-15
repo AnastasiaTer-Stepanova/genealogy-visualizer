@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static genealogy.visualizer.service.helper.FilterHelper.addArchiveDocumentIdFilter;
@@ -111,32 +110,11 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
         if (filter.getFamilyRevisionNumber() != null) {
             predicates.add(cb.equal(root.get("familyRevisionNumber"), filter.getFamilyRevisionNumber()));
         }
+        if (!filter.getFindWithHavePerson()) {
+            predicates.add(cb.isNull(root.get("person")));
+        }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId,
-                                                                                      short familyNumber,
-                                                                                      boolean isFindWithHavePerson) {
-        return isFindWithHavePerson ?
-                familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(archiveDocumentId, familyNumber)
-                        .orElse(Collections.emptyList()) :
-                familyRevisionRepository.findFamilyRevisionsByNumberFamilyAndArchiveDocumentIdWithoutPerson(archiveDocumentId, familyNumber)
-                        .orElse(Collections.emptyList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId,
-                                                                                                  short familyNumber,
-                                                                                                  boolean isFindWithHavePerson) {
-        return isFindWithHavePerson ?
-                familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(archiveDocumentId, familyNumber)
-                        .orElse(Collections.emptyList()) :
-                familyRevisionRepository.findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentIdWithoutPerson(archiveDocumentId, familyNumber)
-                        .orElse(Collections.emptyList());
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

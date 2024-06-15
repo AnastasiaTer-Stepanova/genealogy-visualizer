@@ -19,8 +19,4 @@ public interface FamilyRevisionDAO {
 
     List<FamilyRevision> filter(FamilyRevisionFilterDTO filter);
 
-    List<FamilyRevision> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(Long archiveDocumentId, short familyNumber, boolean isFindWithHavePerson);
-
-    List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId, short familyNumber, boolean isFindWithHavePerson);
-
 }

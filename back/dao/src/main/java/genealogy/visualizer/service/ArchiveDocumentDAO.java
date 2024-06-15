@@ -19,6 +19,4 @@ public interface ArchiveDocumentDAO {
 
     ArchiveDocument saveOrFindIfExistDocument(ArchiveDocument archiveDocument);
 
-    ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber);
-
 }

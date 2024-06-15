@@ -32,26 +32,6 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
             "left join fetch ad.nextRevision left join fetch fs.partner left join fetch fs.person where fs.id = :id")
     Optional<FamilyRevision> findFullInfoById(@Param("id") Long id);
 
-    @Query("select fs from FamilyRevision fs left join fetch fs.archiveDocument ad left join fetch ad.archive " +
-            "where ad.id = :archiveDocumentId and fs.familyRevisionNumber = :number")
-    Optional<List<FamilyRevision>> findFamilyRevisionsByNumberFamilyAndArchiveDocumentId(@Param("archiveDocumentId") Long archiveDocumentId,
-                                                                                         @Param("number") Short number);
-
-    @Query("select fs from FamilyRevision fs left join fetch fs.archiveDocument ad left join fetch ad.archive " +
-            "where ad.id = :archiveDocumentId and fs.familyRevisionNumber = :number and fs.person is null")
-    Optional<List<FamilyRevision>> findFamilyRevisionsByNumberFamilyAndArchiveDocumentIdWithoutPerson(@Param("archiveDocumentId") Long archiveDocumentId,
-                                                                                                      @Param("number") Short number);
-
-    @Query("select fs from FamilyRevision fs left join fetch fs.archiveDocument ad left join fetch ad.archive " +
-            "where ad.id = :archiveDocumentId and fs.nextFamilyRevisionNumber = :nextFamilyRevisionNumber")
-    Optional<List<FamilyRevision>> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(@Param("archiveDocumentId") Long archiveDocumentId,
-                                                                                                     @Param("nextFamilyRevisionNumber") Short nextFamilyRevisionNumber);
-
-    @Query("select fs from FamilyRevision fs left join fetch fs.archiveDocument ad left join fetch ad.archive " +
-            "where ad.id = :archiveDocumentId and fs.nextFamilyRevisionNumber = :nextFamilyRevisionNumber and fs.person is null")
-    Optional<List<FamilyRevision>> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentIdWithoutPerson(@Param("archiveDocumentId") Long archiveDocumentId,
-                                                                                                                  @Param("nextFamilyRevisionNumber") Short nextFamilyRevisionNumber);
-
     @Modifying
     @Query(value = "update family_revision set person_id = :newPersonId where person_id = :personId", nativeQuery = true)
     void updatePersonIdByPersonId(@Param("personId") Long personId, @Param("newPersonId") Long newPersonId);
@@ -78,9 +58,9 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
 
     @Modifying
     @Query(value = "delete from another_name_in_revision where family_revision_id = :id", nativeQuery = true)
-    void deleteAnotherNamesById(@Param("id")Long id);
+    void deleteAnotherNamesById(@Param("id") Long id);
 
     @Modifying
     @Query(value = "insert into another_name_in_revision (family_revision_id, another_name) values (:id, :anotherName)", nativeQuery = true)
-    void insertAnotherName(@Param("id")Long id, @Param("anotherName") String anotherName);
+    void insertAnotherName(@Param("id") Long id, @Param("anotherName") String anotherName);
 }

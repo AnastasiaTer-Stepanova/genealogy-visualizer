@@ -17,3 +17,8 @@ properties:
     $ref: "./../../common/full-name-filter.yaml"
   sex:
     $ref: "./../../common/sex.yaml"
+  isFindWithHavePerson:
+    description: Добавлять ли для вывода данные, если у уже есть связка с Person, true - добавлять, false - не добавлять
+    type: boolean
+    default: false
+    example: true
