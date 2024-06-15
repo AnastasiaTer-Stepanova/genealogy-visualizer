@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.EasyChristeningMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ChristeningDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +51,10 @@ public class ChristeningServiceImpl implements ChristeningService {
         if (christening == null || christening.getId() == null) {
             throw new BadRequestException("Christening must have an id");
         }
-        genealogy.visualizer.entity.Christening entity = christeningDAO.update(christeningMapper.toEntity(christening));
-        if (entity == null) {
+        genealogy.visualizer.entity.Christening entity;
+        try {
+            entity = christeningDAO.update(christeningMapper.toEntity(christening));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Christening for update not found");
         }
         return christeningMapper.toDTO(entity);

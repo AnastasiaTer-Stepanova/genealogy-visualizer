@@ -4,6 +4,7 @@ import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.GenealogyVisualizeGraph;
 import genealogy.visualizer.api.model.GenealogyVisualizeRq;
 import genealogy.visualizer.api.model.GraphLinks;
+import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.entity.Person;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
@@ -30,7 +31,7 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
             //TODO После добавления фильтрации изменить реализацию
             throw new BadRequestException("Фильтрация сейчас невозможна");
         }
-        List<Person> entities = personDAO.getAllEasyPersons();
+        List<Person> entities = personDAO.filter(new PersonFilterDTO());
         if (entities == null) {
             throw new NotFoundException();
         }

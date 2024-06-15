@@ -22,6 +22,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,49 +80,19 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     public ArchiveDocument save(ArchiveDocument archiveDocument) {
         if (archiveDocument.getId() != null)
             throw new IllegalArgumentException("Cannot save archive document with id");
-        List<FamilyRevision> familyRevisions = archiveDocument.getFamilyRevisions();
-        List<Christening> christenings = archiveDocument.getChristenings();
-        List<Death> deaths = archiveDocument.getDeaths();
-        List<Marriage> marriages = archiveDocument.getMarriages();
-        List<ArchiveDocument> previousRevisions = archiveDocument.getPreviousRevisions();
-        archiveDocument.setFamilyRevisions(Collections.emptyList());
-        archiveDocument.setChristenings(Collections.emptyList());
-        archiveDocument.setDeaths(Collections.emptyList());
-        archiveDocument.setMarriages(Collections.emptyList());
-        archiveDocument.setPreviousRevisions(Collections.emptyList());
-        archiveDocument.setArchive(archiveDocument.getArchive() != null ?
-                archiveHelper.saveEntityIfNotExist(archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository) :
-                null);
-        archiveDocument.setNextRevision(archiveDocument.getNextRevision() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository) :
-                null);
-        ArchiveDocument savedArchiveDocument = archiveDocumentRepository.save(archiveDocument);
-        if (familyRevisions != null && !familyRevisions.isEmpty()) {
-            familyRevisions.forEach(fr -> fr.setArchiveDocument(savedArchiveDocument));
-            archiveDocument.setFamilyRevisions(familyRevisionHelper.saveEntitiesIfNotExist(
-                    familyRevisions, familyRevisionRepository, FamilyRevision::getId));
-        }
-        if (christenings != null && !christenings.isEmpty()) {
-            christenings.forEach(c -> c.setArchiveDocument(savedArchiveDocument));
-            savedArchiveDocument.setChristenings(christeningHelper.saveEntitiesIfNotExist(
-                    christenings, christeningRepository, Christening::getId));
-        }
-        if (marriages != null && !marriages.isEmpty()) {
-            marriages.forEach(m -> m.setArchiveDocument(savedArchiveDocument));
-            savedArchiveDocument.setMarriages(marriageHelper.saveEntitiesIfNotExist(
-                    marriages, marriageRepository, Marriage::getId));
-        }
-        if (deaths != null && !deaths.isEmpty()) {
-            deaths.forEach(d -> d.setArchiveDocument(savedArchiveDocument));
-            savedArchiveDocument.setDeaths(deathHelper.saveEntitiesIfNotExist(
-                    deaths, deathRepository, Death::getId));
-        }
-        if (previousRevisions != null && !previousRevisions.isEmpty()) {
-            previousRevisions.forEach(pr -> pr.setNextRevision(savedArchiveDocument));
-            savedArchiveDocument.setPreviousRevisions(archiveDocumentHelper.saveEntitiesIfNotExist(
-                    previousRevisions, archiveDocumentRepository, ArchiveDocument::getId));
-        }
-        return savedArchiveDocument;
+        archiveDocument = updateLinks(archiveDocument);
+
+        ArchiveDocument archiveDocumentForSave = archiveDocument.clone();
+        archiveDocumentForSave.setFamilyRevisions(Collections.emptyList());
+        archiveDocumentForSave.setChristenings(Collections.emptyList());
+        archiveDocumentForSave.setDeaths(Collections.emptyList());
+        archiveDocumentForSave.setMarriages(Collections.emptyList());
+        archiveDocumentForSave.setPreviousRevisions(Collections.emptyList());
+
+        ArchiveDocument savedArchiveDocument = archiveDocumentRepository.save(archiveDocumentForSave);
+        updateLinks(savedArchiveDocument, archiveDocument);
+        entityManager.clear();
+        return this.findFullInfoById(savedArchiveDocument.getId());
     }
 
     @Override
@@ -129,37 +100,17 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     public ArchiveDocument update(ArchiveDocument archiveDocument) {
         if (archiveDocument.getId() == null)
             throw new IllegalArgumentException("Cannot update archive document without id");
-
-        archiveDocument.setArchive(archiveDocument.getArchive() != null ?
-                archiveHelper.saveEntityIfNotExist(archiveDocument.getArchive(), archiveDocument.getArchive().getId(), archiveRepository) :
-                null);
-        archiveDocument.setNextRevision(archiveDocument.getNextRevision() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(archiveDocument.getNextRevision(), archiveDocument.getNextRevision().getId(), archiveDocumentRepository) :
-                null);
-
+        archiveDocument = updateLinks(archiveDocument);
         ArchiveDocument updatedArchiveDocument = archiveDocumentRepository.update(archiveDocument);
-
-        updatedArchiveDocument.setFamilyRevisions(familyRevisionHelper.updateEntities(
-                updatedArchiveDocument.getId(), updatedArchiveDocument.getFamilyRevisions(), archiveDocument.getFamilyRevisions(),
-                FamilyRevision::getId, familyRevisionRepository, familyRevisionRepository::updateArchiveDocumentIdById));
-        updatedArchiveDocument.setChristenings(christeningHelper.updateEntities(
-                updatedArchiveDocument.getId(), updatedArchiveDocument.getChristenings(), archiveDocument.getChristenings(),
-                Christening::getId, christeningRepository, christeningRepository::updateArchiveDocumentIdById));
-        updatedArchiveDocument.setMarriages(marriageHelper.updateEntities(
-                updatedArchiveDocument.getId(), updatedArchiveDocument.getMarriages(), archiveDocument.getMarriages(),
-                Marriage::getId, marriageRepository, marriageRepository::updateArchiveDocumentIdById));
-        updatedArchiveDocument.setDeaths(deathHelper.updateEntities(
-                updatedArchiveDocument.getId(), updatedArchiveDocument.getDeaths(), archiveDocument.getDeaths(), Death::getId,
-                deathRepository, deathRepository::updateArchiveDocumentIdById));
-        updatedArchiveDocument.setPreviousRevisions(archiveDocumentHelper.updateEntities(
-                updatedArchiveDocument.getId(), updatedArchiveDocument.getPreviousRevisions(), archiveDocument.getPreviousRevisions(),
-                ArchiveDocument::getId, archiveDocumentRepository, archiveDocumentRepository::updateNextRevisionIdById));
-
-        return updatedArchiveDocument;
+        if (updatedArchiveDocument == null)
+            throw new EmptyResultDataAccessException("Updating archive document failed", 1);
+        updateLinks(updatedArchiveDocument, archiveDocument);
+        entityManager.clear();
+        return this.findFullInfoById(updatedArchiveDocument.getId());
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(readOnly = true)
     public ArchiveDocument findFullInfoById(Long id) {
         ArchiveDocument archiveDocument = archiveDocumentRepository.findFullInfoById(id).orElse(null);
         if (archiveDocument == null) return null;
@@ -170,6 +121,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ArchiveDocument> filter(ArchiveDocumentFilterDTO filter) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ArchiveDocument> cq = cb.createQuery(ArchiveDocument.class);
@@ -198,59 +150,26 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public ArchiveDocument saveOrFindIfExistDocument(ArchiveDocument archiveDocument) {
-        Archive archive = archiveDocument.getArchive();
-        if (archive != null && archive.getId() == null) {
-            archiveRepository.findArchivedByName(archive.getName())
-                    .or(() -> Optional.of(archiveRepository.save(archive)))
+        if (archiveDocument.getId() != null) {
+            return this.findFullInfoById(archiveDocument.getId());
+        }
+        if (archiveDocument.getArchive() != null && archiveDocument.getArchive().getId() == null) {
+            archiveRepository.findArchivedByName(archiveDocument.getArchive().getName())
+                    .or(() -> Optional.of(archiveRepository.save(archiveDocument.getArchive())))
                     .ifPresent(archiveDocument::setArchive);
         }
-        ArchiveDocument result = findArchiveDocument(archiveDocument);
-        if (result != null) {
-            return result;
-        }
-        ArchiveDocument nextRevision = archiveDocument.getNextRevision();
-        if (nextRevision != null) {
-            Archive nextArchive = nextRevision.getArchive();
-            if (nextRevision.getArchive() != null && nextRevision.getArchive().getId() == null) {
-                archiveRepository.findArchivedByName(nextArchive.getName())
-                        .or(() -> Optional.of(archiveRepository.save(nextArchive)))
-                        .ifPresent(nextRevision::setArchive);
-            }
-            ArchiveDocument nextRevisionResult = findArchiveDocument(nextRevision);
-            if (nextRevisionResult == null) {
-                archiveDocument.setNextRevision(archiveDocumentRepository.save(nextRevision));
-            }
-        }
-        return archiveDocumentRepository.save(archiveDocument);
+        return Optional.ofNullable(findArchiveDocument(archiveDocument))
+                .orElse(this.save(archiveDocument));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber) {
         return archiveDocumentRepository.findArchiveDocumentWithFamilyRevisionByNumberFamily(archiveDocumentId, familyNumber)
                 .orElse(null);
     }
 
-    @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void updateNextRevisionDocument(ArchiveDocument archiveDocument) {
-        if (archiveDocument == null || archiveDocument.getNextRevision() == null) {
-            throw new NullPointerException("Archive Document with next revision null");
-        }
-
-        ArchiveDocument nextRevisionDocument = archiveDocument.getNextRevision();
-        Long archiveDocumentId = archiveDocument.getId();
-        if (archiveDocumentId == null) {
-            archiveDocumentId = saveOrFindIfExistDocument(archiveDocument).getId();
-        }
-
-        Long nextRevisionId = nextRevisionDocument.getId();
-        if (nextRevisionId == null) {
-            nextRevisionId = saveOrFindIfExistDocument(nextRevisionDocument).getId();
-        }
-        archiveDocumentRepository.updateNextRevisionIdById(archiveDocumentId, nextRevisionId);
-    }
-
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(readOnly = true)
     protected ArchiveDocument findArchiveDocument(ArchiveDocument archiveDocument) {
         if (archiveDocument.getId() != null) {
             return archiveDocumentRepository.findById(archiveDocument.getId()).orElse(null);
@@ -284,5 +203,60 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
             }
         }
         return null;
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    protected ArchiveDocument updateLinks(ArchiveDocument info) {
+        info.setArchive(info.getArchive() != null ?
+                archiveHelper.saveEntityIfNotExist(info.getArchive(), info.getArchive().getId(), archiveRepository) :
+                null);
+        info.setNextRevision(info.getNextRevision() != null ?
+                archiveDocumentHelper.saveEntityIfNotExist(info.getNextRevision(), info.getNextRevision().getId(), archiveDocumentRepository) :
+                null);
+        return info;
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    protected void updateLinks(ArchiveDocument existInfo, ArchiveDocument newInfo) {
+
+        familyRevisionHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getFamilyRevisions(),
+                newInfo.getFamilyRevisions(),
+                FamilyRevision::getId,
+                familyRevisionRepository,
+                familyRevisionRepository::updateArchiveDocumentIdById);
+
+        christeningHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getChristenings(),
+                newInfo.getChristenings(),
+                Christening::getId,
+                christeningRepository,
+                christeningRepository::updateArchiveDocumentIdById);
+
+        marriageHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getMarriages(),
+                newInfo.getMarriages(),
+                Marriage::getId,
+                marriageRepository,
+                marriageRepository::updateArchiveDocumentIdById);
+
+        deathHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getDeaths(),
+                newInfo.getDeaths(),
+                Death::getId,
+                deathRepository,
+                deathRepository::updateArchiveDocumentIdById);
+
+        archiveDocumentHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getPreviousRevisions(),
+                newInfo.getPreviousRevisions(),
+                ArchiveDocument::getId,
+                archiveDocumentRepository,
+                archiveDocumentRepository::updateNextRevisionIdById);
     }
 }

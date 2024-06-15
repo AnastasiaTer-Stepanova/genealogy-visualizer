@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface PersonDAO {
 
-    List<Person> getAllEasyPersons();
-
     void delete(Long id);
 
     Person save(Person person);

@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.LocalityMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.LocalityDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +51,10 @@ public class LocalityServiceImpl implements LocalityService {
         if (locality == null || locality.getId() == null) {
             throw new BadRequestException("Locality must have an id");
         }
-        genealogy.visualizer.entity.Locality entity = localityDAO.update(localityMapper.toEntity(locality));
-        if (entity == null) {
+        genealogy.visualizer.entity.Locality entity;
+        try {
+            entity = localityDAO.update(localityMapper.toEntity(locality));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Locality for update not found");
         }
         return localityMapper.toDTO(entity);

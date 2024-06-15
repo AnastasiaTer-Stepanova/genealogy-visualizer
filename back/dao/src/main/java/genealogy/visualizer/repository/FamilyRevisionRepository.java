@@ -26,7 +26,7 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
 
     @Query(value = "select anir.another_name from another_name_in_revision anir where anir.family_revision_id = :id",
             nativeQuery = true)
-    List<String> getAnotherNames(@Param("id") Long id);
+    List<String> findAnotherNames(@Param("id") Long id);
 
     @Query(value = "select fs from FamilyRevision fs left join fetch fs.anotherNames an left join fetch fs.archiveDocument ad left join fetch ad.archive " +
             "left join fetch ad.nextRevision left join fetch fs.partner left join fetch fs.person where fs.id = :id")
@@ -68,4 +68,19 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
     @Query(value = "update family_revision set archive_document_id = :newArchiveDocumentId where id = :id", nativeQuery = true)
     void updateArchiveDocumentIdById(@Param("id") Long id, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
 
+    @Modifying
+    @Query(value = "update family_revision set partner_id = :newPartnerId where id = :id", nativeQuery = true)
+    void updatePartnerIdById(@Param("id") Long id, @Param("newPartnerId") Long newPartnerId);
+
+    @Modifying
+    @Query(value = "update family_revision set partner_id = :newPartnerId where partner_id = :partnerId", nativeQuery = true)
+    void updatePartnerId(@Param("partnerId") Long partnerId, @Param("newPartnerId") Long newPartnerId);
+
+    @Modifying
+    @Query(value = "delete from another_name_in_revision where family_revision_id = :id", nativeQuery = true)
+    void deleteAnotherNamesById(@Param("id")Long id);
+
+    @Modifying
+    @Query(value = "insert into another_name_in_revision (family_revision_id, another_name) values (:id, :anotherName)", nativeQuery = true)
+    void insertAnotherName(@Param("id")Long id, @Param("anotherName") String anotherName);
 }

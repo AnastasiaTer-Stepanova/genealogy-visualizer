@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.MarriageMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.MarriageDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +51,10 @@ public class MarriageServiceImpl implements MarriageService {
         if (marriage == null || marriage.getId() == null) {
             throw new BadRequestException("Marriage must have an id");
         }
-        genealogy.visualizer.entity.Marriage entity = marriageDAO.update(marriageMapper.toEntity(marriage));
-        if (entity == null) {
+        genealogy.visualizer.entity.Marriage entity;
+        try {
+            entity = marriageDAO.update(marriageMapper.toEntity(marriage));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Marriage for update not found");
         }
         return marriageMapper.toDTO(entity);

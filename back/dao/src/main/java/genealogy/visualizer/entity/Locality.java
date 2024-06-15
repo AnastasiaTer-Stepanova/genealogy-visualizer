@@ -191,4 +191,9 @@ public class Locality implements Serializable {
     public void setMarriagesWithWifeLocality(List<Marriage> marriagesWithWifeLocality) {
         this.marriagesWithWifeLocality = marriagesWithWifeLocality;
     }
+
+    public Locality clone() {
+        return new Locality(id, name, type, address, anotherNames, christenings, deaths, personsWithBirthLocality,
+                personsWithDeathLocality, marriagesWithHusbandLocality, marriagesWithWifeLocality);
+    }
 }

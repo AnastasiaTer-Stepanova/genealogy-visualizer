@@ -262,4 +262,9 @@ public class ArchiveDocument implements Serializable {
     public void setNextRevision(ArchiveDocument nextRevision) {
         this.nextRevision = nextRevision;
     }
+
+    public ArchiveDocument clone() {
+        return new ArchiveDocument(id, type, name, abbreviation, year, fund, catalog, instance, bunch, familyRevisions,
+                christenings, marriages, deaths, archive, previousRevisions, nextRevision);
+    }
 }

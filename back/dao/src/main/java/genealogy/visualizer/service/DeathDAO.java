@@ -16,9 +16,4 @@ public interface DeathDAO {
     Death findFullInfoById(Long id);
 
     List<Death> filter(DeathFilterDTO filter);
-
-    void updatePersonIdByPersonId(Long personId, Long newPersonId);
-
-    void updatePersonIdById(Long id, Long newPersonId);
-
 }

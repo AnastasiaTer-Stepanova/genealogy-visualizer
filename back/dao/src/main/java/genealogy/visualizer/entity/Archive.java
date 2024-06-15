@@ -110,4 +110,8 @@ public class Archive implements Serializable {
     public void setArchiveDocuments(List<ArchiveDocument> archiveDocuments) {
         this.archiveDocuments = archiveDocuments;
     }
+
+    public Archive clone() {
+        return new Archive(id, name, abbreviation, comment, address, archiveDocuments);
+    }
 }

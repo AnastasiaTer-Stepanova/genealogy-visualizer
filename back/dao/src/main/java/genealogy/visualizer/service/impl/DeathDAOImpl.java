@@ -17,6 +17,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,17 +61,7 @@ public class DeathDAOImpl implements DeathDAO {
     public Death save(Death death) {
         if (death.getId() != null)
             throw new IllegalArgumentException("Cannot save death with id");
-
-        death.setArchiveDocument(death.getArchiveDocument() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(death.getArchiveDocument(), death.getArchiveDocument().getId(), archiveDocumentRepository) :
-                null);
-        death.setLocality(death.getLocality() != null ?
-                localityHelper.saveEntityIfNotExist(death.getLocality(), death.getLocality().getId(), localityRepository) :
-                null);
-        death.setPerson(death.getPerson() != null ?
-                personHelper.saveEntityIfNotExist(death.getPerson(), death.getPerson().getId(), personRepository) :
-                null);
-        return deathRepository.save(death);
+        return deathRepository.save(updateLinks(death));
     }
 
     @Override
@@ -78,26 +69,20 @@ public class DeathDAOImpl implements DeathDAO {
     public Death update(Death death) {
         if (death.getId() == null)
             throw new IllegalArgumentException("Cannot update death without id");
-
-        death.setPerson(death.getPerson() != null ?
-                personHelper.saveEntityIfNotExist(death.getPerson(), death.getPerson().getId(), personRepository) :
-                null);
-        death.setLocality(death.getLocality() != null ?
-                localityHelper.saveEntityIfNotExist(death.getLocality(), death.getLocality().getId(), localityRepository) :
-                null);
-        death.setArchiveDocument(death.getArchiveDocument() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(death.getArchiveDocument(), death.getArchiveDocument().getId(), archiveDocumentRepository) :
-                null);
-
-        return deathRepository.update(death);
+        Death updatedDeath = deathRepository.update(updateLinks(death));
+        if (updatedDeath == null)
+            throw new EmptyResultDataAccessException("Updating christening failed", 1);
+        return updatedDeath;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Death findFullInfoById(Long id) {
         return deathRepository.findFullInfoById(id).orElse(null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Death> filter(DeathFilterDTO filter) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Death> cq = cb.createQuery(Death.class);
@@ -113,13 +98,17 @@ public class DeathDAOImpl implements DeathDAO {
         return entityManager.createQuery(cq).getResultList();
     }
 
-    @Override
-    public void updatePersonIdByPersonId(Long personId, Long newPersonId) {
-        deathRepository.updatePersonIdByPersonId(personId, newPersonId);
-    }
-
-    @Override
-    public void updatePersonIdById(Long id, Long newPersonId) {
-        deathRepository.updatePersonIdById(id, newPersonId);
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    protected Death updateLinks(Death info) {
+        info.setArchiveDocument(info.getArchiveDocument() != null ?
+                archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), info.getArchiveDocument().getId(), archiveDocumentRepository) :
+                null);
+        info.setLocality(info.getLocality() != null ?
+                localityHelper.saveEntityIfNotExist(info.getLocality(), info.getLocality().getId(), localityRepository) :
+                null);
+        info.setPerson(info.getPerson() != null ?
+                personHelper.saveEntityIfNotExist(info.getPerson(), info.getPerson().getId(), personRepository) :
+                null);
+        return info;
     }
 }

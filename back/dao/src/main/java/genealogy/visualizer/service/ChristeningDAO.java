@@ -16,8 +16,4 @@ public interface ChristeningDAO {
     Christening findFullInfoById(Long id);
 
     List<Christening> filter(ChristeningFilterDTO filter);
-
-    void updatePersonIdByPersonId(Long personId, Long newPersonId);
-
-    void updatePersonIdById(Long id, Long newPersonId);
 }

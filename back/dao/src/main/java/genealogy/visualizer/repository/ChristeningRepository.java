@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Christening;
+import genealogy.visualizer.entity.model.GodParent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +53,16 @@ public interface ChristeningRepository extends JpaRepository<Christening, Long> 
     @Query(value = "update christening set locality_id = :newLocalityId where id = :id", nativeQuery = true)
     void updateLocalityIdById(@Param("id") Long id, @Param("newLocalityId") Long newLocalityId);
 
+    @Modifying
+    @Query(value = "delete from god_parent where christening_id = :id", nativeQuery = true)
+    void deleteGodParentsById(@Param("id") Long id);
+
+    @Modifying
+    @Query(value = "insert into god_parent (christening_id, last_name, name, status, surname, locality_id, relative_last_name, " +
+            "relative_name, relative_status, relative_surname) " +
+            "values (:id, :#{#entity.fullName?.lastName}, :#{#entity.fullName?.name}, :#{#entity.fullName?.status}, " +
+            ":#{#entity.fullName?.surname}, :#{#entity.locality?.id}, :#{#entity.relative?.lastName}, :#{#entity.relative?.name}, " +
+            ":#{#entity.relative?.status}, :#{#entity.relative?.surname})",
+            nativeQuery = true)
+    void insertGodParent(@Param("id") Long id, @Param("entity") GodParent entity);
 }

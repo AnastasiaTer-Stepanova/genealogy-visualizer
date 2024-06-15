@@ -188,4 +188,9 @@ public class Death implements Serializable {
     public void setPerson(Person person) {
         this.person = person;
     }
+
+    public Death clone() {
+        return new Death(id, date, fullName, relative, age, cause, burialPlace, comment, locality,
+                archiveDocument, person);
+    }
 }

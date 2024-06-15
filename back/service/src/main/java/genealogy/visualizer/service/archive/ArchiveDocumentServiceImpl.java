@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +49,10 @@ public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
         if (archiveDocument == null || archiveDocument.getId() == null) {
             throw new BadRequestException("Archive document must have an id");
         }
-        genealogy.visualizer.entity.ArchiveDocument entity = archiveDocumentDAO.update(archiveDocumentMapper.toEntity(archiveDocument));
-        if (entity == null) {
+        genealogy.visualizer.entity.ArchiveDocument entity;
+        try {
+            entity = archiveDocumentDAO.update(archiveDocumentMapper.toEntity(archiveDocument));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Archive document for update not found");
         }
         return archiveDocumentMapper.toDTO(entity);

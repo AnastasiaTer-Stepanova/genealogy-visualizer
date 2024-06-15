@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveFilter;
 import genealogy.visualizer.api.model.EasyArchive;
@@ -32,11 +31,11 @@ class ArchiveControllerTest extends IntegrationTest {
         List<EasyArchiveDocument> archiveDocumentsSave = generator.objects(EasyArchiveDocument.class, generator.nextInt(5, 10)).toList();
         archiveSave.setArchiveDocuments(archiveDocumentsSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(archiveSave));
-        Archive response = getArchiveFromJson(responseJson);
+        Archive response = objectMapper.readValue(responseJson, Archive.class);
         assertNotNull(response);
         assertArchive(response, archiveSave);
         String responseGetJson = getRequest(PATH + "/" + response.getId());
-        Archive responseGet = getArchiveFromJson(responseGetJson);
+        Archive responseGet = objectMapper.readValue(responseGetJson, Archive.class);
         assertNotNull(responseGet);
         assertArchive(responseGet, archiveSave);
     }
@@ -45,7 +44,7 @@ class ArchiveControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.Archive archiveExist = generateRandomExistArchive();
         String responseJson = getRequest(PATH + "/" + archiveExist.getId());
-        Archive response = getArchiveFromJson(responseJson);
+        Archive response = objectMapper.readValue(responseJson, Archive.class);
         assertNotNull(response);
         assertEquals(response.getId(), archiveExist.getId());
         assertArchive(response, archiveExist);
@@ -64,11 +63,11 @@ class ArchiveControllerTest extends IntegrationTest {
         }
         archiveUpdate.setArchiveDocuments(archiveDocumentsUpdates);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
-        Archive response = getArchiveFromJson(responseJson);
+        Archive response = objectMapper.readValue(responseJson, Archive.class);
         assertNotNull(response);
         assertArchive(response, archiveUpdate);
         String responseGetJson = getRequest(PATH + "/" + response.getId());
-        Archive responseGet = getArchiveFromJson(responseGetJson);
+        Archive responseGet = objectMapper.readValue(responseGetJson, Archive.class);
         assertNotNull(responseGet);
         assertArchive(responseGet, archiveUpdate);
     }
@@ -111,7 +110,6 @@ class ArchiveControllerTest extends IntegrationTest {
             }
         }
         List<genealogy.visualizer.entity.Archive> archivesExist = archiveRepository.saveAllAndFlush(archivesSave);
-        archivesExist.forEach(archive -> archiveIds.add(archive.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyArchive> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyArchive.class));
         assertNotNull(response);
@@ -145,19 +143,7 @@ class ArchiveControllerTest extends IntegrationTest {
 
     @AfterEach
     void tearDown() {
-        System.out.println("----------------------End test------------------------");
         super.tearDown();
-    }
-
-    private Archive getArchiveFromJson(String responseJson) throws JsonProcessingException {
-        Archive response = objectMapper.readValue(responseJson, Archive.class);
-        if (response != null) {
-            if (response.getArchiveDocuments() != null) {
-                response.getArchiveDocuments().forEach(archiveDocument -> archiveDocumentIds.add(archiveDocument.getId()));
-            }
-            archiveIds.add(response.getId());
-        }
-        return response;
     }
 
     protected static void assertArchive(Archive archive1, Archive archive2) {
@@ -231,18 +217,13 @@ class ArchiveControllerTest extends IntegrationTest {
 
     private genealogy.visualizer.entity.Archive generateRandomExistArchive() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveSave.setId(null);
         archiveSave.setArchiveDocuments(null);
         genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        archiveIds.add(archiveExist.getId());
         List<genealogy.visualizer.entity.ArchiveDocument> archiveDocumentsSave = generator.objects(genealogy.visualizer.entity.ArchiveDocument.class, generator.nextInt(5, 10)).toList();
         List<genealogy.visualizer.entity.ArchiveDocument> archiveDocumentsExist = new ArrayList<>(archiveDocumentsSave.size());
         for (genealogy.visualizer.entity.ArchiveDocument ad : archiveDocumentsSave) {
             ad.setArchive(archiveSave);
-            ad.setId(null);
-            genealogy.visualizer.entity.ArchiveDocument result = archiveDocumentRepository.saveAndFlush(ad);
-            archiveDocumentIds.add(result.getId());
-            archiveDocumentsExist.add(result);
+            archiveDocumentsExist.add(archiveDocumentRepository.saveAndFlush(ad));
         }
         archiveExist.setArchiveDocuments(archiveDocumentsExist);
         return archiveExist;

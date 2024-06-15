@@ -247,4 +247,9 @@ public class Christening implements Serializable {
     public void setArchiveDocument(ArchiveDocument archiveDocument) {
         this.archiveDocument = archiveDocument;
     }
+
+    public Christening clone() {
+        return new Christening(id, birthDate, christeningDate, sex, name, father, mother, comment, legitimacy, locality,
+                godParents, person, archiveDocument);
+    }
 }

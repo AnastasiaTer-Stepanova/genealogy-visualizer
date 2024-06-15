@@ -106,14 +106,14 @@ public class ArchiveDocumentRevisionLinkSheetParser extends AbstractSheetParser 
             }
         }
         if (!notFoundNextDocumentWithNextAbbreviationNameDocuments.isEmpty()) {
-            notFoundNextDocumentWithNextAbbreviationNameDocuments.forEach((archiveDocument, nextAbbreviationArchiveDocument) -> {
+            notFoundNextDocumentWithNextAbbreviationNameDocuments.forEach((savedArchiveDocument, nextAbbreviationArchiveDocument) -> {
                 ArchiveDocument nextArchiveDocument = archiveRevisionDocuments.get(nextAbbreviationArchiveDocument);
                 if (nextArchiveDocument == null) {
                     LOGGER.error("Not found next abbreviation document with abbreviation {}, after save all documents info", nextAbbreviationArchiveDocument);
                     return;
                 }
-                archiveDocument.setNextRevision(nextArchiveDocument);
-                archiveDocumentDAO.updateNextRevisionDocument(archiveDocument);
+                savedArchiveDocument.setNextRevision(nextArchiveDocument);
+                archiveDocumentDAO.update(savedArchiveDocument);
             });
         }
         updateStatus(excelSheet, successParsingRowNumbers, header.get(STATUS_COLUMN_NAME));

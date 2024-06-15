@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.EasyArchiveMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ArchiveDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +49,10 @@ public class ArchiveServiceImpl implements ArchiveService {
         if (archive == null || archive.getId() == null) {
             throw new BadRequestException("Archive must have an id");
         }
-        genealogy.visualizer.entity.Archive entity = archiveDAO.update(archiveMapper.toEntity(archive));
-        if (entity == null) {
+        genealogy.visualizer.entity.Archive entity;
+        try {
+            entity = archiveDAO.update(archiveMapper.toEntity(archive));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Archive for update not found");
         }
         return archiveMapper.toDTO(entity);

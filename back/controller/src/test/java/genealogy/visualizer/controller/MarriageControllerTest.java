@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
@@ -56,11 +55,11 @@ class MarriageControllerTest extends IntegrationTest {
         witnessesSave.forEach(w -> w.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(EasyLocality.class)));
         marriageSave.setWitnesses(witnessesSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(marriageSave));
-        Marriage response = getMarriageFromJson(responseJson);
+        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
         assertNotNull(response);
         assertMarriage(response, marriageSave);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = getMarriageFromJson(responseJsonGet);
+        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
         assertNotNull(responseGet);
         assertMarriage(responseGet, marriageSave);
     }
@@ -78,7 +77,10 @@ class MarriageControllerTest extends IntegrationTest {
         marriageUpdate.setHusbandLocality(localityUpdate);
         marriageUpdate.setWifeLocality(localityUpdate);
         List<Witness> witnessesUpdate = new ArrayList<>(generator.objects(Witness.class, generator.nextInt(5, 10)).toList());
-        witnessesUpdate.forEach(w -> w.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(EasyLocality.class)));
+        witnessesUpdate.forEach(w -> {
+            w.getFullName().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+            w.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(EasyLocality.class));
+        });
         marriageExist.getWitnesses().forEach(w -> {
             if (generator.nextBoolean()) {
                 witnessesUpdate.add(witnessMapper.toDTO(w));
@@ -86,11 +88,11 @@ class MarriageControllerTest extends IntegrationTest {
         });
         marriageUpdate.setWitnesses(witnessesUpdate);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate));
-        Marriage response = getMarriageFromJson(responseJson);
+        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
         assertNotNull(response);
         assertMarriage(response, marriageUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = getMarriageFromJson(responseJsonGet);
+        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
         assertNotNull(responseGet);
         assertMarriage(responseGet, marriageUpdate);
     }
@@ -106,11 +108,11 @@ class MarriageControllerTest extends IntegrationTest {
         marriageUpdate.setPersons(Collections.emptyList());
         marriageUpdate.setWitnesses(Collections.emptyList());
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate));
-        Marriage response = getMarriageFromJson(responseJson);
+        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
         assertNotNull(response);
         assertMarriage(response, marriageUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = getMarriageFromJson(responseJsonGet);
+        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
         assertNotNull(responseGet);
         assertMarriage(responseGet, marriageUpdate);
     }
@@ -131,7 +133,7 @@ class MarriageControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.Marriage marriageExist = generateRandomExistMarriage();
         String responseJson = getRequest(PATH + "/" + marriageExist.getId());
-        Marriage response = getMarriageFromJson(responseJson);
+        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
         assertNotNull(response);
         assertEquals(response.getId(), marriageExist.getId());
         assertMarriage(response, marriageExist);
@@ -197,12 +199,10 @@ class MarriageControllerTest extends IntegrationTest {
                 archiveDocumentSave.setDeaths(Collections.emptyList());
                 archiveDocumentSave.setNextRevision(null);
                 genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                archiveDocumentIds.add(archiveDocumentExist.getId());
                 marriage.setArchiveDocument(archiveDocumentExist);
             }
         }
         List<genealogy.visualizer.entity.Marriage> marriagesExist = marriageRepository.saveAllAndFlush(marriagesSave);
-        marriagesExist.forEach(m -> marriageIds.add(m.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyMarriage> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyMarriage.class));
         assertNotNull(response);
@@ -243,38 +243,9 @@ class MarriageControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        marriageIds.forEach(id -> marriageDAO.delete(id));
-        personRepository.deleteAllById(personIds);
-        localityRepository.deleteAllById(localityIds);
-        archiveDocumentRepository.deleteAllById(archiveDocumentIds);
+        marriageRepository.deleteAll();
+        personRepository.deleteAll();
         super.tearDown();
-    }
-
-    private Marriage getMarriageFromJson(String responseJson) throws JsonProcessingException {
-        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
-        if (response != null) {
-            if (response.getArchiveDocument() != null) {
-                archiveDocumentIds.add(response.getArchiveDocument().getId());
-            }
-            if (response.getWifeLocality() != null) {
-                localityIds.add(response.getWifeLocality().getId());
-            }
-            if (response.getHusbandLocality() != null) {
-                localityIds.add(response.getHusbandLocality().getId());
-            }
-            if (response.getPersons() != null) {
-                response.getPersons().forEach(p -> personIds.add(p.getId()));
-            }
-            if (response.getWitnesses() != null) {
-                response.getWitnesses().forEach(w -> {
-                    if (w.getLocality() != null) {
-                        localityIds.add(w.getLocality().getId());
-                    }
-                });
-            }
-            marriageIds.add(response.getId());
-        }
-        return response;
     }
 
     static void assertMarriage(Marriage marriage1, Marriage marriage2) {
@@ -395,7 +366,6 @@ class MarriageControllerTest extends IntegrationTest {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
         genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        archiveIds.add(archiveExist.getId());
 
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         archiveDocumentSave.setArchive(archiveExist);
@@ -406,7 +376,6 @@ class MarriageControllerTest extends IntegrationTest {
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setNextRevision(null);
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-        archiveDocumentIds.add(archiveDocumentExist.getId());
 
         genealogy.visualizer.entity.Marriage marriageSave = generator.nextObject(genealogy.visualizer.entity.Marriage.class);
         marriageSave.setArchiveDocument(archiveDocumentExist);
@@ -425,15 +394,12 @@ class MarriageControllerTest extends IntegrationTest {
         });
         List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
         marriageSave.setPersons(personsExist);
-        personsExist.forEach(p -> personIds.add(p.getId()));
 
         List<genealogy.visualizer.entity.model.Witness> witnessesSave = generator.objects(genealogy.visualizer.entity.model.Witness.class, generator.nextInt(5, 10)).toList();
         witnessesSave.forEach(gp -> gp.setLocality(localityExisting));
         marriageSave.setWitnesses(witnessesSave);
         marriageSave.setHusbandLocality(localityExisting);
         marriageSave.setWifeLocality(localityExisting);
-        genealogy.visualizer.entity.Marriage marriageExist = marriageRepository.save(marriageSave);
-        marriageIds.add(marriageExist.getId());
-        return marriageExist;
+        return marriageRepository.save(marriageSave);
     }
 }

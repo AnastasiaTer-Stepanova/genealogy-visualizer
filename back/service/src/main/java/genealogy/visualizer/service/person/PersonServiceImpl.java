@@ -10,6 +10,7 @@ import genealogy.visualizer.mapper.PersonMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.PersonDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +51,10 @@ public class PersonServiceImpl implements PersonService {
         if (person == null || person.getId() == null) {
             throw new BadRequestException("Person must have an id");
         }
-        genealogy.visualizer.entity.Person entity = personDAO.update(personMapper.toEntity(person));
-        if (entity == null) {
+        genealogy.visualizer.entity.Person entity;
+        try {
+            entity = personDAO.update(personMapper.toEntity(person));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Person for update not found");
         }
         return personMapper.toDTO(entity);

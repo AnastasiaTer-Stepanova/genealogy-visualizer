@@ -23,8 +23,4 @@ public interface FamilyRevisionDAO {
 
     List<FamilyRevision> findFamilyRevisionsByNextFamilyRevisionNumberAndArchiveDocumentId(Long archiveDocumentId, short familyNumber, boolean isFindWithHavePerson);
 
-    void updatePersonIdByPersonId(Long personId, Long newPersonId);
-
-    void updatePersonIdById(Long id, Long newPersonId);
-
 }

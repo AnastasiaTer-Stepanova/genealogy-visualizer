@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.EasyChristening;
 import genealogy.visualizer.api.model.EasyDeath;
 import genealogy.visualizer.api.model.EasyLocality;
@@ -58,11 +57,11 @@ class LocalityControllerTest extends IntegrationTest {
         List<EasyPerson> personsWithDeathLocality = generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList();
         localitySave.setPersonsWithDeathLocality(personsWithDeathLocality);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(localitySave));
-        Locality response = getLocalityFromJson(responseJson);
+        Locality response = objectMapper.readValue(responseJson, Locality.class);
         assertNotNull(response);
         assertLocality(response, localitySave);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Locality responseGet = getLocalityFromJson(responseJsonGet);
+        Locality responseGet = objectMapper.readValue(responseJsonGet, Locality.class);
         assertNotNull(responseGet);
         assertLocality(responseGet, localitySave);
     }
@@ -118,11 +117,11 @@ class LocalityControllerTest extends IntegrationTest {
         });
         localityUpdate.setPersonsWithDeathLocality(personsWithDeathLocalityUpdate);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(localityUpdate));
-        Locality response = getLocalityFromJson(responseJson);
+        Locality response = objectMapper.readValue(responseJson, Locality.class);
         assertNotNull(response);
         assertLocality(response, localityUpdate);
         String responseJsonGet = getRequest(PATH + "/" + localityUpdate.getId());
-        Locality responseGet = getLocalityFromJson(responseJsonGet);
+        Locality responseGet = objectMapper.readValue(responseJsonGet, Locality.class);
         assertNotNull(responseGet);
         assertLocality(responseGet, localityUpdate);
     }
@@ -139,11 +138,11 @@ class LocalityControllerTest extends IntegrationTest {
         localityUpdate.setPersonsWithDeathLocality(Collections.emptyList());
         localityUpdate.setPersonsWithBirthLocality(Collections.emptyList());
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(localityUpdate));
-        Locality response = getLocalityFromJson(responseJson);
+        Locality response = objectMapper.readValue(responseJson, Locality.class);
         assertNotNull(response);
         assertLocality(response, localityUpdate);
         String responseJsonGet = getRequest(PATH + "/" + localityUpdate.getId());
-        Locality responseGet = getLocalityFromJson(responseJsonGet);
+        Locality responseGet = objectMapper.readValue(responseJsonGet, Locality.class);
         assertNotNull(responseGet);
         assertLocality(responseGet, localityUpdate);
     }
@@ -166,7 +165,7 @@ class LocalityControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.Locality locality = generateRandomExistLocality();
         String responseJson = getRequest(PATH + "/" + locality.getId());
-        Locality response = getLocalityFromJson(responseJson);
+        Locality response = objectMapper.readValue(responseJson, Locality.class);
         assertNotNull(response);
         assertEquals(response.getId(), locality.getId());
         assertLocality(response, locality);
@@ -200,7 +199,6 @@ class LocalityControllerTest extends IntegrationTest {
             }
         }
         List<genealogy.visualizer.entity.Locality> localitiesExist = localityRepository.saveAllAndFlush(localitiesSave);
-        localitiesExist.forEach(ad -> localityIds.add(ad.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyLocality> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyLocality.class));
         assertNotNull(response);
@@ -236,38 +234,11 @@ class LocalityControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        localityIds.forEach(id -> localityDAO.delete(id));
-        christeningRepository.deleteAllById(christeningIds);
-        deathRepository.deleteAllById(deathIds);
-        personRepository.deleteAllById(personIds);
-        marriageRepository.deleteAllById(marriageIds);
+        christeningRepository.deleteAll();
+        deathRepository.deleteAll();
+        personRepository.deleteAll();
+        marriageRepository.deleteAll();
         super.tearDown();
-    }
-
-    private Locality getLocalityFromJson(String responseJson) throws JsonProcessingException {
-        Locality response = objectMapper.readValue(responseJson, Locality.class);
-        if (response != null) {
-            if (response.getChristenings() != null) {
-                response.getChristenings().forEach(c -> christeningIds.add(c.getId()));
-            }
-            if (response.getDeaths() != null) {
-                response.getDeaths().forEach(d -> deathIds.add(d.getId()));
-            }
-            if (response.getMarriagesWithHusbandLocality() != null) {
-                response.getMarriagesWithHusbandLocality().forEach(m -> marriageIds.add(m.getId()));
-            }
-            if (response.getMarriagesWithWifeLocality() != null) {
-                response.getMarriagesWithWifeLocality().forEach(m -> marriageIds.add(m.getId()));
-            }
-            if (response.getPersonsWithBirthLocality() != null) {
-                response.getPersonsWithBirthLocality().forEach(p -> personIds.add(p.getId()));
-            }
-            if (response.getPersonsWithDeathLocality() != null) {
-                response.getPersonsWithDeathLocality().forEach(p -> personIds.add(p.getId()));
-            }
-            localityIds.add(response.getId());
-        }
-        return response;
     }
 
     protected static void assertLocality(Locality locality1, Locality locality2) {
@@ -436,7 +407,6 @@ class LocalityControllerTest extends IntegrationTest {
         List<String> anotherNames = generator.objects(String.class, generator.nextInt(5, 10)).toList();
         localitySave.setAnotherNames(anotherNames);
         genealogy.visualizer.entity.Locality localityExist = localityRepository.saveAndFlush(localitySave);
-        localityIds.add(localityExist.getId());
 
         List<genealogy.visualizer.entity.Christening> christeningsSave = generator.objects(genealogy.visualizer.entity.Christening.class, generator.nextInt(5, 10)).toList();
         List<genealogy.visualizer.entity.Christening> christeningsExist = new ArrayList<>(christeningsSave.size());
@@ -444,9 +414,7 @@ class LocalityControllerTest extends IntegrationTest {
             entity.getGodParents().forEach(gp -> localityMapper.toDTO(localityExisting));
             entity.setLocality(localityExist);
             entity.setArchiveDocument(null);
-            genealogy.visualizer.entity.Christening result = christeningRepository.saveAndFlush(entity);
-            christeningIds.add(result.getId());
-            christeningsExist.add(entity);
+            christeningsExist.add(christeningRepository.saveAndFlush(entity));
         }
         localityExist.setChristenings(christeningsExist);
 
@@ -455,9 +423,7 @@ class LocalityControllerTest extends IntegrationTest {
         for (genealogy.visualizer.entity.Death entity : deathsSave) {
             entity.setLocality(localityExist);
             entity.setArchiveDocument(null);
-            genealogy.visualizer.entity.Death result = deathRepository.saveAndFlush(entity);
-            deathIds.add(result.getId());
-            deathsExist.add(entity);
+            deathsExist.add(deathRepository.saveAndFlush(entity));
         }
         localityExist.setDeaths(deathsExist);
 
@@ -467,9 +433,7 @@ class LocalityControllerTest extends IntegrationTest {
             entity.setWifeLocality(localityExisting);
             entity.setHusbandLocality(localityExist);
             entity.setArchiveDocument(null);
-            genealogy.visualizer.entity.Marriage result = marriageRepository.saveAndFlush(entity);
-            marriageIds.add(result.getId());
-            marriagesWithHusbandLocalityExist.add(entity);
+            marriagesWithHusbandLocalityExist.add(marriageRepository.saveAndFlush(entity));
         }
         localityExist.setMarriagesWithHusbandLocality(marriagesWithHusbandLocalityExist);
 
@@ -479,9 +443,7 @@ class LocalityControllerTest extends IntegrationTest {
             entity.setHusbandLocality(localityExisting);
             entity.setWifeLocality(localityExist);
             entity.setArchiveDocument(null);
-            genealogy.visualizer.entity.Marriage result = marriageRepository.saveAndFlush(entity);
-            marriageIds.add(result.getId());
-            marriagesWithWifeLocalityExist.add(entity);
+            marriagesWithWifeLocalityExist.add(marriageRepository.saveAndFlush(entity));
         }
         localityExist.setMarriagesWithWifeLocality(marriagesWithWifeLocalityExist);
 
@@ -497,9 +459,7 @@ class LocalityControllerTest extends IntegrationTest {
             entity.setDeath(null);
             entity.setDeathLocality(localityExisting);
             entity.setBirthLocality(localityExist);
-            genealogy.visualizer.entity.Person personExist = personRepository.saveAndFlush(entity);
-            personsWithBirthLocalityExist.add(personExist);
-            personIds.add(personExist.getId());
+            personsWithBirthLocalityExist.add(personRepository.saveAndFlush(entity));
         }
         localityExist.setPersonsWithBirthLocality(personsWithBirthLocalityExist);
 
@@ -515,9 +475,7 @@ class LocalityControllerTest extends IntegrationTest {
             entity.setDeath(null);
             entity.setBirthLocality(localityExisting);
             entity.setDeathLocality(localityExist);
-            genealogy.visualizer.entity.Person personExist = personRepository.saveAndFlush(entity);
-            personsWithDeathLocalityExist.add(personExist);
-            personIds.add(personExist.getId());
+            personsWithDeathLocalityExist.add(personRepository.saveAndFlush(entity));
         }
         localityExist.setPersonsWithDeathLocality(personsWithDeathLocalityExist);
         return localityExist;

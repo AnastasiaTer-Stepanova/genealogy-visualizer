@@ -14,6 +14,7 @@ public class ParamDAOImpl implements ParamDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Boolean getBooleanParamOrDefault(String paramName, Boolean defaultValue) {
         return paramRepository.findByName(paramName)
                 .map(param -> Boolean.parseBoolean(param.getValue()))

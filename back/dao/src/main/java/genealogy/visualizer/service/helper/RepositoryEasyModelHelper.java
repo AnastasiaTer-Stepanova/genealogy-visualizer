@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -33,8 +35,7 @@ public class RepositoryEasyModelHelper<E> {
         }
         List<E> result = new ArrayList<>();
         for (E entity : entities) {
-            Long id = getIdFunction.apply(entity);
-            result.add(id != null ? entity : repository.save(entity));
+            result.add(saveEntityIfNotExist(entity, getIdFunction.apply(entity), repository));
         }
         return result;
     }
@@ -44,6 +45,7 @@ public class RepositoryEasyModelHelper<E> {
                                   JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
         newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
         if (entities == null || entities.isEmpty()) {
+            newEntities.forEach(entity -> updateIdFunction.accept(getIdFunction.apply(entity), parentId));
             return newEntities;
         }
         Set<Long> newIds = newEntities != null ?
@@ -69,11 +71,36 @@ public class RepositoryEasyModelHelper<E> {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public List<E> updateEntitiesWithLinkTable(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
-                                               JpaRepository<E, Long> repository, BiConsumer<Long, Long> deleteLinkFunction,
-                                               BiConsumer<Long, Long> insertLinkFunction) {
+    public Optional<E> updateEntity(Long parentId, E entity, E newEntity, Function<E, Long> getIdFunction,
+                                    JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
+        if (newEntity != null) {
+            newEntity = saveEntityIfNotExist(newEntity, getIdFunction.apply(newEntity), repository);
+        }
+        Long newId = newEntity != null ? getIdFunction.apply(newEntity) : null;
+        Long existId = entity != null ? getIdFunction.apply(entity) : null;
+
+        if (!Objects.equals(existId, newId)) {
+            if (existId != null && updateIdFunction != null) {
+                updateIdFunction.accept(existId, null);
+            }
+            if (newId != null && updateIdFunction != null) {
+                updateIdFunction.accept(newId, parentId);
+            }
+        }
+
+        E result = newEntity != null ? newEntity : entity;
+        return result != null ? Optional.of(result) : Optional.empty();
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Optional<List<E>> updateEntitiesWithLinkTable(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
+                                                         JpaRepository<E, Long> repository, BiConsumer<Long, Long> deleteLinkFunction,
+                                                         BiConsumer<Long, Long> insertLinkFunction) {
         newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
-        if (entities == null || entities.isEmpty()) return newEntities;
+        if (entities == null || entities.isEmpty()) {
+            newEntities.forEach(entity -> insertLinkFunction.accept(getIdFunction.apply(entity), parentId));
+            return Optional.of(newEntities);
+        }
 
         Set<Long> newIds = newEntities != null ? newEntities.stream().map(getIdFunction).collect(Collectors.toSet()) : Collections.emptySet();
         Set<Long> existIds = entities.stream().map(getIdFunction).collect(Collectors.toSet());
@@ -86,12 +113,10 @@ public class RepositoryEasyModelHelper<E> {
         if (newEntities != null) {
             newEntities.stream().filter(entity -> newIds.contains(getIdFunction.apply(entity)) && !existIds.contains(getIdFunction.apply(entity)))
                     .forEach(entity -> {
-                        if (insertLinkFunction != null) {
-                            insertLinkFunction.accept(getIdFunction.apply(entity), parentId);
-                        }
+                        insertLinkFunction.accept(getIdFunction.apply(entity), parentId);
                         result.add(entity);
                     });
         }
-        return result;
+        return Optional.of(result);
     }
 }

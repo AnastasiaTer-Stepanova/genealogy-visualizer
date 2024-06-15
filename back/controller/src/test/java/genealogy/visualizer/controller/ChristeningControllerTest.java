@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Christening;
 import genealogy.visualizer.api.model.ChristeningFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
@@ -30,6 +29,7 @@ import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChristeningControllerTest extends IntegrationTest {
@@ -55,11 +55,11 @@ class ChristeningControllerTest extends IntegrationTest {
         godParentsSave.forEach(gp -> gp.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(EasyLocality.class)));
         christeningSave.setGodParents(godParentsSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(christeningSave));
-        Christening response = getChristeningFromJson(responseJson);
+        Christening response = objectMapper.readValue(responseJson, Christening.class);
         assertNotNull(response);
         assertChristening(response, christeningSave);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Christening responseGet = getChristeningFromJson(responseJsonGet);
+        Christening responseGet = objectMapper.readValue(responseJsonGet, Christening.class);
         assertNotNull(responseGet);
         assertChristening(responseGet, christeningSave);
     }
@@ -84,11 +84,11 @@ class ChristeningControllerTest extends IntegrationTest {
         });
         christeningUpdate.setGodParents(godParentsUpdate);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(christeningUpdate));
-        Christening response = getChristeningFromJson(responseJson);
+        Christening response = objectMapper.readValue(responseJson, Christening.class);
         assertNotNull(response);
         assertChristening(response, christeningUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Christening responseGet = getChristeningFromJson(responseJsonGet);
+        Christening responseGet = objectMapper.readValue(responseJsonGet, Christening.class);
         assertNotNull(responseGet);
         assertChristening(responseGet, christeningUpdate);
     }
@@ -103,11 +103,11 @@ class ChristeningControllerTest extends IntegrationTest {
         christeningUpdate.setLocality(null);
         christeningUpdate.setGodParents(Collections.emptyList());
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(christeningUpdate));
-        Christening response = getChristeningFromJson(responseJson);
+        Christening response = objectMapper.readValue(responseJson, Christening.class);
         assertNotNull(response);
         assertChristening(response, christeningUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Christening responseGet = getChristeningFromJson(responseJsonGet);
+        Christening responseGet = objectMapper.readValue(responseJsonGet, Christening.class);
         assertNotNull(responseGet);
         assertChristening(responseGet, christeningUpdate);
     }
@@ -127,7 +127,7 @@ class ChristeningControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.Christening christeningExist = generateRandomExistChristening();
         String responseJson = getRequest(PATH + "/" + christeningExist.getId());
-        Christening response = getChristeningFromJson(responseJson);
+        Christening response = objectMapper.readValue(responseJson, Christening.class);
         assertNotNull(response);
         assertEquals(response.getId(), christeningExist.getId());
         assertChristening(response, christeningExist);
@@ -165,13 +165,10 @@ class ChristeningControllerTest extends IntegrationTest {
                 archiveDocumentSave.setMarriages(Collections.emptyList());
                 archiveDocumentSave.setDeaths(Collections.emptyList());
                 archiveDocumentSave.setNextRevision(null);
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                archiveDocumentIds.add(archiveDocumentExist.getId());
-                christening.setArchiveDocument(archiveDocumentExist);
+                christening.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
             }
         }
         List<genealogy.visualizer.entity.Christening> christeningExist = christeningRepository.saveAllAndFlush(christeningsSave);
-        christeningExist.forEach(ad -> christeningIds.add(ad.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyChristening> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyChristening.class));
         assertNotNull(response);
@@ -208,38 +205,17 @@ class ChristeningControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        christeningIds.forEach(id -> christeningDAO.delete(id));
-        personRepository.deleteAllById(personIds);
-        localityRepository.deleteAllById(localityIds);
-        archiveDocumentRepository.deleteAllById(archiveDocumentIds);
+        christeningRepository.deleteAll();
+        personRepository.deleteAll();
         super.tearDown();
     }
 
-    private Christening getChristeningFromJson(String responseJson) throws JsonProcessingException {
-        Christening response = objectMapper.readValue(responseJson, Christening.class);
-        if (response != null) {
-            if (response.getArchiveDocument() != null) {
-                archiveDocumentIds.add(response.getArchiveDocument().getId());
-            }
-            if (response.getLocality() != null) {
-                localityIds.add(response.getLocality().getId());
-            }
-            if (response.getPerson() != null) {
-                personIds.add(response.getPerson().getId());
-            }
-            if (response.getGodParents() != null) {
-                response.getGodParents().forEach(gp -> {
-                    if (gp.getLocality() != null) {
-                        localityIds.add(gp.getLocality().getId());
-                    }
-                });
-            }
-            christeningIds.add(response.getId());
-        }
-        return response;
-    }
-
     static void assertChristening(EasyChristening christening1, EasyChristening christening2) {
+        if (christening1 == null || christening2 == null) {
+            assertNull(christening1);
+            assertNull(christening2);
+            return;
+        }
         assertNotNull(christening1);
         assertNotNull(christening2);
         assertEquals(christening1.getName(), christening2.getName());
@@ -351,22 +327,18 @@ class ChristeningControllerTest extends IntegrationTest {
     private genealogy.visualizer.entity.Christening generateRandomExistChristening() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
-        genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        archiveIds.add(archiveExist.getId());
 
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentSave.setArchive(archiveExist);
+        archiveDocumentSave.setArchive(archiveRepository.saveAndFlush(archiveSave));
         archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
         archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
         archiveDocumentSave.setChristenings(Collections.emptyList());
         archiveDocumentSave.setMarriages(Collections.emptyList());
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setNextRevision(null);
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-        archiveDocumentIds.add(archiveDocumentExist.getId());
 
         genealogy.visualizer.entity.Christening christeningSave = generator.nextObject(genealogy.visualizer.entity.Christening.class);
-        christeningSave.setArchiveDocument(archiveDocumentExist);
+        christeningSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
 
         genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
         personSave.setChristening(null);
@@ -378,16 +350,12 @@ class ChristeningControllerTest extends IntegrationTest {
         personSave.setDeath(null);
         personSave.setDeathLocality(localityExisting);
         personSave.setBirthLocality(localityExisting);
-        genealogy.visualizer.entity.Person personExist = personRepository.saveAndFlush(personSave);
-        christeningSave.setPerson(personExist);
-        personIds.add(personExist.getId());
+        christeningSave.setPerson(personRepository.saveAndFlush(personSave));
 
         List<genealogy.visualizer.entity.model.GodParent> godParentsSave = generator.objects(genealogy.visualizer.entity.model.GodParent.class, generator.nextInt(5, 10)).toList();
         godParentsSave.forEach(gp -> gp.setLocality(localityExisting));
         christeningSave.setGodParents(godParentsSave);
         christeningSave.setLocality(localityExisting);
-        genealogy.visualizer.entity.Christening christeningExist = christeningRepository.save(christeningSave);
-        christeningIds.add(christeningExist.getId());
-        return christeningExist;
+        return christeningRepository.save(christeningSave);
     }
 }

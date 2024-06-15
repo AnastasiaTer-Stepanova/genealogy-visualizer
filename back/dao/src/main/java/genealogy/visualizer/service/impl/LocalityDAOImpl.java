@@ -18,13 +18,13 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class LocalityDAOImpl implements LocalityDAO {
 
@@ -73,46 +73,17 @@ public class LocalityDAOImpl implements LocalityDAO {
     public Locality save(Locality locality) {
         if (locality.getId() != null)
             throw new IllegalArgumentException("Cannot save locality with id");
-        List<Christening> christenings = locality.getChristenings();
-        List<Death> deaths = locality.getDeaths();
-        List<Marriage> marriagesWithHusbandLocality = locality.getMarriagesWithHusbandLocality();
-        List<Marriage> marriagesWithWifeLocality = locality.getMarriagesWithWifeLocality();
-        List<Person> personsWithBirthLocality = locality.getPersonsWithBirthLocality();
-        List<Person> personsWithDeathLocality = locality.getPersonsWithDeathLocality();
-        locality.setChristenings(Collections.emptyList());
-        locality.setDeaths(Collections.emptyList());
-        locality.setMarriagesWithHusbandLocality(Collections.emptyList());
-        locality.setMarriagesWithWifeLocality(Collections.emptyList());
-        locality.setPersonsWithDeathLocality(Collections.emptyList());
-        locality.setPersonsWithBirthLocality(Collections.emptyList());
-
-        Locality savedLocality = localityRepository.save(locality);
-
-        savedLocality.setChristenings(christenings != null ?
-                christeningHelper.saveEntitiesIfNotExist(christenings.stream().peek(c -> c.setLocality(savedLocality)).toList(),
-                        christeningRepository, Christening::getId) :
-                null);
-        savedLocality.setDeaths(deaths != null ?
-                deathHelper.saveEntitiesIfNotExist(deaths.stream().peek(d -> d.setLocality(savedLocality)).toList(),
-                        deathRepository, Death::getId) :
-                null);
-        savedLocality.setMarriagesWithWifeLocality(marriagesWithWifeLocality != null ?
-                marriageHelper.saveEntitiesIfNotExist(marriagesWithWifeLocality.stream().peek(m -> m.setWifeLocality(savedLocality)).toList(),
-                        marriageRepository, Marriage::getId) :
-                null);
-        savedLocality.setMarriagesWithHusbandLocality(marriagesWithHusbandLocality != null ?
-                marriageHelper.saveEntitiesIfNotExist(marriagesWithHusbandLocality.stream().peek(m -> m.setHusbandLocality(savedLocality)).toList(),
-                        marriageRepository, Marriage::getId) :
-                null);
-        savedLocality.setPersonsWithBirthLocality(personsWithBirthLocality != null ?
-                personHelper.saveEntitiesIfNotExist(personsWithBirthLocality.stream().peek(p -> p.setBirthLocality(savedLocality)).toList(),
-                        personRepository, Person::getId) :
-                null);
-        savedLocality.setPersonsWithDeathLocality(personsWithDeathLocality != null ?
-                personHelper.saveEntitiesIfNotExist(personsWithDeathLocality.stream().peek(p -> p.setDeathLocality(savedLocality)).toList(),
-                        personRepository, Person::getId) :
-                null);
-        return savedLocality;
+        Locality localityForSave = locality.clone();
+        localityForSave.setChristenings(Collections.emptyList());
+        localityForSave.setDeaths(Collections.emptyList());
+        localityForSave.setMarriagesWithHusbandLocality(Collections.emptyList());
+        localityForSave.setMarriagesWithWifeLocality(Collections.emptyList());
+        localityForSave.setPersonsWithDeathLocality(Collections.emptyList());
+        localityForSave.setPersonsWithBirthLocality(Collections.emptyList());
+        Locality savedLocality = localityRepository.save(localityForSave);
+        updateLinks(savedLocality, locality);
+        entityManager.clear();
+        return this.findFullInfoById(savedLocality.getId());
     }
 
     @Override
@@ -120,34 +91,20 @@ public class LocalityDAOImpl implements LocalityDAO {
     public Locality update(Locality locality) {
         if (locality.getId() == null)
             throw new IllegalArgumentException("Cannot update locality without id");
-
         Locality updatedLocality = localityRepository.update(locality);
-        updatedLocality.setAnotherNames(locality.getAnotherNames());
-
-        updatedLocality.setChristenings(christeningHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getChristenings(), locality.getChristenings(),
-                Christening::getId, christeningRepository, christeningRepository::updateLocalityIdById));
-        updatedLocality.setDeaths(deathHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getDeaths(), locality.getDeaths(), Death::getId,
-                deathRepository, deathRepository::updateLocalityIdById));
-        updatedLocality.setMarriagesWithWifeLocality(marriageHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getMarriagesWithWifeLocality(), locality.getMarriagesWithWifeLocality(),
-                Marriage::getId, marriageRepository, marriageRepository::updateWifeLocalityIdById));
-        updatedLocality.setMarriagesWithHusbandLocality(marriageHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getMarriagesWithHusbandLocality(), locality.getMarriagesWithHusbandLocality(),
-                Marriage::getId, marriageRepository, marriageRepository::updateHusbandLocalityIdById));
-        updatedLocality.setPersonsWithDeathLocality(personHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getPersonsWithDeathLocality(), locality.getPersonsWithDeathLocality(),
-                Person::getId, personRepository, personRepository::updateDeathLocalityIdById));
-        updatedLocality.setPersonsWithBirthLocality(personHelper.updateEntities(
-                updatedLocality.getId(), updatedLocality.getPersonsWithBirthLocality(), locality.getPersonsWithBirthLocality(),
-                Person::getId, personRepository, personRepository::updateBirthLocalityIdById));
-
-        return updatedLocality;
+        if (updatedLocality == null)
+            throw new EmptyResultDataAccessException("Updating locality failed", 1);
+        localityRepository.deleteAnotherNamesById(updatedLocality.getId());
+        if (locality.getAnotherNames() != null) {
+            locality.getAnotherNames().forEach(an -> localityRepository.insertAnotherName(updatedLocality.getId(), an));
+        }
+        updateLinks(updatedLocality, locality);
+        entityManager.clear();
+        return this.findFullInfoById(updatedLocality.getId());
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(readOnly = true)
     public Locality findFullInfoById(Long id) {
         Locality locality = localityRepository.findFullInfoById(id).orElse(null);
         if (locality == null) return null;
@@ -160,6 +117,7 @@ public class LocalityDAOImpl implements LocalityDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Locality> filter(LocalityFilterDTO filter) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Locality> cq = cb.createQuery(Locality.class);
@@ -178,15 +136,56 @@ public class LocalityDAOImpl implements LocalityDAO {
         return entityManager.createQuery(cq).getResultList();
     }
 
-    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Locality saveOrFindIfExist(Locality locality) {
-        if (locality == null || locality.getName() == null || locality.getName().isEmpty()) return null;
-        if (locality.getId() == null) {
-            return localityRepository.findLocality(locality.getName(), locality.getType(), locality.getAddress())
-                    .or(() -> Optional.of(localityRepository.save(locality)))
-                    .orElseThrow();
-        }
-        return localityRepository.findById(locality.getId()).orElseThrow();
+    protected void updateLinks(Locality existInfo, Locality newInfo) {
+
+        christeningHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getChristenings(),
+                newInfo.getChristenings(),
+                Christening::getId,
+                christeningRepository,
+                christeningRepository::updateLocalityIdById);
+
+        deathHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getDeaths(),
+                newInfo.getDeaths(),
+                Death::getId,
+                deathRepository,
+                deathRepository::updateLocalityIdById);
+
+        marriageHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getMarriagesWithWifeLocality(),
+                newInfo.getMarriagesWithWifeLocality(),
+                Marriage::getId,
+                marriageRepository,
+                marriageRepository::updateWifeLocalityIdById);
+
+        marriageHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getMarriagesWithHusbandLocality(),
+                newInfo.getMarriagesWithHusbandLocality(),
+                Marriage::getId,
+                marriageRepository,
+                marriageRepository::updateHusbandLocalityIdById);
+
+        personHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getPersonsWithDeathLocality(),
+                newInfo.getPersonsWithDeathLocality(),
+                Person::getId,
+                personRepository,
+                personRepository::updateDeathLocalityIdById);
+
+        personHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getPersonsWithBirthLocality(),
+                newInfo.getPersonsWithBirthLocality(),
+                Person::getId,
+                personRepository,
+                personRepository::updateBirthLocalityIdById);
+
     }
 }

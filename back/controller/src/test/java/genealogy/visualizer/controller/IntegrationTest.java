@@ -47,9 +47,7 @@ import org.springframework.util.MimeType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import static genealogy.visualizer.config.EasyRandomParamsBuilder.getGeneratorParams;
 import static org.jeasy.random.FieldPredicates.named;
@@ -145,16 +143,6 @@ class IntegrationTest {
 
     static EasyRandom generator;
 
-    final Set<Long> localityIds = new HashSet<>();
-    final Set<Long> archiveIds = new HashSet<>();
-    final Set<Long> archiveDocumentIds = new HashSet<>();
-    final Set<Long> personIds = new HashSet<>();
-    final Set<Long> christeningIds = new HashSet<>();
-    final Set<Long> deathIds = new HashSet<>();
-    final Set<Long> marriageIds = new HashSet<>();
-    final Set<Long> familyRevisionIds = new HashSet<>();
-    final Set<Long> userIds = new HashSet<>();
-
     static {
         EasyRandomParameters parameters = getGeneratorParams()
                 .randomize(named("id").and(ofType(Long.class)), () -> null)
@@ -174,30 +162,26 @@ class IntegrationTest {
         userExistingPassword = userExisting.getPassword();
         userExisting.setPassword(passwordEncoder.encode(userExistingPassword));
         userExisting = userRepository.save(userExisting);
-        userIds.add(userExisting.getId());
         localityExisting = generator.nextObject(genealogy.visualizer.entity.Locality.class);
         localityExisting.setChristenings(Collections.emptyList());
         localityExisting.setPersonsWithBirthLocality(Collections.emptyList());
         localityExisting.setPersonsWithDeathLocality(Collections.emptyList());
         localityExisting = localityRepository.save(localityExisting);
-        localityIds.add(localityExisting.getId());
         archiveExisting = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveExisting = archiveRepository.saveAndFlush(archiveExisting);
-        archiveIds.add(archiveExisting.getId());
         archiveDocumentExisting = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         archiveDocumentExisting.setArchive(archiveExisting);
         archiveDocumentExisting = archiveDocumentRepository.saveAndFlush(archiveDocumentExisting);
-        archiveDocumentIds.add(archiveDocumentExisting.getId());
         System.out.println("----------------------Start test------------------------");
     }
 
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        archiveDocumentRepository.deleteAllById(archiveDocumentIds);
-        archiveRepository.deleteAllById(archiveIds);
-        localityRepository.deleteAllById(localityIds);
-        userRepository.deleteAllById(userIds);
+        archiveDocumentRepository.deleteAll();
+        archiveRepository.deleteAll();
+        localityRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     void postUnauthorizedRequest(String path, String requestJson) throws Exception {

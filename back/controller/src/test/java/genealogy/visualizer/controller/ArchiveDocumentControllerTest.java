@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.ArchiveDocument;
 import genealogy.visualizer.api.model.ArchiveDocumentFilter;
 import genealogy.visualizer.api.model.ArchiveDocumentType;
@@ -60,11 +59,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         List<EasyMarriage> marriagesSave = generator.objects(EasyMarriage.class, generator.nextInt(5, 10)).toList();
         archiveDocumentSave.setMarriages(marriagesSave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(archiveDocumentSave));
-        ArchiveDocument response = getArchiveDocumentFromJson(responseJson);
+        ArchiveDocument response = objectMapper.readValue(responseJson, ArchiveDocument.class);
         assertNotNull(response);
         assertArchiveDocument(response, archiveDocumentSave);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        ArchiveDocument responseGet = getArchiveDocumentFromJson(responseJsonGet);
+        ArchiveDocument responseGet = objectMapper.readValue(responseJsonGet, ArchiveDocument.class);
         assertNotNull(responseGet);
         assertArchiveDocument(responseGet, archiveDocumentSave);
     }
@@ -115,11 +114,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         });
         archiveDocumentSave.setMarriages(marriagesSave);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveDocumentSave));
-        ArchiveDocument response = getArchiveDocumentFromJson(responseJson);
+        ArchiveDocument response = objectMapper.readValue(responseJson, ArchiveDocument.class);
         assertNotNull(response);
         assertArchiveDocument(response, archiveDocumentSave);
         String responseJsonGet = getRequest(PATH + "/" + archiveDocumentSave.getId());
-        ArchiveDocument responseGet = getArchiveDocumentFromJson(responseJsonGet);
+        ArchiveDocument responseGet = objectMapper.readValue(responseJsonGet, ArchiveDocument.class);
         assertNotNull(responseGet);
         assertArchiveDocument(responseGet, archiveDocumentSave);
     }
@@ -137,11 +136,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setMarriages(Collections.emptyList());
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveDocumentSave));
-        ArchiveDocument response = getArchiveDocumentFromJson(responseJson);
+        ArchiveDocument response = objectMapper.readValue(responseJson, ArchiveDocument.class);
         assertNotNull(response);
         assertArchiveDocument(response, archiveDocumentSave);
         String responseJsonGet = getRequest(PATH + "/" + archiveDocumentSave.getId());
-        ArchiveDocument responseGet = getArchiveDocumentFromJson(responseJsonGet);
+        ArchiveDocument responseGet = objectMapper.readValue(responseJsonGet, ArchiveDocument.class);
         assertNotNull(responseGet);
         assertArchiveDocument(responseGet, archiveDocumentSave);
     }
@@ -165,7 +164,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.ArchiveDocument archiveDocument = generateRandomExistArchiveDocument();
         String responseJson = getRequest(PATH + "/" + archiveDocument.getId());
-        ArchiveDocument response = getArchiveDocumentFromJson(responseJson);
+        ArchiveDocument response = objectMapper.readValue(responseJson, ArchiveDocument.class);
         assertNotNull(response);
         assertEquals(response.getId(), archiveDocument.getId());
         assertArchiveDocument(response, archiveDocument);
@@ -205,7 +204,6 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
             }
         }
         List<genealogy.visualizer.entity.ArchiveDocument> archiveDocumentsExist = archiveDocumentRepository.saveAllAndFlush(archiveDocumentsSave);
-        archiveDocumentsExist.forEach(ad -> archiveDocumentIds.add(ad.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyArchiveDocument> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyArchiveDocument.class));
         assertNotNull(response);
@@ -243,41 +241,11 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        christeningRepository.deleteAllById(christeningIds);
-        deathRepository.deleteAllById(deathIds);
-        marriageRepository.deleteAllById(marriageIds);
-        familyRevisionRepository.deleteAllById(familyRevisionIds);
-        archiveDocumentIds.forEach(id -> archiveDocumentDAO.delete(id));
+        christeningRepository.deleteAll();
+        deathRepository.deleteAll();
+        marriageRepository.deleteAll();
+        familyRevisionRepository.deleteAll();
         super.tearDown();
-    }
-
-    private ArchiveDocument getArchiveDocumentFromJson(String responseJson) throws JsonProcessingException {
-        ArchiveDocument response = objectMapper.readValue(responseJson, ArchiveDocument.class);
-        if (response != null) {
-            if (response.getArchive() != null) {
-                archiveIds.add(response.getArchive().getId());
-            }
-            if (response.getNextRevision() != null) {
-                archiveDocumentIds.add(response.getNextRevision().getId());
-            }
-            if (response.getPreviousRevisions() != null) {
-                response.getPreviousRevisions().forEach(archiveDocument -> archiveDocumentIds.add(archiveDocument.getId()));
-            }
-            if (response.getFamilyRevisions() != null) {
-                response.getFamilyRevisions().forEach(fr -> familyRevisionIds.add(fr.getId()));
-            }
-            if (response.getChristenings() != null) {
-                response.getChristenings().forEach(c -> christeningIds.add(c.getId()));
-            }
-            if (response.getDeaths() != null) {
-                response.getDeaths().forEach(d -> deathIds.add(d.getId()));
-            }
-            if (response.getMarriages() != null) {
-                response.getMarriages().forEach(m -> marriageIds.add(m.getId()));
-            }
-            archiveDocumentIds.add(response.getId());
-        }
-        return response;
     }
 
     protected static void assertArchiveDocument(ArchiveDocument archiveDocument1, ArchiveDocument archiveDocument2) {
@@ -422,7 +390,6 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
         genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        archiveIds.add(archiveExist.getId());
 
         genealogy.visualizer.entity.ArchiveDocument nextRevisionSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         nextRevisionSave.setArchive(archiveExist);
@@ -432,8 +399,6 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         nextRevisionSave.setMarriages(Collections.emptyList());
         nextRevisionSave.setDeaths(Collections.emptyList());
         nextRevisionSave.setNextRevision(null);
-        genealogy.visualizer.entity.ArchiveDocument nextRevisionExist = archiveDocumentRepository.saveAndFlush(nextRevisionSave);
-        archiveDocumentIds.add(nextRevisionExist.getId());
 
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         archiveDocumentSave.setArchive(archiveExist);
@@ -442,18 +407,15 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         archiveDocumentSave.setChristenings(Collections.emptyList());
         archiveDocumentSave.setMarriages(Collections.emptyList());
         archiveDocumentSave.setDeaths(Collections.emptyList());
-        archiveDocumentSave.setNextRevision(nextRevisionExist);
+        archiveDocumentSave.setNextRevision(archiveDocumentRepository.saveAndFlush(nextRevisionSave));
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-        archiveDocumentIds.add(archiveDocumentExist.getId());
 
         List<genealogy.visualizer.entity.ArchiveDocument> previousRevisionsSave = generator.objects(genealogy.visualizer.entity.ArchiveDocument.class, generator.nextInt(5, 10)).toList();
         List<genealogy.visualizer.entity.ArchiveDocument> previousRevisionsExist = new ArrayList<>(previousRevisionsSave.size());
         for (genealogy.visualizer.entity.ArchiveDocument entity : previousRevisionsSave) {
             entity.setArchive(archiveExist);
             entity.setNextRevision(archiveDocumentExist);
-            genealogy.visualizer.entity.ArchiveDocument result = archiveDocumentRepository.saveAndFlush(entity);
-            archiveDocumentIds.add(result.getId());
-            previousRevisionsExist.add(result);
+            previousRevisionsExist.add(archiveDocumentRepository.saveAndFlush(entity));
         }
         archiveDocumentExist.setPreviousRevisions(previousRevisionsExist);
 
@@ -461,9 +423,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         List<genealogy.visualizer.entity.FamilyRevision> familyRevisionsExist = new ArrayList<>(familyRevisionsSave.size());
         for (genealogy.visualizer.entity.FamilyRevision entity : familyRevisionsSave) {
             entity.setArchiveDocument(archiveDocumentExist);
-            genealogy.visualizer.entity.FamilyRevision result = familyRevisionRepository.saveAndFlush(entity);
-            familyRevisionIds.add(result.getId());
-            familyRevisionsExist.add(result);
+            familyRevisionsExist.add(familyRevisionRepository.saveAndFlush(entity));
         }
         archiveDocumentExist.setFamilyRevisions(familyRevisionsExist);
 
@@ -473,9 +433,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
             entity.getGodParents().forEach(gp -> localityMapper.toDTO(localityExisting));
             entity.setArchiveDocument(archiveDocumentExist);
             entity.setLocality(localityExisting);
-            genealogy.visualizer.entity.Christening result = christeningRepository.saveAndFlush(entity);
-            christeningIds.add(result.getId());
-            christeningsExist.add(entity);
+            christeningsExist.add(christeningRepository.saveAndFlush(entity));
         }
         archiveDocumentExist.setChristenings(christeningsExist);
 
@@ -485,9 +443,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
             entity.setArchiveDocument(archiveDocumentExist);
             entity.setWifeLocality(localityExisting);
             entity.setHusbandLocality(localityExisting);
-            genealogy.visualizer.entity.Marriage result = marriageRepository.saveAndFlush(entity);
-            marriageIds.add(result.getId());
-            marriagesExist.add(entity);
+            marriagesExist.add(marriageRepository.saveAndFlush(entity));
         }
         archiveDocumentExist.setMarriages(marriagesExist);
 
@@ -496,9 +452,7 @@ class ArchiveDocumentControllerTest extends IntegrationTest {
         for (genealogy.visualizer.entity.Death entity : deathsSave) {
             entity.setArchiveDocument(archiveDocumentExist);
             entity.setLocality(localityExisting);
-            genealogy.visualizer.entity.Death result = deathRepository.saveAndFlush(entity);
-            deathIds.add(result.getId());
-            deathsExist.add(entity);
+            deathsExist.add(deathRepository.saveAndFlush(entity));
         }
         archiveDocumentExist.setDeaths(deathsExist);
         return archiveDocumentExist;

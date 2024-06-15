@@ -139,8 +139,8 @@ public class Marriage implements Serializable {
 
     @ElementCollection(targetClass = Witness.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "WITNESS",
-            joinColumns = @JoinColumn(name = "WITNESS_ID",
-                    foreignKey = @ForeignKey(name = "FK_WITNESS")))
+            joinColumns = @JoinColumn(name = "MARRIAGE_ID",
+                    foreignKey = @ForeignKey(name = "FK_MARRIAGE")))
     @AssociationOverrides({
             @AssociationOverride(name = "locality",
                     joinColumns = @JoinColumn(name = "LOCALITY_ID"),
@@ -156,10 +156,10 @@ public class Marriage implements Serializable {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "PERSON_MARRIAGE",
-            joinColumns = @JoinColumn(name = "PERSON_ID",
+            joinColumns = @JoinColumn(name = "MARRIAGE_ID",
                     referencedColumnName = "ID",
-                    foreignKey = @ForeignKey(name = "FK_PERSON_ID_MARRIAGE_ID")),
-            inverseJoinColumns = @JoinColumn(name = "MARRIAGE_ID", referencedColumnName = "ID"))
+                    foreignKey = @ForeignKey(name = "FK_MARRIAGE_ID_PERSON_ID")),
+            inverseJoinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "ID"))
     private List<Person> persons = new ArrayList<>();
 
     public Marriage() {
@@ -312,12 +312,8 @@ public class Marriage implements Serializable {
         this.persons = persons;
     }
 
-    public void addPerson(Person person) {
-        if (this.persons == null) {
-            this.persons = new ArrayList<>();
-        }
-        if (!this.persons.contains(person)) {
-            this.persons.add(person);
-        }
+    public Marriage clone() {
+        return new Marriage(id, date, husbandLocality, husbandsFather, husband, husbandAge, husbandMarriageNumber,
+                wifeLocality, wifesFather, wife, wifeAge, wifeMarriageNumber, comment, witnesses, archiveDocument, persons);
     }
 }

@@ -24,8 +24,6 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
     @Autowired
     private PersonRepository personRepository;
 
-    private final Set<Long> personIds = new HashSet<>();
-
     @Test
     void getGenealogyVisualizeGraphTest() throws Exception {
         List<Person> persons = generator.objects(Person.class, generator.nextInt(10, 15)).toList();
@@ -56,7 +54,6 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
         graphLinks.add(new GraphLinks().source(persons.get(1).getId()).target(persons.get(2).getId()));
         persons = personRepository.saveAllAndFlush(persons);
         persons = persons.stream().sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).toList();
-        personIds.addAll(persons.stream().map(Person::getId).toList());
         String responseJson = getRequest("/genealogy-visualizer/graph", objectMapper.writeValueAsString(new GenealogyVisualizeRq()));
         GenealogyVisualizeGraph response = objectMapper.readValue(responseJson, GenealogyVisualizeGraph.class);
         assertNotNull(response);
@@ -75,7 +72,7 @@ class GenealogyVisualizeControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        personRepository.deleteAllById(personIds);
+        personRepository.deleteAll();
         super.tearDown();
     }
 }

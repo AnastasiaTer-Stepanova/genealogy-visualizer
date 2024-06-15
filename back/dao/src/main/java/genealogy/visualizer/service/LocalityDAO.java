@@ -17,6 +17,4 @@ public interface LocalityDAO {
 
     List<Locality> filter(LocalityFilterDTO filter);
 
-    Locality saveOrFindIfExist(Locality archiveDocument);
-
 }

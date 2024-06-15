@@ -317,4 +317,10 @@ public class FamilyRevision implements Serializable {
     public void setPerson(Person person) {
         this.person = person;
     }
+
+    public FamilyRevision clone() {
+        return new FamilyRevision(id, partner, familyRevisionNumber, nextFamilyRevisionNumber, listNumber, isHeadOfYard,
+                isLastNameClearlyStated, fullName, age, ageInNextRevision, departed, arrived, familyGeneration, comment,
+                sex, relative, anotherNames, archiveDocument, person);
+    }
 }

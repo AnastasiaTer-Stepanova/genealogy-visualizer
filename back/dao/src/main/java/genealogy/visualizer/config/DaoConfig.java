@@ -60,9 +60,10 @@ public class DaoConfig {
 
     @Bean
     public FamilyRevisionDAO familyRevisionDAO(@Autowired FamilyRevisionRepository familyRevisionRepository,
-                                               ArchiveDocumentDAO archiveDocumentDAO,
+                                               @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                               @Autowired PersonRepository personRepository,
                                                @Autowired EntityManager entityManager) {
-        return new FamilyRevisionDAOImpl(familyRevisionRepository, archiveDocumentDAO, entityManager);
+        return new FamilyRevisionDAOImpl(familyRevisionRepository, archiveDocumentRepository, personRepository, entityManager);
     }
 
     @Bean
@@ -112,13 +113,19 @@ public class DaoConfig {
 
     @Bean
     public PersonDAO personDAO(@Autowired PersonRepository personRepository,
-                               LocalityDAO localityDAO,
-                               ChristeningDAO christeningDAO,
-                               DeathDAO deathDAO,
-                               MarriageDAO marriageDAO,
-                               FamilyRevisionDAO familyRevisionDAO,
+                               @Autowired LocalityRepository localityRepository,
+                               @Autowired ChristeningRepository christeningRepository,
+                               @Autowired DeathRepository deathRepository,
+                               @Autowired MarriageRepository marriageRepository,
+                               @Autowired FamilyRevisionRepository familyRevisionRepository,
                                @Autowired EntityManager entityManager) {
-        return new PersonDAOImpl(personRepository, localityDAO, christeningDAO, deathDAO, marriageDAO, familyRevisionDAO, entityManager);
+        return new PersonDAOImpl(personRepository,
+                localityRepository,
+                christeningRepository,
+                deathRepository,
+                marriageRepository,
+                familyRevisionRepository,
+                entityManager);
     }
 
     @Bean

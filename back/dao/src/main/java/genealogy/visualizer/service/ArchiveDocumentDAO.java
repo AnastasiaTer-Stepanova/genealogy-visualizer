@@ -21,5 +21,4 @@ public interface ArchiveDocumentDAO {
 
     ArchiveDocument findArchiveDocumentWithFamilyRevisionByNumberFamily(Long archiveDocumentId, short familyNumber);
 
-    void updateNextRevisionDocument(ArchiveDocument archiveDocument);
 }

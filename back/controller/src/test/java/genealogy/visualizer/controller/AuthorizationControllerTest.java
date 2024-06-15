@@ -111,8 +111,6 @@ class AuthorizationControllerTest extends IntegrationTest {
 
     @AfterEach
     void tearDown() {
-        System.out.println("----------------------End test------------------------");
-        userRepository.deleteAll();
         super.tearDown();
     }
 

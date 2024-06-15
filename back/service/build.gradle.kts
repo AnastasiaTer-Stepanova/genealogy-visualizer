@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security:3.2.5")
     implementation("org.springframework.boot:spring-boot-starter:3.2.5")
     implementation("org.springframework.data:spring-data-commons:3.2.5")
+    implementation("org.springframework:spring-tx:6.1.6")
 
     testImplementation(testFixtures(project(":back:dao")))
     testImplementation("jakarta.persistence:jakarta.persistence-api:3.1.0") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED

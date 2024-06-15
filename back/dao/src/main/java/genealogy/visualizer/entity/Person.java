@@ -79,12 +79,12 @@ public class Person implements Serializable {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "PERSON_PARTNER",
-            joinColumns = @JoinColumn(name = "PARTNER_ID",
+            joinColumns = @JoinColumn(name = "PERSON_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PARTNER_ID_PERSON_ID")),
             uniqueConstraints = @UniqueConstraint(name = "UK_PARTNER_ID_PERSON_ID",
                     columnNames = {"PARTNER_ID", "PERSON_ID"}),
-            inverseJoinColumns = @JoinColumn(name = "PERSON_ID",
+            inverseJoinColumns = @JoinColumn(name = "PARTNER_ID",
                     referencedColumnName = "ID",
                     foreignKey = @ForeignKey(name = "FK_PERSON_ID_PARTNER_ID")))
     private List<Person> partners = new ArrayList<>();
@@ -115,12 +115,12 @@ public class Person implements Serializable {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "PERSON_MARRIAGE",
-            joinColumns = @JoinColumn(name = "MARRIAGE_ID",
+            joinColumns = @JoinColumn(name = "PERSON_ID",
                     referencedColumnName = "ID",
-                    foreignKey = @ForeignKey(name = "FK_MARRIAGE_ID_PERSON_ID")),
+                    foreignKey = @ForeignKey(name = "FK_PERSON_ID_MARRIAGE_ID")),
             uniqueConstraints = @UniqueConstraint(name = "UK_MARRIAGE_ID_PERSON_ID",
                     columnNames = {"PERSON_ID", "MARRIAGE_ID"}),
-            inverseJoinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "ID"))
+            inverseJoinColumns = @JoinColumn(name = "MARRIAGE_ID", referencedColumnName = "ID"))
     private List<Marriage> marriages = new ArrayList<>();
 
     public Person() {
@@ -262,5 +262,10 @@ public class Person implements Serializable {
 
     public void setMarriages(List<Marriage> marriages) {
         this.marriages = marriages;
+    }
+
+    public Person clone() {
+        return new Person(id, fullName, birthDate, deathDate, birthLocality, deathLocality, sex, partners, children,
+                parents, christening, death, revisions, marriages);
     }
 }

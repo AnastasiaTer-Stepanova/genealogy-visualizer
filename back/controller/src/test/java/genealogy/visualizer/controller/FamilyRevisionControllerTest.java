@@ -1,9 +1,9 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.ArchiveWithFamilyMembers;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyFamilyMember;
+import genealogy.visualizer.api.model.EasyPerson;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.FamilyFilter;
 import genealogy.visualizer.api.model.FamilyMember;
@@ -43,15 +43,24 @@ class FamilyRevisionControllerTest extends IntegrationTest {
 
     @Test
     void saveTest() throws Exception {
-        EasyArchiveDocument archiveDocumentSave = generator.nextObject(EasyArchiveDocument.class);
         FamilyMember revisionSave = generator.nextObject(FamilyMember.class);
+        EasyArchiveDocument archiveDocumentSave = generator.nextObject(EasyArchiveDocument.class);
         revisionSave.setId(null);
         revisionSave.setArchiveDocument(archiveDocumentSave);
-        String requestJson = objectMapper.writeValueAsString(revisionSave);
-        String responseJson = postRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        EasyFamilyMember partnerSave = generator.nextObject(EasyFamilyMember.class);
+        partnerSave.setId(null);
+        revisionSave.setPartner(partnerSave);
+        EasyPerson personSave = generator.nextObject(EasyPerson.class);
+        personSave.setId(null);
+        revisionSave.setPerson(personSave);
+        String responseJson = postRequest(PATH, objectMapper.writeValueAsString(revisionSave));
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
+        String responseJsonGet = getRequest(PATH + "/" + response.getId());
+        FamilyMember responseGet = objectMapper.readValue(responseJsonGet, FamilyMember.class);
+        assertNotNull(responseGet);
+        assertFamilyRevision(responseGet, revisionSave);
     }
 
     @Test
@@ -64,7 +73,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setPartner(revisionPartnerSave);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
         assertNotNull(revisionSave.getPartner());
@@ -80,7 +89,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setArchiveDocument(archiveDocumentSave);
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
     }
@@ -92,7 +101,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setArchiveDocument(easyArchiveDocumentMapper.toDTO(archiveDocumentExisting));
         String requestJson = objectMapper.writeValueAsString(revisionSave);
         String responseJson = postRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionSave);
     }
@@ -103,7 +112,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setArchiveDocument(archiveDocumentExisting);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
         String responseJson = getRequest(PATH + "/" + revisionExist.getId());
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertEquals(response.getId(), revisionExist.getId());
         assertFamilyRevision(response, revisionExist);
@@ -123,19 +132,26 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         genealogy.visualizer.entity.FamilyRevision revisionSave = generator.nextObject(genealogy.visualizer.entity.FamilyRevision.class);
         revisionSave.setArchiveDocument(archiveDocumentExisting);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAndFlush(revisionSave);
-        FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist);
-        EasyFamilyMember revisionPartnerSave = generator.nextObject(EasyFamilyMember.class);
-        revisionPartnerSave.setId(null);
-        revisionUpdate.setPartner(revisionPartnerSave);
+        FamilyMember revisionUpdate = generator.nextObject(FamilyMember.class);
+        revisionUpdate.setId(revisionExist.getId());
+        EasyFamilyMember revisionPartnerUpdate = generator.nextObject(EasyFamilyMember.class);
+        revisionUpdate.setPartner(revisionPartnerUpdate);
         revisionUpdate.setAnotherNames(generator.objects(String.class, 4).toList());
-        String requestJson = objectMapper.writeValueAsString(revisionUpdate);
-        String responseJson = putRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        EasyPerson personUpdate = generator.nextObject(EasyPerson.class);
+        revisionUpdate.setPerson(personUpdate);
+        EasyArchiveDocument archiveDocumentUpdate = generator.nextObject(EasyArchiveDocument.class);
+        revisionUpdate.setArchiveDocument(archiveDocumentUpdate);
+        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(revisionUpdate));
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionUpdate);
         assertNotNull(revisionUpdate.getPartner());
         assertNotNull(response.getPartner());
         assertFamilyRevision(response.getPartner(), revisionUpdate.getPartner());
+        String responseJsonGet = getRequest(PATH + "/" + response.getId());
+        FamilyMember responseGet = objectMapper.readValue(responseJsonGet, FamilyMember.class);
+        assertNotNull(responseGet);
+        assertFamilyRevision(responseGet, revisionUpdate);
     }
 
     @Test
@@ -162,16 +178,19 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         revisionSave.setPartner(partnerRevisionSave);
         partnerRevisionSave.setPartner(revisionSave);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAllAndFlush(List.of(revisionSave, partnerRevisionSave)).getFirst();
-        familyRevisionIds.add(revisionExist.getPartner().getId());
         FamilyMember revisionUpdate = familyRevisionMapper.toDTO(revisionExist);
         revisionUpdate.setPartner(null);
         revisionUpdate.setAnotherNames(List.of(revisionUpdate.getAnotherNames().getFirst(), generator.nextObject(String.class)));
-        String requestJson = objectMapper.writeValueAsString(revisionUpdate);
-        String responseJson = putRequest(PATH, requestJson);
-        FamilyMember response = getFamilyRevisionFromJson(responseJson);
+        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(revisionUpdate));
+        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
         assertNotNull(response);
         assertFamilyRevision(response, revisionUpdate);
         assertNull(revisionUpdate.getPartner());
+        assertFamilyRevision(response.getPartner(), revisionUpdate.getPartner());
+        String responseJsonGet = getRequest(PATH + "/" + response.getId());
+        FamilyMember responseGet = objectMapper.readValue(responseJsonGet, FamilyMember.class);
+        assertNotNull(responseGet);
+        assertFamilyRevision(responseGet, revisionUpdate);
     }
 
     @Test
@@ -186,11 +205,10 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         partnerRevisionSave.setPartner(revisionSave);
         genealogy.visualizer.entity.FamilyRevision revisionExist = familyRevisionRepository.saveAllAndFlush(List.of(revisionSave, partnerRevisionSave)).getFirst();
         String responseJson = deleteRequest(PATH + "/" + revisionSave.getId());
-        familyRevisionIds.add(revisionExist.getPartner().getId());
         assertTrue(responseJson.isEmpty());
         assertTrue(familyRevisionRepository.findById(revisionExist.getId()).isEmpty());
         assertFalse(familyRevisionRepository.findById(revisionExist.getPartner().getId()).isEmpty());
-        assertTrue(familyRevisionRepository.getAnotherNames(revisionExist.getId()).isEmpty());
+        assertTrue(familyRevisionRepository.findAnotherNames(revisionExist.getId()).isEmpty());
         assertFalse(archiveDocumentRepository.findById(revisionExist.getArchiveDocument().getId()).isEmpty());
         if (revisionExist.getArchiveDocument().getArchive() != null) {
             assertFalse(archiveRepository.findById(revisionExist.getArchiveDocument().getArchive().getId()).isEmpty());
@@ -224,7 +242,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         FamilyFilter filterRequest = new FamilyFilter((int) familyRevisionNumber, archiveDocumentExisting.getId(), false, true);
         String requestJson = objectMapper.writeValueAsString(filterRequest);
         String responseJson = getRequest(PATH + "/family", requestJson);
-        List<FamilyMemberFullInfo> response = getFamilyMemberFullInfosFromJson(responseJson);
+        List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
         assertNotNull(response);
         List<genealogy.visualizer.entity.FamilyRevision> existFamilyRevisionList = familyRevisionList.stream()
                 .filter(familyRevision -> familyRevision.getFamilyRevisionNumber().equals(familyRevisionNumber) &&
@@ -250,7 +268,7 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         ErrorResponse response = objectMapper.readValue(responseJson, ErrorResponse.class);
         assertNotNull(response);
         assertEquals(response.getCode(), HttpStatus.NOT_FOUND.value());
-        assertEquals(response.getMessage(),  NotFoundException.MESSAGE);
+        assertEquals(response.getMessage(), NotFoundException.MESSAGE);
     }
 
     @Test
@@ -276,30 +294,25 @@ class FamilyRevisionControllerTest extends IntegrationTest {
         person.setChildren(null);
         person.setId(null);
         person = personRepository.saveAndFlush(person);
-        personIds.add(person.getId());
         genealogy.visualizer.entity.ArchiveDocument adParent = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adParent.setArchive(archiveExisting);
         adParent = archiveDocumentRepository.saveAndFlush(adParent);
         Long adParentId = adParent.getId();
-        archiveDocumentIds.add(adParentId);
         genealogy.visualizer.entity.ArchiveDocument adChildLevel1 = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adChildLevel1.setNextRevision(adParent);
         adChildLevel1.setArchive(archiveExisting);
         adChildLevel1 = archiveDocumentRepository.saveAndFlush(adChildLevel1);
         Long adChildLevel1Id = adChildLevel1.getId();
-        archiveDocumentIds.add(adChildLevel1Id);
         genealogy.visualizer.entity.ArchiveDocument adSecondChildLevel1 = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adSecondChildLevel1.setNextRevision(adParent);
         adSecondChildLevel1.setArchive(archiveExisting);
         adSecondChildLevel1 = archiveDocumentRepository.saveAndFlush(adSecondChildLevel1);
         Long adSecondChildLevel1Id = adSecondChildLevel1.getId();
-        archiveDocumentIds.add(adSecondChildLevel1Id);
         genealogy.visualizer.entity.ArchiveDocument adChildLevel2 = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
         adChildLevel2.setNextRevision(adChildLevel1);
         adChildLevel2.setArchive(archiveExisting);
         adChildLevel2 = archiveDocumentRepository.saveAndFlush(adChildLevel2);
         Long adChildLevel2Id = adChildLevel2.getId();
-        archiveDocumentIds.add(adChildLevel2Id);
         List<genealogy.visualizer.entity.FamilyRevision> familyRevisionList = generator.objects(genealogy.visualizer.entity.FamilyRevision.class, generator.nextInt(20, 30)).toList();
         short familyRevisionNumberParent = (short) generator.nextInt(25000, 30000);
         short familyRevisionNumberChildLevel1 = (short) generator.nextInt(20000, 25000);
@@ -479,12 +492,10 @@ class FamilyRevisionControllerTest extends IntegrationTest {
                 archiveDocumentSave.setDeaths(Collections.emptyList());
                 archiveDocumentSave.setNextRevision(null);
                 genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                archiveDocumentIds.add(archiveDocumentExist.getId());
                 familyRevision.setArchiveDocument(archiveDocumentExist);
             }
         }
         List<genealogy.visualizer.entity.FamilyRevision> familyRevisionsExist = familyRevisionRepository.saveAllAndFlush(familyRevisionsSave);
-        familyRevisionsExist.forEach(fr -> familyRevisionIds.add(fr.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyFamilyMember> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyFamilyMember.class));
         assertNotNull(response);
@@ -523,45 +534,9 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        familyRevisionRepository.deleteAllById(familyRevisionIds);
-        personRepository.deleteAllById(personIds);
+        familyRevisionRepository.deleteAll();
+        personRepository.deleteAll();
         super.tearDown();
-    }
-
-    private List<FamilyMemberFullInfo> getFamilyMemberFullInfosFromJson(String responseJson) throws JsonProcessingException {
-        List<FamilyMemberFullInfo> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, FamilyMemberFullInfo.class));
-        if (response != null) {
-            for (FamilyMemberFullInfo fmFullInfo : response) {
-                if (fmFullInfo.getFamilyMember() != null) {
-                    familyRevisionIds.add(fmFullInfo.getFamilyMember().getId());
-                }
-                if (fmFullInfo.getAnotherFamilies() != null && !fmFullInfo.getAnotherFamilies().isEmpty()) {
-                    for (ArchiveWithFamilyMembers fm : fmFullInfo.getAnotherFamilies()) {
-                        if (fm.getArchive() != null) {
-                            archiveIds.add(fm.getArchive().getId());
-                        }
-                        if (fm.getFamilies() != null && !fm.getFamilies().isEmpty()) {
-                            for (EasyFamilyMember efm : fm.getFamilies()) {
-                                familyRevisionIds.add(efm.getId());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return response;
-    }
-
-    private FamilyMember getFamilyRevisionFromJson(String responseJson) throws JsonProcessingException {
-        FamilyMember response = objectMapper.readValue(responseJson, FamilyMember.class);
-        if (response != null) {
-            if (response.getPartner() != null) {
-                familyRevisionIds.add(response.getPartner().getId());
-            }
-            familyRevisionIds.add(response.getId());
-            archiveDocumentIds.add(response.getArchiveDocument().getId());
-        }
-        return response;
     }
 
     protected static void assertFamilyRevision(FamilyMember familyRevision, EasyFamilyMember easyFamilyMember) {
@@ -586,6 +561,11 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     protected static void assertFamilyRevision(EasyFamilyMember familyRevision, EasyFamilyMember easyFamilyMember) {
+        if (familyRevision == null || easyFamilyMember == null) {
+            assertNull(familyRevision);
+            assertNull(easyFamilyMember);
+            return;
+        }
         assertNotNull(familyRevision);
         assertNotNull(easyFamilyMember);
         assertEquals(familyRevision.getFamilyRevisionNumber(), easyFamilyMember.getFamilyRevisionNumber());
@@ -702,26 +682,17 @@ class FamilyRevisionControllerTest extends IntegrationTest {
     }
 
     private List<genealogy.visualizer.entity.FamilyRevision> generateFamilyRevisionList(List<genealogy.visualizer.entity.FamilyRevision> familyRevisionList) {
-        List<genealogy.visualizer.entity.Archive> archives = archiveRepository.saveAllAndFlush(
+        archiveRepository.saveAllAndFlush(
                 familyRevisionList.stream()
                         .map(familyRevision -> familyRevision.getArchiveDocument().getArchive())
                         .filter(Objects::nonNull)
                         .toList());
-        archiveIds.addAll(archives.stream()
-                .map(genealogy.visualizer.entity.Archive::getId)
-                .toList());
-        List<genealogy.visualizer.entity.ArchiveDocument> archiveDocuments = archiveDocumentRepository.saveAllAndFlush(
+        archiveDocumentRepository.saveAllAndFlush(
                 familyRevisionList.stream()
                         .map(genealogy.visualizer.entity.FamilyRevision::getArchiveDocument)
                         .filter(Objects::nonNull)
                         .toList());
-        archiveDocumentIds.addAll(archiveDocuments.stream()
-                .map(genealogy.visualizer.entity.ArchiveDocument::getId)
-                .toList());
         familyRevisionList = familyRevisionRepository.saveAllAndFlush(familyRevisionList);
-        familyRevisionIds.addAll(familyRevisionList.stream()
-                .map(genealogy.visualizer.entity.FamilyRevision::getId)
-                .toList());
         return familyRevisionList;
     }
 }

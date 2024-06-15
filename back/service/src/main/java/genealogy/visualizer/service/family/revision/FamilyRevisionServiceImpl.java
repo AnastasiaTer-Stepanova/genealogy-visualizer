@@ -15,6 +15,7 @@ import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,8 +68,10 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         if (familyRevision == null || familyRevision.getId() == null) {
             throw new BadRequestException("FamilyMember must have an id");
         }
-        genealogy.visualizer.entity.FamilyRevision entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision));
-        if (entity == null) {
+        genealogy.visualizer.entity.FamilyRevision entity;
+        try {
+            entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Family revision for update not found");
         }
         return familyRevisionMapper.toDTO(entity);

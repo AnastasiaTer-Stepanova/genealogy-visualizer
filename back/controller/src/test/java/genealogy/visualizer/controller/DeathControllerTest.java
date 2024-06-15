@@ -1,6 +1,5 @@
 package genealogy.visualizer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import genealogy.visualizer.api.model.Death;
 import genealogy.visualizer.api.model.DeathFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
@@ -26,6 +25,7 @@ import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeathControllerTest extends IntegrationTest {
@@ -45,11 +45,11 @@ class DeathControllerTest extends IntegrationTest {
         EasyLocality localitySave = generator.nextObject(EasyLocality.class);
         deathSave.setLocality(localitySave);
         String responseJson = postRequest(PATH, objectMapper.writeValueAsString(deathSave));
-        Death response = getDeathFromJson(responseJson);
+        Death response = objectMapper.readValue(responseJson, Death.class);
         assertNotNull(response);
         assertDeath(response, deathSave);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = getDeathFromJson(responseJsonGet);
+        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
         assertNotNull(responseGet);
         assertDeath(responseGet, deathSave);
     }
@@ -66,11 +66,11 @@ class DeathControllerTest extends IntegrationTest {
         EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
         deathUpdate.setLocality(localityUpdate);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
-        Death response = getDeathFromJson(responseJson);
+        Death response = objectMapper.readValue(responseJson, Death.class);
         assertNotNull(response);
         assertDeath(response, deathUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = getDeathFromJson(responseJsonGet);
+        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
         assertNotNull(responseGet);
         assertDeath(responseGet, deathUpdate);
     }
@@ -84,11 +84,11 @@ class DeathControllerTest extends IntegrationTest {
         deathUpdate.setPerson(null);
         deathUpdate.setLocality(null);
         String responseJson = putRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
-        Death response = getDeathFromJson(responseJson);
+        Death response = objectMapper.readValue(responseJson, Death.class);
         assertNotNull(response);
         assertDeath(response, deathUpdate);
         String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = getDeathFromJson(responseJsonGet);
+        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
         assertNotNull(responseGet);
         assertDeath(responseGet, deathUpdate);
     }
@@ -108,7 +108,7 @@ class DeathControllerTest extends IntegrationTest {
     void getByIdTest() throws Exception {
         genealogy.visualizer.entity.Death deathExist = generateRandomExistDeath();
         String responseJson = getRequest(PATH + "/" + deathExist.getId());
-        Death response = getDeathFromJson(responseJson);
+        Death response = objectMapper.readValue(responseJson, Death.class);
         assertNotNull(response);
         assertEquals(response.getId(), deathExist.getId());
         assertDeath(response, deathExist);
@@ -156,12 +156,10 @@ class DeathControllerTest extends IntegrationTest {
                 archiveDocumentSave.setDeaths(Collections.emptyList());
                 archiveDocumentSave.setNextRevision(null);
                 genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                archiveDocumentIds.add(archiveDocumentExist.getId());
                 death.setArchiveDocument(archiveDocumentExist);
             }
         }
         List<genealogy.visualizer.entity.Death> deathsExist = deathRepository.saveAllAndFlush(deathsSave);
-        deathsExist.forEach(ad -> deathIds.add(ad.getId()));
         String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
         List<EasyDeath> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyDeath.class));
         assertNotNull(response);
@@ -199,28 +197,9 @@ class DeathControllerTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         System.out.println("----------------------End test------------------------");
-        deathIds.forEach(id -> deathDAO.delete(id));
-        personRepository.deleteAllById(personIds);
-        localityRepository.deleteAllById(localityIds);
-        archiveDocumentRepository.deleteAllById(archiveDocumentIds);
+        deathRepository.deleteAll();
+        personRepository.deleteAll();
         super.tearDown();
-    }
-
-    private Death getDeathFromJson(String responseJson) throws JsonProcessingException {
-        Death response = objectMapper.readValue(responseJson, Death.class);
-        if (response != null) {
-            if (response.getArchiveDocument() != null) {
-                archiveDocumentIds.add(response.getArchiveDocument().getId());
-            }
-            if (response.getLocality() != null) {
-                localityIds.add(response.getLocality().getId());
-            }
-            if (response.getPerson() != null) {
-                personIds.add(response.getPerson().getId());
-            }
-            deathIds.add(response.getId());
-        }
-        return response;
     }
 
     static void assertDeath(EasyDeath death1, genealogy.visualizer.entity.Death death2) {
@@ -266,6 +245,11 @@ class DeathControllerTest extends IntegrationTest {
     }
 
     static void assertDeath(EasyDeath death1, EasyDeath death2) {
+        if (death1 == null || death2 == null) {
+            assertNull(death1);
+            assertNull(death2);
+            return;
+        }
         assertNotNull(death1);
         assertNotNull(death2);
         assertEquals(death1.getDate(), death2.getDate());
@@ -280,22 +264,18 @@ class DeathControllerTest extends IntegrationTest {
     private genealogy.visualizer.entity.Death generateRandomExistDeath() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
-        genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        archiveIds.add(archiveExist.getId());
 
         genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentSave.setArchive(archiveExist);
+        archiveDocumentSave.setArchive(archiveRepository.saveAndFlush(archiveSave));
         archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
         archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
         archiveDocumentSave.setChristenings(Collections.emptyList());
         archiveDocumentSave.setMarriages(Collections.emptyList());
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setNextRevision(null);
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-        archiveDocumentIds.add(archiveDocumentExist.getId());
 
         genealogy.visualizer.entity.Death deathSave = generator.nextObject(genealogy.visualizer.entity.Death.class);
-        deathSave.setArchiveDocument(archiveDocumentExist);
+        deathSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
 
         genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
         personSave.setChristening(null);
@@ -307,14 +287,10 @@ class DeathControllerTest extends IntegrationTest {
         personSave.setDeath(null);
         personSave.setDeathLocality(localityExisting);
         personSave.setBirthLocality(localityExisting);
-        genealogy.visualizer.entity.Person personExist = personRepository.saveAndFlush(personSave);
-        deathSave.setPerson(personExist);
-        personIds.add(personExist.getId());
+        deathSave.setPerson(personRepository.saveAndFlush(personSave));
 
         deathSave.setLocality(localityExisting);
-        genealogy.visualizer.entity.Death deathExist = deathRepository.save(deathSave);
-        deathIds.add(deathExist.getId());
-        return deathExist;
+        return deathRepository.save(deathSave);
     }
 
 }

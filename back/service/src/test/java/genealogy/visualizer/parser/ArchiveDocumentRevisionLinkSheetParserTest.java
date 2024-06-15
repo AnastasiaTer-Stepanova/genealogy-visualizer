@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
@@ -55,7 +54,6 @@ class ArchiveDocumentRevisionLinkSheetParserTest extends AbstractTest {
     @Test
     void checkParseTest() throws IOException {
         doReturn(archiveDocuments.getFirst()).when(archiveDocumentDAO).saveOrFindIfExistDocument(any(ArchiveDocument.class));
-        doNothing().when(archiveDocumentDAO).updateNextRevisionDocument(any());
         Sheet sheet = createXSSFWorkbook(archiveDocuments);
         Workbook workbook = sheet.getWorkbook();
         Sheet result = workbook.cloneSheet(0);

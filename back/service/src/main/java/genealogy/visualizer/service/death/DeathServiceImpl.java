@@ -8,6 +8,7 @@ import genealogy.visualizer.mapper.EasyDeathMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.DeathDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +51,10 @@ public class DeathServiceImpl implements DeathService {
         if (death == null || death.getId() == null) {
             throw new BadRequestException("Archive must have an id");
         }
-        genealogy.visualizer.entity.Death entity = deathDAO.update(deathMapper.toEntity(death));
-        if (entity == null) {
+        genealogy.visualizer.entity.Death entity;
+        try {
+            entity = deathDAO.update(deathMapper.toEntity(death));
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Death for update not found");
         }
         return deathMapper.toDTO(entity);
