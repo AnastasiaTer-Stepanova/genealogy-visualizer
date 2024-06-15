@@ -73,7 +73,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         headers.put(FAMILY_GENERATION_COLUMN_NAME_PREFIX + 5, 18);
         headers.put(MALE_COLUMN_NAME, 19);
         headers.put(FEMALE_COLUMN_NAME, 20);
-        sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO);
+        sheetParser = new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Test

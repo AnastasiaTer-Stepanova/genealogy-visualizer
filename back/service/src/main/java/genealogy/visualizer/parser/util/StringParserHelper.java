@@ -3,11 +3,13 @@ package genealogy.visualizer.parser.util;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.enums.LocalityType;
 import genealogy.visualizer.entity.model.FullName;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -22,11 +24,8 @@ import static org.apache.commons.lang3.StringUtils.contains;
 
 public class StringParserHelper {
 
-    private static final Set<String> RELATIVE = Set.of("брат мужа", "муж", "отец", "брат", "племянник", "дядя", "отчим", "дед", "мать",
-                    "свекр", "брат двоюродный", "брат сводный", "сестра близнец", "дядя по мужу")
-            .stream()
-            .sorted(StringParserHelper::sortSet)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    private static final String RELATIVE_PARAM_NAME = "parsing_relative_list";
+
     private static final Set<String> SETTLEMENT = Set.of("слободы", "уезда", "округа");
     private static final Set<String> TOWN_LOCATION = Set.of("г.", "города");
     private static final Set<String> VILLAGE_LOCATION = Set.of("с.", "село", "села");
@@ -77,11 +76,7 @@ public class StringParserHelper {
         CHECK_LIST.addAll(FEMININE_COUNTER);
         CHECK_LIST.addAll(MASCULINE_COUNTER);
         CHECK_LIST.addAll(ANOTHER_WITH_SUFFIX);
-        CHECK_LIST.addAll(RELATIVE);
         CHECK_LIST.add(LOCATION_EXCLUDE);
-        CHECK_LIST = CHECK_LIST.stream()
-                .sorted(StringParserHelper::sortSet)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private FullName fullName = new FullName();
@@ -90,10 +85,19 @@ public class StringParserHelper {
     private FullName relative = new FullName();
     private Locality relativeLocality = new Locality();
 
-    public StringParserHelper(String parsingString) {
+    public StringParserHelper(String parsingString, ParamDAO paramDAO) {
+        Set<String> relatives = paramDAO.getListStringOrDefault(RELATIVE_PARAM_NAME, Collections.emptyList())
+                .stream()
+                .sorted(StringParserHelper::sortSet)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        CHECK_LIST.addAll(relatives);
+        CHECK_LIST = CHECK_LIST.stream()
+                .sorted(StringParserHelper::sortSet)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         if (parsingString == null || parsingString.isEmpty() || HYPHEN.equals(parsingString)) return;
         String fullNameString = parsingString;
-        for (String relative : RELATIVE) {
+        for (String relative : relatives) {
             if (contains(parsingString, relative) && parsingString.matches("(.*)\\s" + relative + "\\s(.*)")) {
                 String relativeString = relative + " " + StringUtils.substringAfter(parsingString, relative).trim();
                 fullNameString = StringUtils.substringBefore(parsingString, relative).trim();

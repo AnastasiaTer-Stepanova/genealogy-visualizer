@@ -54,7 +54,7 @@ class DeathSheetParserTest extends AbstractTest {
         headers.put(CAUSE_COLUMN_NAME, 5);
         headers.put(BURIAL_PLACE_COLUMN_NAME, 6);
         headers.put(COMMENT_COLUMN_NAME, 7);
-        sheetParser = new DeathSheetParser(deathDAO, archiveDocumentDAO);
+        sheetParser = new DeathSheetParser(deathDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Test

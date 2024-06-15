@@ -34,15 +34,15 @@ public class Param implements Serializable {
     @Comment("Наименование парамера")
     private String name;
 
+    @Column(length = 4000)
     @Comment("Значение параметра")
     private String value;
 
-    public Param() {
-    }
+    @Column(length = 4000)
+    @Comment("Описание параметра")
+    private String comment;
 
-    public Param(String name, String value) {
-        this.name = name;
-        this.value = value;
+    public Param() {
     }
 
     public Long getId() {
@@ -67,5 +67,13 @@ public class Param implements Serializable {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

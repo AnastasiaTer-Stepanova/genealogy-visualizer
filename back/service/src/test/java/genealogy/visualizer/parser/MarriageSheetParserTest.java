@@ -78,7 +78,7 @@ class MarriageSheetParserTest extends AbstractTest {
         headers.put(SECOND_WIFE_WITNESS_COLUMN_NAME, 15);
         headers.put(THIRD_WIFE_WITNESS_COLUMN_NAME, 16);
         headers.put(COMMENT_COLUMN_NAME, 17);
-        sheetParser = new MarriageSheetParser(marriageDAO, archiveDocumentDAO);
+        sheetParser = new MarriageSheetParser(marriageDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Test

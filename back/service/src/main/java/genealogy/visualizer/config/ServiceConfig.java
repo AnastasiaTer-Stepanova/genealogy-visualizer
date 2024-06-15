@@ -30,11 +30,11 @@ import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
-import genealogy.visualizer.service.ParamDAO;
 import genealogy.visualizer.service.DeathDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import genealogy.visualizer.service.LocalityDAO;
 import genealogy.visualizer.service.MarriageDAO;
+import genealogy.visualizer.service.ParamDAO;
 import genealogy.visualizer.service.PersonDAO;
 import genealogy.visualizer.service.UserDAO;
 import genealogy.visualizer.service.archive.ArchiveDocumentService;
@@ -90,38 +90,38 @@ public class ServiceConfig {
     }
 
     @Bean
-    public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    public SheetParser familyRevisionParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new FamilyRevisionSheetParser(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser christeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new ChristeningSheetParser(christeningDAO, archiveDocumentDAO);
+    public SheetParser christeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new ChristeningSheetParser(christeningDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser marriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new MarriageSheetParser(marriageDAO, archiveDocumentDAO);
+    public SheetParser marriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new MarriageSheetParser(marriageDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser deathSheetParser(DeathDAO deathDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new DeathSheetParser(deathDAO, archiveDocumentDAO);
+    public SheetParser deathSheetParser(DeathDAO deathDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new DeathSheetParser(deathDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser censusBookSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new CensusBookSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    public SheetParser censusBookSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new CensusBookSheetParser(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new ConfessionSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    public SheetParser confessionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new ConfessionSheetParser(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean
-    public SheetParser interimCensusSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        return new InterimCensusSheetParser(familyRevisionDAO, archiveDocumentDAO);
+    public SheetParser interimCensusSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        return new InterimCensusSheetParser(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Bean

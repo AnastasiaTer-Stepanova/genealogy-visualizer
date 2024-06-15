@@ -9,6 +9,7 @@ import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.MarriageDAO;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -49,10 +50,12 @@ public class MarriageSheetParser extends AbstractSheetParser implements SheetPar
     private static final String COMMENT_COLUMN_NAME = "Comment";
 
     private final MarriageDAO marriageDAO;
+    private final ParamDAO paramDAO;
 
-    public MarriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+    public MarriageSheetParser(MarriageDAO marriageDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
         super(archiveDocumentDAO);
         this.marriageDAO = marriageDAO;
+        this.paramDAO = paramDAO;
         LOGGER = LogManager.getLogger(MarriageSheetParser.class);
     }
 
@@ -90,14 +93,14 @@ public class MarriageSheetParser extends AbstractSheetParser implements SheetPar
                 marriage = new Marriage(
                         null,
                         marriageDate,
-                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_LOCALITY_COLUMN_NAME))).getLocality(),
-                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_FATHER_COLUMN_NAME))).getFullName(),
-                        new StringParserHelper(husband).getFullName(),
+                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_LOCALITY_COLUMN_NAME)), paramDAO).getLocality(),
+                        new StringParserHelper(getStringCellValue(row, header.get(HUSBAND_FATHER_COLUMN_NAME)), paramDAO).getFullName(),
+                        new StringParserHelper(husband, paramDAO).getFullName(),
                         parseAge(getStringCellValue(row, header.get(HUSBAND_AGE_COLUMN_NAME))),
                         husbandMarriageNum != null ? Byte.parseByte(husbandMarriageNum) : null,
-                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_LOCALITY_COLUMN_NAME))).getLocality(),
-                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_FATHER_COLUMN_NAME))).getFullName(),
-                        new StringParserHelper(wife).getFullName(),
+                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_LOCALITY_COLUMN_NAME)), paramDAO).getLocality(),
+                        new StringParserHelper(getStringCellValue(row, header.get(WIFE_FATHER_COLUMN_NAME)), paramDAO).getFullName(),
+                        new StringParserHelper(wife, paramDAO).getFullName(),
                         parseAge(getStringCellValue(row, header.get(WIFE_AGE_COLUMN_NAME))),
                         wifeMarriageNum != null ? Byte.parseByte(wifeMarriageNum) : null,
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
@@ -149,7 +152,7 @@ public class MarriageSheetParser extends AbstractSheetParser implements SheetPar
 
     private Witness getWitness(String witness) {
         if (witness == null || witness.isEmpty()) return null;
-        StringParserHelper witnessHelper = new StringParserHelper(witness);
+        StringParserHelper witnessHelper = new StringParserHelper(witness, paramDAO);
         Witness result = new Witness();
         result.setLocality(witnessHelper.getLocality());
         result.setFullName(witnessHelper.getFullName());

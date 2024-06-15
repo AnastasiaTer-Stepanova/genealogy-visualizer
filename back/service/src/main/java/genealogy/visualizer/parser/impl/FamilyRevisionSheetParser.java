@@ -9,6 +9,7 @@ import genealogy.visualizer.parser.util.ParserUtils;
 import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.poi.ss.usermodel.Cell;
@@ -54,10 +55,12 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
     private static final String WIFE_PREFIX = "жена";
 
     private final FamilyRevisionDAO familyRevisionDAO;
+    private final ParamDAO paramDAO;
 
-    public FamilyRevisionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+    public FamilyRevisionSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
         super(archiveDocumentDAO);
         this.familyRevisionDAO = familyRevisionDAO;
+        this.paramDAO = paramDAO;
         LOGGER = LogManager.getLogger(FamilyRevisionSheetParser.class);
     }
 
@@ -98,7 +101,7 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
                     previousPerson.getFamilyRevisionNumber().equals(currentFamilyRevisionNumber)) {
                 partner = previousPerson;
             }
-            StringParserHelper fullNameHelper = new StringParserHelper(fullName);
+            StringParserHelper fullNameHelper = new StringParserHelper(fullName, paramDAO);
             FamilyRevision familyMember;
             String headOfYard = getStringCellValue(row, header.get(HEAD_OF_YARD_LAST_NAME_COLUMN_NAME));
             if (WITHOUT_LAST_NAME.equalsIgnoreCase(headOfYard)) {

@@ -5,7 +5,11 @@ import genealogy.visualizer.service.ParamDAO;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 public class ParamDAOImpl implements ParamDAO {
+
+    private static final String COMMA = ", ";
 
     private final ParamRepository paramRepository;
 
@@ -18,6 +22,13 @@ public class ParamDAOImpl implements ParamDAO {
     public Boolean getBooleanParamOrDefault(String paramName, Boolean defaultValue) {
         return paramRepository.findByName(paramName)
                 .map(param -> Boolean.parseBoolean(param.getValue()))
+                .orElse(defaultValue);
+    }
+
+    @Override
+    public List<String> getListStringOrDefault(String paramName, List<String> defaultValue) {
+        return paramRepository.findByName(paramName)
+                .map(param -> List.of(param.getValue().split(COMMA)))
                 .orElse(defaultValue);
     }
 

@@ -8,6 +8,7 @@ import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -42,10 +43,12 @@ public class ChristeningSheetParser extends AbstractSheetParser implements Sheet
     private static final String ILLEGITIMATE = "незаконнорожденный";
 
     private final ChristeningDAO christeningDAO;
+    private final ParamDAO paramDAO;
 
-    public ChristeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO) {
+    public ChristeningSheetParser(ChristeningDAO christeningDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
         super(archiveDocumentDAO);
         this.christeningDAO = christeningDAO;
+        this.paramDAO = paramDAO;
         LOGGER = LogManager.getLogger(ChristeningSheetParser.class);
     }
 
@@ -74,11 +77,11 @@ public class ChristeningSheetParser extends AbstractSheetParser implements Sheet
                         getDateCellValue(row, header.get(CHRISTENING_COLUMN_NAME)),
                         getSex(getStringCellValue(row, header.get(MALE_COLUMN_NAME)), getStringCellValue(row, header.get(FEMALE_COLUMN_NAME))),
                         getStringCellValue(row, header.get(NAME_COLUMN_NAME)),
-                        new StringParserHelper(getStringCellValue(row, header.get(FATHER_COLUMN_NAME))).getFullName(),
-                        new StringParserHelper(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME))).getFullName(),
+                        new StringParserHelper(getStringCellValue(row, header.get(FATHER_COLUMN_NAME)), paramDAO).getFullName(),
+                        new StringParserHelper(getStringCellValue(row, header.get(MOTHER_COLUMN_NAME)), paramDAO).getFullName(),
                         getStringCellValue(row, header.get(COMMENT_COLUMN_NAME)),
                         getLegitimacy(getStringCellValue(row, header.get(LEGITIMACY_COLUMN_NAME))),
-                        new StringParserHelper(getStringCellValue(row, header.get(LOCALITY_COLUMN_NAME))).getLocality(),
+                        new StringParserHelper(getStringCellValue(row, header.get(LOCALITY_COLUMN_NAME)), paramDAO).getLocality(),
                         getGodParents(row, header),
                         null,
                         archive);
@@ -127,7 +130,7 @@ public class ChristeningSheetParser extends AbstractSheetParser implements Sheet
 
     private GodParent getGodParent(String godParentString) {
         if (godParentString == null || godParentString.isEmpty()) return null;
-        StringParserHelper helper = new StringParserHelper(godParentString);
+        StringParserHelper helper = new StringParserHelper(godParentString, paramDAO);
         if (helper.getFullName() == null || helper.getFullName().getName() == null) return null;
         return new GodParent(
                 helper.getFullName(),

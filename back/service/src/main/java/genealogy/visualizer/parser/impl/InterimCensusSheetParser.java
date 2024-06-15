@@ -3,14 +3,15 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.FamilyRevisionDAO;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.Map;
 
 public class InterimCensusSheetParser extends FamilyRevisionSheetParser {
 
-    public InterimCensusSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO) {
-        super(familyRevisionDAO, archiveDocumentDAO);
+    public InterimCensusSheetParser(FamilyRevisionDAO familyRevisionDAO, ArchiveDocumentDAO archiveDocumentDAO, ParamDAO paramDAO) {
+        super(familyRevisionDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Override

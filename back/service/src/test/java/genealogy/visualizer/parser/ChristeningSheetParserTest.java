@@ -64,7 +64,7 @@ class ChristeningSheetParserTest extends AbstractTest {
         headers.put(SECOND_GOD_PARENT_COLUMN_NAME, 9);
         headers.put(COMMENT_COLUMN_NAME, 10);
         headers.put(LEGITIMACY_COLUMN_NAME, 11);
-        sheetParser = new ChristeningSheetParser(christeningDAO, archiveDocumentDAO);
+        sheetParser = new ChristeningSheetParser(christeningDAO, archiveDocumentDAO, paramDAO);
     }
 
     @Test

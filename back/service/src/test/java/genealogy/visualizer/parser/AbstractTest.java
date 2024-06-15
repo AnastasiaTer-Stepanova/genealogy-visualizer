@@ -6,6 +6,7 @@ import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.enums.LocalityType;
 import genealogy.visualizer.entity.model.FullName;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
+import genealogy.visualizer.service.ParamDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -65,6 +66,9 @@ abstract class AbstractTest {
 
     @Mock
     ArchiveDocumentDAO archiveDocumentDAO;
+
+    @Mock
+    ParamDAO paramDAO;
 
     static {
         generator = new EasyRandom(getGeneratorParams());
