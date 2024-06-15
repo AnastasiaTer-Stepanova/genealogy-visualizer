@@ -140,14 +140,16 @@ class ChristeningControllerTest extends IntegrationTest {
                 .name("Иван")
                 .archiveDocumentId(archiveDocumentExisting.getId())
                 .sex(Sex.FEMALE)
-                .christeningYear(1850);
+                .christeningYear(1850)
+                .isFindWithHavePerson(false);
         List<genealogy.visualizer.entity.Christening> christeningsSave = generator.objects(genealogy.visualizer.entity.Christening.class, generator.nextInt(5, 10)).toList();
         byte count = 0;
         for (genealogy.visualizer.entity.Christening christening : christeningsSave) {
-            christening.setPerson(null);
             christening.setLocality(null);
             christening.setGodParents(null);
+            christening.setPerson(null);
             if (generator.nextBoolean()) {
+                christening.setPerson(null);
                 christening.setArchiveDocument(archiveDocumentExisting);
                 christening.setSex(genealogy.visualizer.entity.enums.Sex.FEMALE);
                 christening.setName(stringRandomizer.getRandomValue() +
@@ -157,15 +159,8 @@ class ChristeningControllerTest extends IntegrationTest {
                 christening.setChristeningDate(christeningDate);
                 count++;
             } else {
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-                archiveDocumentSave.setArchive(null);
-                archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-                archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-                archiveDocumentSave.setChristenings(Collections.emptyList());
-                archiveDocumentSave.setMarriages(Collections.emptyList());
-                archiveDocumentSave.setDeaths(Collections.emptyList());
-                archiveDocumentSave.setNextRevision(null);
-                christening.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
+                christening.setPerson(getEmptySavedPerson());
+                christening.setArchiveDocument(getEmptySavedArchiveDocument());
             }
         }
         List<genealogy.visualizer.entity.Christening> christeningExist = christeningRepository.saveAllAndFlush(christeningsSave);
@@ -325,6 +320,34 @@ class ChristeningControllerTest extends IntegrationTest {
 
 
     private genealogy.visualizer.entity.Christening generateRandomExistChristening() {
+
+        genealogy.visualizer.entity.Christening christeningSave = generator.nextObject(genealogy.visualizer.entity.Christening.class);
+        christeningSave.setArchiveDocument(getEmptySavedArchiveDocument());
+
+        christeningSave.setPerson(getEmptySavedPerson());
+
+        List<genealogy.visualizer.entity.model.GodParent> godParentsSave = generator.objects(genealogy.visualizer.entity.model.GodParent.class, generator.nextInt(5, 10)).toList();
+        godParentsSave.forEach(gp -> gp.setLocality(localityExisting));
+        christeningSave.setGodParents(godParentsSave);
+        christeningSave.setLocality(localityExisting);
+        return christeningRepository.save(christeningSave);
+    }
+
+    private genealogy.visualizer.entity.Person getEmptySavedPerson() {
+        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
+        personSave.setChristening(null);
+        personSave.setPartners(Collections.emptyList());
+        personSave.setChildren(Collections.emptyList());
+        personSave.setRevisions(Collections.emptyList());
+        personSave.setMarriages(Collections.emptyList());
+        personSave.setParents(Collections.emptyList());
+        personSave.setDeath(null);
+        personSave.setDeathLocality(localityExisting);
+        personSave.setBirthLocality(localityExisting);
+        return personRepository.saveAndFlush(personSave);
+    }
+
+    private genealogy.visualizer.entity.ArchiveDocument getEmptySavedArchiveDocument() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
 
@@ -337,25 +360,6 @@ class ChristeningControllerTest extends IntegrationTest {
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setNextRevision(null);
 
-        genealogy.visualizer.entity.Christening christeningSave = generator.nextObject(genealogy.visualizer.entity.Christening.class);
-        christeningSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
-
-        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
-        personSave.setChristening(null);
-        personSave.setPartners(Collections.emptyList());
-        personSave.setChildren(Collections.emptyList());
-        personSave.setRevisions(Collections.emptyList());
-        personSave.setMarriages(Collections.emptyList());
-        personSave.setParents(Collections.emptyList());
-        personSave.setDeath(null);
-        personSave.setDeathLocality(localityExisting);
-        personSave.setBirthLocality(localityExisting);
-        christeningSave.setPerson(personRepository.saveAndFlush(personSave));
-
-        List<genealogy.visualizer.entity.model.GodParent> godParentsSave = generator.objects(genealogy.visualizer.entity.model.GodParent.class, generator.nextInt(5, 10)).toList();
-        godParentsSave.forEach(gp -> gp.setLocality(localityExisting));
-        christeningSave.setGodParents(godParentsSave);
-        christeningSave.setLocality(localityExisting);
-        return christeningRepository.save(christeningSave);
+        return archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
     }
 }

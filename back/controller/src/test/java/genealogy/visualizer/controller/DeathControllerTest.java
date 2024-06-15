@@ -124,13 +124,14 @@ class DeathControllerTest extends IntegrationTest {
         DeathFilter filter = new DeathFilter()
                 .fullName(fullNameFilter)
                 .archiveDocumentId(archiveDocumentExisting.getId())
-                .deathYear(1850);
+                .deathYear(1850)
+                .isFindWithHavePerson(false);
         List<genealogy.visualizer.entity.Death> deathsSave = generator.objects(genealogy.visualizer.entity.Death.class, generator.nextInt(5, 10)).toList();
         byte count = 0;
         for (genealogy.visualizer.entity.Death death : deathsSave) {
-            death.setPerson(null);
             death.setLocality(null);
             if (generator.nextBoolean()) {
+                death.setPerson(null);
                 death.setArchiveDocument(archiveDocumentExisting);
                 genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
                 fullName.setName(stringRandomizer.getRandomValue() +
@@ -147,16 +148,8 @@ class DeathControllerTest extends IntegrationTest {
                 death.setDate(date);
                 count++;
             } else {
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-                archiveDocumentSave.setArchive(null);
-                archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-                archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-                archiveDocumentSave.setChristenings(Collections.emptyList());
-                archiveDocumentSave.setMarriages(Collections.emptyList());
-                archiveDocumentSave.setDeaths(Collections.emptyList());
-                archiveDocumentSave.setNextRevision(null);
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                death.setArchiveDocument(archiveDocumentExist);
+                death.setPerson(getEmptySavedPerson());
+                death.setArchiveDocument(getEmptySavedArchiveDocument());
             }
         }
         List<genealogy.visualizer.entity.Death> deathsExist = deathRepository.saveAllAndFlush(deathsSave);
@@ -262,6 +255,30 @@ class DeathControllerTest extends IntegrationTest {
     }
 
     private genealogy.visualizer.entity.Death generateRandomExistDeath() {
+        genealogy.visualizer.entity.Death deathSave = generator.nextObject(genealogy.visualizer.entity.Death.class);
+        deathSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(getEmptySavedArchiveDocument()));
+
+        deathSave.setPerson(getEmptySavedPerson());
+
+        deathSave.setLocality(localityExisting);
+        return deathRepository.save(deathSave);
+    }
+
+    private genealogy.visualizer.entity.Person getEmptySavedPerson() {
+        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
+        personSave.setChristening(null);
+        personSave.setPartners(Collections.emptyList());
+        personSave.setChildren(Collections.emptyList());
+        personSave.setRevisions(Collections.emptyList());
+        personSave.setMarriages(Collections.emptyList());
+        personSave.setParents(Collections.emptyList());
+        personSave.setDeath(null);
+        personSave.setDeathLocality(localityExisting);
+        personSave.setBirthLocality(localityExisting);
+        return personRepository.saveAndFlush(personSave);
+    }
+
+    private genealogy.visualizer.entity.ArchiveDocument getEmptySavedArchiveDocument() {
         genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
         archiveSave.setArchiveDocuments(null);
 
@@ -274,23 +291,6 @@ class DeathControllerTest extends IntegrationTest {
         archiveDocumentSave.setDeaths(Collections.emptyList());
         archiveDocumentSave.setNextRevision(null);
 
-        genealogy.visualizer.entity.Death deathSave = generator.nextObject(genealogy.visualizer.entity.Death.class);
-        deathSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(archiveDocumentSave));
-
-        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
-        personSave.setChristening(null);
-        personSave.setPartners(Collections.emptyList());
-        personSave.setChildren(Collections.emptyList());
-        personSave.setRevisions(Collections.emptyList());
-        personSave.setMarriages(Collections.emptyList());
-        personSave.setParents(Collections.emptyList());
-        personSave.setDeath(null);
-        personSave.setDeathLocality(localityExisting);
-        personSave.setBirthLocality(localityExisting);
-        deathSave.setPerson(personRepository.saveAndFlush(personSave));
-
-        deathSave.setLocality(localityExisting);
-        return deathRepository.save(deathSave);
+        return archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
     }
-
 }

@@ -154,15 +154,16 @@ class MarriageControllerTest extends IntegrationTest {
                 .husbandFullName(husbandFullNameFilter)
                 .wifeFullName(wifeFullNameFilter)
                 .archiveDocumentId(archiveDocumentExisting.getId())
-                .marriageYear(1850);
+                .marriageYear(1850)
+                .isFindWithHavePerson(false);
         List<genealogy.visualizer.entity.Marriage> marriagesSave = generator.objects(genealogy.visualizer.entity.Marriage.class, generator.nextInt(5, 10)).toList();
         byte count = 0;
         for (genealogy.visualizer.entity.Marriage marriage : marriagesSave) {
-            marriage.setPersons(Collections.emptyList());
             marriage.setWifeLocality(null);
             marriage.setHusbandLocality(null);
             marriage.setWitnesses(null);
             if (generator.nextBoolean()) {
+                marriage.setPersons(Collections.emptyList());
                 marriage.setArchiveDocument(archiveDocumentExisting);
                 genealogy.visualizer.entity.model.FullName husbandFullName = new genealogy.visualizer.entity.model.FullName();
                 husbandFullName.setName(stringRandomizer.getRandomValue() +
@@ -190,16 +191,8 @@ class MarriageControllerTest extends IntegrationTest {
                 marriage.setDate(marriageDate);
                 count++;
             } else {
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-                archiveDocumentSave.setArchive(null);
-                archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-                archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-                archiveDocumentSave.setChristenings(Collections.emptyList());
-                archiveDocumentSave.setMarriages(Collections.emptyList());
-                archiveDocumentSave.setDeaths(Collections.emptyList());
-                archiveDocumentSave.setNextRevision(null);
-                genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-                marriage.setArchiveDocument(archiveDocumentExist);
+                marriage.setArchiveDocument(getEmptySavedArchiveDocument());
+                marriage.setPersons(getEmptySavedPersons());
             }
         }
         List<genealogy.visualizer.entity.Marriage> marriagesExist = marriageRepository.saveAllAndFlush(marriagesSave);
@@ -363,23 +356,20 @@ class MarriageControllerTest extends IntegrationTest {
     }
 
     private genealogy.visualizer.entity.Marriage generateRandomExistMarriage() {
-        genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveSave.setArchiveDocuments(null);
-        genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentSave.setArchive(archiveExist);
-        archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-        archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-        archiveDocumentSave.setChristenings(Collections.emptyList());
-        archiveDocumentSave.setMarriages(Collections.emptyList());
-        archiveDocumentSave.setDeaths(Collections.emptyList());
-        archiveDocumentSave.setNextRevision(null);
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentExist = archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
-
         genealogy.visualizer.entity.Marriage marriageSave = generator.nextObject(genealogy.visualizer.entity.Marriage.class);
-        marriageSave.setArchiveDocument(archiveDocumentExist);
+        marriageSave.setArchiveDocument(getEmptySavedArchiveDocument());
 
+        marriageSave.setPersons(getEmptySavedPersons());
+
+        List<genealogy.visualizer.entity.model.Witness> witnessesSave = generator.objects(genealogy.visualizer.entity.model.Witness.class, generator.nextInt(5, 10)).toList();
+        witnessesSave.forEach(gp -> gp.setLocality(localityExisting));
+        marriageSave.setWitnesses(witnessesSave);
+        marriageSave.setHusbandLocality(localityExisting);
+        marriageSave.setWifeLocality(localityExisting);
+        return marriageRepository.save(marriageSave);
+    }
+
+    private List<genealogy.visualizer.entity.Person> getEmptySavedPersons() {
         List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
         personsSave.forEach(p -> {
             p.setChristening(null);
@@ -392,14 +382,22 @@ class MarriageControllerTest extends IntegrationTest {
             p.setDeathLocality(localityExisting);
             p.setBirthLocality(localityExisting);
         });
-        List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
-        marriageSave.setPersons(personsExist);
+        return personRepository.saveAllAndFlush(personsSave);
+    }
 
-        List<genealogy.visualizer.entity.model.Witness> witnessesSave = generator.objects(genealogy.visualizer.entity.model.Witness.class, generator.nextInt(5, 10)).toList();
-        witnessesSave.forEach(gp -> gp.setLocality(localityExisting));
-        marriageSave.setWitnesses(witnessesSave);
-        marriageSave.setHusbandLocality(localityExisting);
-        marriageSave.setWifeLocality(localityExisting);
-        return marriageRepository.save(marriageSave);
+    private genealogy.visualizer.entity.ArchiveDocument getEmptySavedArchiveDocument() {
+        genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
+        archiveSave.setArchiveDocuments(null);
+
+        genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
+        archiveDocumentSave.setArchive(archiveRepository.saveAndFlush(archiveSave));
+        archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
+        archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
+        archiveDocumentSave.setChristenings(Collections.emptyList());
+        archiveDocumentSave.setMarriages(Collections.emptyList());
+        archiveDocumentSave.setDeaths(Collections.emptyList());
+        archiveDocumentSave.setNextRevision(null);
+
+        return archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
     }
 }

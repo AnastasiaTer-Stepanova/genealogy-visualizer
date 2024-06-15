@@ -15,3 +15,8 @@ properties:
     example: 1858
   fullName:
     $ref: "./../../common/full-name-filter.yaml"
+  isFindWithHavePerson:
+    description: Добавлять ли для вывода данные, если у уже есть связка с Person, true - добавлять, false - не добавлять
+    type: boolean
+    default: false
+    example: true

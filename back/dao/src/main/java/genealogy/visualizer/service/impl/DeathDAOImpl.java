@@ -94,6 +94,9 @@ public class DeathDAOImpl implements DeathDAO {
             Expression<Integer> yearExpression = cb.function("date_part", Integer.class, cb.literal("year"), root.get("date"));
             predicates.add(cb.equal(yearExpression, filter.getDeathYear()));
         }
+        if (!filter.getFindWithHavePerson()) {
+            predicates.add(cb.isNull(root.get("person")));
+        }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();
     }

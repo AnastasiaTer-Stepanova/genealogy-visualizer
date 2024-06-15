@@ -4,6 +4,7 @@ import genealogy.visualizer.api.model.Marriage;
 import genealogy.visualizer.api.model.MarriageFilter;
 import genealogy.visualizer.dto.MarriageFilterDTO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -21,6 +22,7 @@ public interface MarriageMapper extends CommonMapper {
 
     Marriage toDTO(genealogy.visualizer.entity.Marriage marriage);
 
+    @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
     MarriageFilterDTO toFilter(MarriageFilter filter);
 
 }

@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,6 +111,12 @@ public class MarriageDAOImpl implements MarriageDAO {
         if (filter.getMarriageYear() != null) {
             Expression<Integer> yearExpression = cb.function("date_part", Integer.class, cb.literal("year"), root.get("date"));
             predicates.add(cb.equal(yearExpression, filter.getMarriageYear()));
+        }
+        if (!filter.getFindWithHavePerson()) {
+            Subquery<Long> subquery = cq.subquery(Long.class);
+            Root<Person> personRoot = subquery.from(Person.class);
+            subquery.select(personRoot.get("marriages").get("id"));
+            predicates.add(cb.not(cb.in(root.get("id")).value(subquery)));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(cq).getResultList();

@@ -10,6 +10,8 @@ public class MarriageFilterDTO {
 
     private FullNameFilterDTO husbandFullName;
 
+    private Boolean isFindWithHavePerson;
+
     public Long getArchiveDocumentId() {
         return archiveDocumentId;
     }
@@ -40,5 +42,13 @@ public class MarriageFilterDTO {
 
     public void setHusbandFullName(FullNameFilterDTO husbandFullName) {
         this.husbandFullName = husbandFullName;
+    }
+
+    public Boolean getFindWithHavePerson() {
+        return isFindWithHavePerson;
+    }
+
+    public void setFindWithHavePerson(Boolean findWithHavePerson) {
+        isFindWithHavePerson = findWithHavePerson;
     }
 }

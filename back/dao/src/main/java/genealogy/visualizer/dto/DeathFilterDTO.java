@@ -8,6 +8,8 @@ public class DeathFilterDTO {
 
     private FullNameFilterDTO fullName;
 
+    private Boolean isFindWithHavePerson;
+
     public Long getArchiveDocumentId() {
         return archiveDocumentId;
     }
@@ -30,5 +32,13 @@ public class DeathFilterDTO {
 
     public void setFullName(FullNameFilterDTO fullName) {
         this.fullName = fullName;
+    }
+
+    public Boolean getFindWithHavePerson() {
+        return isFindWithHavePerson;
+    }
+
+    public void setFindWithHavePerson(Boolean findWithHavePerson) {
+        isFindWithHavePerson = findWithHavePerson;
     }
 }

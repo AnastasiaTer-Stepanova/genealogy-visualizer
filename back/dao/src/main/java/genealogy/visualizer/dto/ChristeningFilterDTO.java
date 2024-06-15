@@ -12,6 +12,8 @@ public class ChristeningFilterDTO {
 
     private Sex sex;
 
+    private Boolean isFindWithHavePerson;
+
     public Long getArchiveDocumentId() {
         return archiveDocumentId;
     }
@@ -42,5 +44,13 @@ public class ChristeningFilterDTO {
 
     public void setSex(Sex sex) {
         this.sex = sex;
+    }
+
+    public Boolean getFindWithHavePerson() {
+        return isFindWithHavePerson;
+    }
+
+    public void setFindWithHavePerson(Boolean findWithHavePerson) {
+        isFindWithHavePerson = findWithHavePerson;
     }
 }

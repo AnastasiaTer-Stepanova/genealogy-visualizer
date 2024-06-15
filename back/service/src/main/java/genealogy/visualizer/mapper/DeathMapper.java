@@ -4,6 +4,7 @@ import genealogy.visualizer.api.model.Death;
 import genealogy.visualizer.api.model.DeathFilter;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -19,6 +20,7 @@ public interface DeathMapper extends CommonMapper {
 
     Death toDTO(genealogy.visualizer.entity.Death death);
 
+    @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
     genealogy.visualizer.dto.DeathFilterDTO toFilter(DeathFilter filter);
 
 }
