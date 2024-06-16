@@ -13,6 +13,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -23,6 +27,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "ArchiveDocument.withArchiveAndNextRevisionAndPreviousRevisions",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "previousRevisions"),
+                        @NamedAttributeNode(value = "archive"),
+                        @NamedAttributeNode(value = "nextRevision")
+                }),
+        @NamedEntityGraph(name = "ArchiveDocument.withRevisions",
+                attributeNodes = {@NamedAttributeNode(value = "familyRevisions", subgraph = "revisionGraph")},
+                subgraphs = {@NamedSubgraph(name = "revisionGraph", type = String.class, attributeNodes = {@NamedAttributeNode("anotherNames")})}),
+        @NamedEntityGraph(name = "ArchiveDocument.withDeaths", attributeNodes = {@NamedAttributeNode(value = "deaths")}),
+        @NamedEntityGraph(name = "ArchiveDocument.withChristenings", attributeNodes = {@NamedAttributeNode(value = "christenings")}),
+        @NamedEntityGraph(name = "ArchiveDocument.withMarriages", attributeNodes = {@NamedAttributeNode(value = "marriages")}),
+})
 @Table(indexes = @Index(name = "IDX_INSTANCE_IN_ARCHIVE", columnList = "ARCHIVE_ID, FUND, CATALOG, INSTANCE, BUNCH, YEAR, TYPE"))
 public class ArchiveDocument implements Serializable {
 

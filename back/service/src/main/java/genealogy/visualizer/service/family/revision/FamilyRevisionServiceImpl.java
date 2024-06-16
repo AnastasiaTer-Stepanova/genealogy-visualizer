@@ -48,8 +48,11 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
     @Override
     public FamilyMember getById(Long id) {
-        return Optional.ofNullable(familyRevisionMapper.toDTO(familyRevisionDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return familyRevisionMapper.toDTO(familyRevisionDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

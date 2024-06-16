@@ -2,6 +2,7 @@ package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.model.GodParent;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,8 +38,8 @@ public interface ChristeningRepository extends JpaRepository<Christening, Long> 
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     Christening update(@Param("entity") Christening entity);
 
-    @Query("select c from Christening c left join fetch c.archiveDocument left join fetch c.person left join fetch c.godParents " +
-            "left join fetch c.locality where c.id = :id")
+    @Query("select c from Christening c where c.id = :id")
+    @EntityGraph(value = "Christening.full", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Christening> findFullInfoById(@Param("id") Long id);
 
     @Modifying

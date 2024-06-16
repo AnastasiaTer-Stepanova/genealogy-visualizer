@@ -72,7 +72,8 @@ public class ArchiveDAOImpl implements ArchiveDAO {
     @Override
     @Transactional(readOnly = true)
     public Archive findFullInfoById(Long id) {
-        return archiveRepository.findByIdWithArchiveDocuments(id).orElse(null);
+        return archiveRepository.findFullInfoById(id)
+                .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Archive not found by id: %d", id), 1));
     }
 
     @Override

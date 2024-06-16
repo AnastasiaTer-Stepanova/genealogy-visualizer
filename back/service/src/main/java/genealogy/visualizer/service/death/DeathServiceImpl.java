@@ -34,8 +34,11 @@ public class DeathServiceImpl implements DeathService {
 
     @Override
     public Death getById(Long id) {
-        return Optional.ofNullable(deathMapper.toDTO(deathDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return deathMapper.toDTO(deathDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

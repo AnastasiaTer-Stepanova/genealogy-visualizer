@@ -84,7 +84,8 @@ public class ChristeningDAOImpl implements ChristeningDAO {
     @Override
     @Transactional(readOnly = true)
     public Christening findFullInfoById(Long id) {
-        return christeningRepository.findFullInfoById(id).orElse(null);
+        return christeningRepository.findFullInfoById(id)
+                .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Christening not found by id: %d", id), 1));
     }
 
     @Override

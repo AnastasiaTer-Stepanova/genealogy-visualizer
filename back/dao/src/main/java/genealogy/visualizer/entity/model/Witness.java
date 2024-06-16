@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.Comment;
@@ -24,7 +25,7 @@ public class Witness implements Serializable {
     @Convert(converter = WitnessConverter.class)
     private WitnessType witnessType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "LOCALITY_ID", referencedColumnName = "id")
     private Locality locality;
 

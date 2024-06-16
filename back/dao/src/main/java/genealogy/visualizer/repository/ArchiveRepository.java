@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Archive;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +19,8 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     Archive update(@Param("entity") Archive entity);
 
-    @Query("select a from Archive a left join fetch a.archiveDocuments where a.id = :id ")
-    Optional<Archive> findByIdWithArchiveDocuments(@Param("id") Long id);
+    @Query("select a from Archive a where a.id = :id")
+    @EntityGraph(value = "Archive.full", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Archive> findFullInfoById(@Param("id") Long id);
 
 }

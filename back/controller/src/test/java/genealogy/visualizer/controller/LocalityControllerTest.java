@@ -44,7 +44,6 @@ class LocalityControllerTest extends IntegrationTest {
         List<String> anotherNames = generator.objects(String.class, generator.nextInt(5, 10)).toList();
         localitySave.setAnotherNames(anotherNames);
         List<EasyChristening> christeningsSave = generator.objects(EasyChristening.class, generator.nextInt(5, 10)).toList();
-        christeningsSave.forEach(c -> c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting))));
         localitySave.setChristenings(christeningsSave);
         List<EasyDeath> deathsSave = generator.objects(EasyDeath.class, generator.nextInt(5, 10)).toList();
         localitySave.setDeaths(deathsSave);
@@ -74,7 +73,6 @@ class LocalityControllerTest extends IntegrationTest {
         localityUpdate.setAnotherNames(anotherNames);
         localityUpdate.setId(localityExist.getId());
         List<EasyChristening> christeningsUpdate = new ArrayList<>(generator.objects(EasyChristening.class, generator.nextInt(2, 5)).toList());
-        christeningsUpdate.forEach(c -> c.getGodParents().forEach(gp -> gp.setLocality(localityMapper.toDTO(localityExisting))));
         localityExist.getChristenings().forEach(c -> {
             if (generator.nextBoolean()) {
                 christeningsUpdate.add(easyChristeningMapper.toDTO(c));
@@ -404,8 +402,7 @@ class LocalityControllerTest extends IntegrationTest {
         localitySave.setMarriagesWithHusbandLocality(Collections.emptyList());
         localitySave.setPersonsWithDeathLocality(Collections.emptyList());
         localitySave.setPersonsWithBirthLocality(Collections.emptyList());
-        List<String> anotherNames = generator.objects(String.class, generator.nextInt(5, 10)).toList();
-        localitySave.setAnotherNames(anotherNames);
+        localitySave.setAnotherNames(generator.objects(String.class, generator.nextInt(5, 10)).collect(Collectors.toSet()));
         genealogy.visualizer.entity.Locality localityExist = localityRepository.saveAndFlush(localitySave);
 
         List<genealogy.visualizer.entity.Christening> christeningsSave = generator.objects(genealogy.visualizer.entity.Christening.class, generator.nextInt(5, 10)).toList();

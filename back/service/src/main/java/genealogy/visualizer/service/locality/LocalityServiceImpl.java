@@ -34,8 +34,11 @@ public class LocalityServiceImpl implements LocalityService {
 
     @Override
     public Locality getById(Long id) {
-        return Optional.ofNullable(localityMapper.toDTO(localityDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return localityMapper.toDTO(localityDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

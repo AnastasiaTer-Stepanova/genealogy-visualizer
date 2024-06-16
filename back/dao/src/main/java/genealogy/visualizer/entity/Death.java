@@ -14,6 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
@@ -22,6 +25,18 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
+@NamedEntityGraph(
+        name = "Death.full",
+        attributeNodes = {
+                @NamedAttributeNode(value = "locality", subgraph = "localityGraph"),
+                @NamedAttributeNode(value = "person", subgraph = "personGraph"),
+                @NamedAttributeNode("archiveDocument")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
+        }
+)
 public class Death implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_DEATH")

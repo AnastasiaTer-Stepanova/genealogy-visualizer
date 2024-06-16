@@ -114,12 +114,13 @@ public class PersonDAOImpl implements PersonDAO {
     @Override
     @Transactional(readOnly = true)
     public Person findFullInfoById(Long id) {
-        Person person = personRepository.findByIdWithMarriages(id).orElse(null);
-        if (person == null) return null;
-        personRepository.findByIdWithChildren(id).orElseThrow();
-        personRepository.findByIdWithParents(id).orElseThrow();
-        personRepository.findByIdWithPartners(id).orElseThrow();
-        return personRepository.findFullInfoById(id).orElseThrow();
+        String errorMes = String.format("Person not found by id: %d", id);
+        personRepository.findPersonWithBirthLocalityAndDeathLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        personRepository.findPersonWithPartners(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        personRepository.findPersonWithParents(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        personRepository.findPersonWithChildren(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        personRepository.findPersonWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        return personRepository.findPersonWithMarriages(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 
     @Override

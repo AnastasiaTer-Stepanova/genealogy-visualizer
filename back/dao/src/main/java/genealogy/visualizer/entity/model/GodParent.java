@@ -6,6 +6,7 @@ import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.Comment;
@@ -18,7 +19,7 @@ public class GodParent implements Serializable {
     @Embedded
     private FullName fullName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "LOCALITY_ID", referencedColumnName = "id")
     private Locality locality;
 

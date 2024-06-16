@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static genealogy.visualizer.entity.enums.Sex.MALE;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,8 +106,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         List<FamilyRevision> familyRevisions = generator.objects(FamilyRevision.class, generator.nextInt(5, 15)).toList();
         for (FamilyRevision familyRevision : familyRevisions) {
             if (generator.nextBoolean()) {
-                List<String> anotherNamesInRevision = generator.objects(String.class, generator.nextInt(1, 3)).toList();
-                familyRevision.setAnotherNames(anotherNamesInRevision);
+                familyRevision.setAnotherNames(generator.objects(String.class, generator.nextInt(1, 3)).collect(Collectors.toSet()));
             }
             familyRevision.setFamilyGeneration((byte) generator.nextInt(1, 6));
         }
@@ -153,7 +154,7 @@ class FamilyRevisionSheetParserTest extends AbstractTest {
         }
     }
 
-    private static String getAnotherName(List<String> anotherNames) {
+    private static String getAnotherName(Set<String> anotherNames) {
         if (anotherNames == null) return null;
         StringBuilder anotherNameString = new StringBuilder();
         for (String anotherNameInRevision : anotherNames) {

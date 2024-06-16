@@ -106,14 +106,14 @@ public class LocalityDAOImpl implements LocalityDAO {
     @Override
     @Transactional(readOnly = true)
     public Locality findFullInfoById(Long id) {
-        Locality locality = localityRepository.findFullInfoById(id).orElse(null);
-        if (locality == null) return null;
-        localityRepository.findFullInfoByIdWithChristening(id).orElseThrow();
-        localityRepository.findFullInfoByIdWithDeath(id).orElseThrow();
-        localityRepository.findFullInfoByIdWithMarriageWifeLocality(id).orElseThrow();
-        localityRepository.findFullInfoByIdWithMarriageHusbandLocality(id).orElseThrow();
-        localityRepository.findFullInfoByIdWithPersonBirthLocality(id).orElseThrow();
-        return localityRepository.findFullInfoByIdWithPersonDeathLocality(id).orElseThrow();
+        String errorMes = String.format("Locality not found by id: %d", id);
+        localityRepository.findWithDeaths(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        localityRepository.findWithAnotherNames(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        localityRepository.findWithChristenings(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        localityRepository.findWithPersonsWithBirthLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        localityRepository.findWithPersonsWithDeathLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        localityRepository.findWithMarriagesWithWifeLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        return localityRepository.findWithMarriagesWithHusbandLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 
     @Override

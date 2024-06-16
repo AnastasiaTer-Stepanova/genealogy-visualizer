@@ -95,7 +95,8 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
     @Override
     @Transactional(readOnly = true)
     public FamilyRevision findFullInfoById(Long id) {
-        return familyRevisionRepository.findFullInfoById(id).orElse(null);
+        return familyRevisionRepository.findFullInfoById(id)
+                .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Family revision not found by id: %d", id), 1));
     }
 
     @Override

@@ -11,15 +11,16 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
-        uses = {FullNameMapper.class, GodParentMapper.class})
+        uses = {FullNameMapper.class})
 public interface EasyChristeningMapper extends CommonMapper {
 
     @Mapping(target = "locality", ignore = true)
+    @Mapping(target = "godParents", ignore = true)
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
     genealogy.visualizer.entity.Christening toEntity(EasyChristening christening);
 
-    @BeanMapping(ignoreUnmappedSourceProperties = {"locality", "person", "archiveDocument"})
+    @BeanMapping(ignoreUnmappedSourceProperties = {"locality", "godParents", "person", "archiveDocument"})
     EasyChristening toDTO(genealogy.visualizer.entity.Christening christening);
 
     List<EasyChristening> toDTOs(List<genealogy.visualizer.entity.Christening> christening);

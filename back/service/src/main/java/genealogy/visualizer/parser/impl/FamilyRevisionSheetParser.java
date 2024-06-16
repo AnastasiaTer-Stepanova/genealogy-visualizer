@@ -18,8 +18,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_COLUMN_NAME;
 import static genealogy.visualizer.parser.util.ParserUtils.STATUS_IMPORTED;
@@ -207,13 +210,13 @@ public class FamilyRevisionSheetParser extends AbstractSheetParser implements Sh
         return fullName;
     }
 
-    private static List<String> getAnotherNamesFromCell(Cell cell) {
-        List<String> anotherNames = new ArrayList<>();
+    private static Set<String> getAnotherNamesFromCell(Cell cell) {
+        Set<String> anotherNames = new HashSet<>();
         String anotherNameString = cell.getStringCellValue();
         if (isNotBlank(anotherNameString)) {
             return Arrays.stream(split(anotherNameString, " /"))
                     .map(name -> StringUtils.capitalize(name.replaceAll("^\\(|\\)$", "").trim()))
-                    .toList();
+                    .collect(Collectors.toSet());
         }
         return anotherNames;
     }

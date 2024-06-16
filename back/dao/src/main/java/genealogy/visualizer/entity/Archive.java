@@ -6,6 +6,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NamedEntityGraph(name = "Archive.full", attributeNodes = {@NamedAttributeNode("archiveDocuments")})
 @Table(uniqueConstraints = @UniqueConstraint(name = "UK_ARCHIVE_NAME", columnNames = {"NAME"}))
 public class Archive implements Serializable {
 

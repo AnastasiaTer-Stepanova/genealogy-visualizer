@@ -221,14 +221,6 @@ class ChristeningControllerTest extends IntegrationTest {
         assertEquals(christening1.getComment(), christening2.getComment());
         assertFullName(christening1.getFather(), christening2.getFather());
         assertFullName(christening1.getMother(), christening2.getMother());
-        if (christening2.getGodParents() != null) {
-            assertEquals(christening1.getGodParents().size(), christening2.getGodParents().size());
-            List<GodParent> godParents1 = christening1.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            List<GodParent> godParents2 = christening2.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            for (int i = 0; i < godParents1.size(); i++) {
-                assertGodParent(godParents1.get(i), godParents2.get(i));
-            }
-        }
     }
 
     static void assertChristening(EasyChristening christening1, genealogy.visualizer.entity.Christening christening2) {
@@ -242,14 +234,6 @@ class ChristeningControllerTest extends IntegrationTest {
         assertEquals(christening1.getComment(), christening2.getComment());
         assertFullName(christening1.getFather(), christening2.getFather());
         assertFullName(christening1.getMother(), christening2.getMother());
-        if (christening2.getGodParents() != null) {
-            assertEquals(christening1.getGodParents().size(), christening2.getGodParents().size());
-            List<GodParent> godParents1 = christening1.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            List<genealogy.visualizer.entity.model.GodParent> godParents2 = christening2.getGodParents().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            for (int i = 0; i < godParents1.size(); i++) {
-                assertGodParent(godParents1.get(i), godParents2.get(i));
-            }
-        }
     }
 
     static void assertChristening(Christening christening1, Christening christening2) {
@@ -317,7 +301,6 @@ class ChristeningControllerTest extends IntegrationTest {
         assertFullName(godParent1.getRelative(), godParent2.getRelative());
         assertLocality(godParent1.getLocality(), godParent2.getLocality());
     }
-
 
     private genealogy.visualizer.entity.Christening generateRandomExistChristening() {
 

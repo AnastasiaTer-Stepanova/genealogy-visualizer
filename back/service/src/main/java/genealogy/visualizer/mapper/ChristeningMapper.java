@@ -12,7 +12,8 @@ import org.mapstruct.ReportingPolicy;
         uses = {EasyArchiveDocumentMapper.class,
                 EasyPersonMapper.class,
                 EasyLocalityMapper.class,
-                FullNameMapper.class})
+                FullNameMapper.class,
+                GodParentMapper.class})
 public interface ChristeningMapper extends CommonMapper {
 
     genealogy.visualizer.entity.Christening toEntity(Christening christening);

@@ -20,6 +20,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
@@ -31,6 +35,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Person.withBirthLocalityAndDeathLocality",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "birthLocality", subgraph = "localityGraph"),
+                        @NamedAttributeNode(value = "deathLocality", subgraph = "localityGraph"),
+                        @NamedAttributeNode(value = "christening"),
+                        @NamedAttributeNode(value = "death"),
+                },
+                subgraphs = {@NamedSubgraph(name = "localityGraph", type = Locality.class, attributeNodes = {@NamedAttributeNode("anotherNames")}),}),
+        @NamedEntityGraph(name = "Person.withPartners",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "partners", subgraph = "personGraph"),
+                        @NamedAttributeNode(value = "christening"),
+                        @NamedAttributeNode(value = "death"),
+                },
+                subgraphs = {@NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death"),})}),
+        @NamedEntityGraph(name = "Person.withChildren",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "children", subgraph = "personGraph"),
+                        @NamedAttributeNode(value = "christening"),
+                        @NamedAttributeNode(value = "death"),
+                },
+                subgraphs = {@NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death"),})}),
+        @NamedEntityGraph(name = "Person.withParents",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "parents", subgraph = "personGraph"),
+                        @NamedAttributeNode(value = "christening"),
+                        @NamedAttributeNode(value = "death"),
+                },
+                subgraphs = {@NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death"),})}),
+        @NamedEntityGraph(name = "Person.withRevisions",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "revisions", subgraph = "revisionGraph"),
+                        @NamedAttributeNode(value = "christening"),
+                        @NamedAttributeNode(value = "death"),
+                },
+                subgraphs = {@NamedSubgraph(name = "revisionGraph", type = String.class, attributeNodes = {@NamedAttributeNode("anotherNames")})}),
+        @NamedEntityGraph(name = "Person.withMarriages", attributeNodes = {@NamedAttributeNode(value = "marriages")}),
+})
 public class Person implements Serializable {
 
     @Id
@@ -60,13 +103,13 @@ public class Person implements Serializable {
     @Comment(value = "Тип диапазона даты смерти", on = "DEATH_DATE_RANGE_TYPE")
     private DateInfo deathDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BIRTH_LOCALITY_ID",
             referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_PERSON_BIRTH_LOCALITY"))
     private Locality birthLocality;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DEATH_LOCALITY_ID",
             referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_PERSON_DEATH_LOCALITY"))

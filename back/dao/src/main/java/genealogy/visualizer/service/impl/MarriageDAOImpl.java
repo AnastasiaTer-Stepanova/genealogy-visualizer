@@ -93,9 +93,11 @@ public class MarriageDAOImpl implements MarriageDAO {
     @Override
     @Transactional(readOnly = true)
     public Marriage findFullInfoById(Long id) {
-        Marriage marriage = marriageRepository.findFullInfoById(id).orElse(null);
-        if (marriage == null) return null;
-        return marriageRepository.findFullInfoWithPersons(id).orElseThrow();
+        String errorMes = String.format("Marriage not found by id: %d", id);
+        marriageRepository.findWithWitnessesAndArchiveDocument(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        marriageRepository.findWithWifeLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        marriageRepository.findWithHusbandLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        return marriageRepository.findWithPersons(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 
     @Override

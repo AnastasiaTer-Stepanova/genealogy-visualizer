@@ -45,8 +45,3 @@ properties:
     type: string
     maxLength: 255
     example: незаконнорожденный
-  godParents:
-    description: Крестные
-    type: array
-    items:
-      $ref: "god-parent.yaml"

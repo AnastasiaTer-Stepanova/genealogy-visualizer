@@ -10,3 +10,8 @@ allOf:
         $ref: "./../person/easy-person.yaml"
       locality:
         $ref: "./../../locality/easy-locality.yaml"
+      godParents:
+        description: Крестные
+        type: array
+        items:
+          $ref: "god-parent.yaml"

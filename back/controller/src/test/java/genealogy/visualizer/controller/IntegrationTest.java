@@ -47,6 +47,7 @@ import org.springframework.util.MimeType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import static genealogy.visualizer.config.EasyRandomParamsBuilder.getGeneratorParams;
@@ -54,6 +55,7 @@ import static org.jeasy.random.FieldPredicates.named;
 import static org.jeasy.random.FieldPredicates.ofType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -391,5 +393,15 @@ class IntegrationTest {
         assertNotNull(dateInfo2);
         assertEquals(dateInfo1.getDate(), dateInfo2.getDate());
         assertEquals(dateInfo1.getDateRangeType(), dateInfo2.getDateRangeType());
+    }
+
+    static void assertAnotherNames(List<String> anotherNames1, List<String> anotherNames2) {
+        if (anotherNames1 == null || anotherNames2 == null) {
+            assertNull(anotherNames1);
+            assertNull(anotherNames2);
+            return;
+        }
+        assertEquals(anotherNames1.size(), anotherNames2.size());
+        anotherNames1.forEach(an -> assertTrue(anotherNames2.contains(an)));
     }
 }

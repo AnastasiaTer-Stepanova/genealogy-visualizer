@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Death;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,8 +37,8 @@ public interface DeathRepository extends JpaRepository<Death, Long> {
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     Death update(@Param("entity") Death entity);
 
-    @Query("select d from Death d left join fetch d.archiveDocument left join fetch d.person " +
-            "left join fetch d.locality where d.id = :id")
+    @Query("select d from Death d where d.id = :id")
+    @EntityGraph(value = "Death.full", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Death> findFullInfoById(@Param("id") Long id);
 
     @Modifying

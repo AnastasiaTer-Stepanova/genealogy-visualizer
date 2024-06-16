@@ -32,8 +32,11 @@ public class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     public Archive getById(Long id) {
-        return Optional.ofNullable(archiveMapper.toDTO(archiveDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return archiveMapper.toDTO(archiveDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

@@ -34,8 +34,11 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public Person getById(Long id) {
-        return Optional.ofNullable(personMapper.toDTO(personDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return personMapper.toDTO(personDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

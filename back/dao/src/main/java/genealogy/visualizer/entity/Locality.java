@@ -15,6 +15,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -23,10 +27,27 @@ import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Embeddable
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Locality.withAnotherNames", attributeNodes = {@NamedAttributeNode(value = "anotherNames"),}),
+        @NamedEntityGraph(name = "Locality.withDeaths", attributeNodes = {@NamedAttributeNode(value = "deaths"),}),
+        @NamedEntityGraph(name = "Locality.withChristenings", attributeNodes = {@NamedAttributeNode(value = "christenings")}),
+        @NamedEntityGraph(name = "Locality.withPersonsWithBirthLocality",
+                attributeNodes = {@NamedAttributeNode(value = "personsWithBirthLocality", subgraph = "personGraph")},
+                subgraphs = {@NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death"),})}),
+        @NamedEntityGraph(name = "Locality.withPersonsWithDeathLocality",
+                attributeNodes = {@NamedAttributeNode(value = "personsWithDeathLocality", subgraph = "personGraph")},
+                subgraphs = {@NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death"),})}),
+        @NamedEntityGraph(name = "Locality.withMarriagesWithWifeLocality",
+                attributeNodes = {@NamedAttributeNode(value = "marriagesWithWifeLocality"),}),
+        @NamedEntityGraph(name = "Locality.withMarriagesWithHusbandLocality",
+                attributeNodes = {@NamedAttributeNode(value = "marriagesWithHusbandLocality")}),
+})
 @Table(indexes = {@Index(name = "IDX_LOCALITY_NAME", columnList = "NAME")})
 public class Locality implements Serializable {
 
@@ -48,14 +69,14 @@ public class Locality implements Serializable {
     @Comment("Полный адрес: страна, область, округ и т.д.")
     private String address;
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "ANOTHER_LOCALITY_NAME",
             joinColumns = @JoinColumn(name = "LOCALITY_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_LOCALITY_NAME")),
             uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_LOCALITY_NAME",
                     columnNames = {"LOCALITY_ID", "ANOTHER_NAME"}))
     @Column(name = "ANOTHER_NAME", length = 50)
-    private List<String> anotherNames = new ArrayList<>();
+    private Set<String> anotherNames = new HashSet<>();
 
     @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
     private List<Christening> christenings = new ArrayList<>();
@@ -83,14 +104,14 @@ public class Locality implements Serializable {
         this.type = type;
     }
 
-    public Locality(String name, LocalityType type, String address, List<String> anotherNames) {
+    public Locality(String name, LocalityType type, String address, Set<String> anotherNames) {
         this.name = name;
         this.type = type;
         this.address = address;
         this.anotherNames = anotherNames;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, List<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality, List<Marriage> marriagesWithHusbandLocality, List<Marriage> marriagesWithWifeLocality) {
+    public Locality(Long id, String name, LocalityType type, String address, Set<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality, List<Marriage> marriagesWithHusbandLocality, List<Marriage> marriagesWithWifeLocality) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -136,11 +157,11 @@ public class Locality implements Serializable {
         this.address = address;
     }
 
-    public List<String> getAnotherNames() {
+    public Set<String> getAnotherNames() {
         return anotherNames;
     }
 
-    public void setAnotherNames(List<String> anotherNames) {
+    public void setAnotherNames(Set<String> anotherNames) {
         this.anotherNames = anotherNames;
     }
 

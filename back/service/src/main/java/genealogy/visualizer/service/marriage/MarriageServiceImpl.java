@@ -34,8 +34,11 @@ public class MarriageServiceImpl implements MarriageService {
 
     @Override
     public Marriage getById(Long id) {
-        return Optional.ofNullable(marriageMapper.toDTO(marriageDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return marriageMapper.toDTO(marriageDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

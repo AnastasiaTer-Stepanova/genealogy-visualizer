@@ -21,6 +21,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -34,6 +37,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NamedEntityGraph(
+        name = "Christening.full",
+        attributeNodes = {
+                @NamedAttributeNode(value = "locality", subgraph = "localityGraph"),
+                @NamedAttributeNode(value = "godParents", subgraph = "godParentsGraph"),
+                @NamedAttributeNode(value = "person", subgraph = "personGraph"),
+                @NamedAttributeNode("archiveDocument")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "godParentsGraph", attributeNodes = @NamedAttributeNode(value = "locality", subgraph = "localityGraph")),
+                @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
+        }
+)
 @Table(uniqueConstraints = @UniqueConstraint(name = "UK_CHRISTENING_PERSON_ID", columnNames = {"PERSON_ID"}))
 public class Christening implements Serializable {
 
@@ -101,7 +118,7 @@ public class Christening implements Serializable {
             foreignKey = @ForeignKey(name = "FK_LOCALITY"))
     private Locality locality;
 
-    @ElementCollection(targetClass = GodParent.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = GodParent.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "GOD_PARENT",
             joinColumns = @JoinColumn(name = "CHRISTENING_ID",
                     foreignKey = @ForeignKey(name = "FK_GOD_PARENT")))

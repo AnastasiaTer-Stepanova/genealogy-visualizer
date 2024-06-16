@@ -78,7 +78,8 @@ public class DeathDAOImpl implements DeathDAO {
     @Override
     @Transactional(readOnly = true)
     public Death findFullInfoById(Long id) {
-        return deathRepository.findFullInfoById(id).orElse(null);
+        return deathRepository.findFullInfoById(id)
+                .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Death not found by id: %d", id), 1));
     }
 
     @Override

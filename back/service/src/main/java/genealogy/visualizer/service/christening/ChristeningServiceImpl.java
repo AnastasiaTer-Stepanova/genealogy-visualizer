@@ -34,8 +34,11 @@ public class ChristeningServiceImpl implements ChristeningService {
 
     @Override
     public Christening getById(Long id) {
-        return Optional.ofNullable(christeningMapper.toDTO(christeningDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return christeningMapper.toDTO(christeningDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

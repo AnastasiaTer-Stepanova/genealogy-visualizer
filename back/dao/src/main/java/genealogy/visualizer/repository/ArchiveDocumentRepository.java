@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.ArchiveDocument;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -39,19 +40,24 @@ public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     ArchiveDocument update(@Param("entity") ArchiveDocument entity);
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.archive left join fetch ad.previousRevisions " +
-            "left join fetch ad.nextRevision where ad.id = :id ")
-    Optional<ArchiveDocument> findFullInfoById(@Param("id") Long id);
+    @Query("select ad from ArchiveDocument ad where ad.id = :id")
+    @EntityGraph(value = "ArchiveDocument.withArchiveAndNextRevisionAndPreviousRevisions", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<ArchiveDocument> findWithArchiveAndNextRevisionAndPreviousRevisions(@Param("id") Long id);
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.deaths where ad.id = :id ")
-    Optional<ArchiveDocument> findByIdWithDeath(@Param("id") Long id);
+    @Query("select ad from ArchiveDocument ad where ad.id = :id")
+    @EntityGraph(value = "ArchiveDocument.withDeaths", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<ArchiveDocument> findWithDeaths(@Param("id") Long id);
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.marriages where ad.id = :id ")
-    Optional<ArchiveDocument> findByIdWithMarriages(@Param("id") Long id);
+    @Query("select ad from ArchiveDocument ad where ad.id = :id")
+    @EntityGraph(value = "ArchiveDocument.withChristenings", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<ArchiveDocument> findWithChristenings(@Param("id") Long id);
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.familyRevisions where ad.id = :id ")
-    Optional<ArchiveDocument> findByIdWithFamilyRevisions(@Param("id") Long id);
+    @Query("select ad from ArchiveDocument ad where ad.id = :id")
+    @EntityGraph(value = "ArchiveDocument.withRevisions", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<ArchiveDocument> findWithRevisions(@Param("id") Long id);
 
-    @Query("select ad from ArchiveDocument ad left join fetch ad.christenings where ad.id = :id ")
-    Optional<ArchiveDocument> findByIdWithChristenings(@Param("id") Long id);
+    @Query("select ad from ArchiveDocument ad where ad.id = :id")
+    @EntityGraph(value = "ArchiveDocument.withMarriages", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<ArchiveDocument> findWithMarriages(@Param("id") Long id);
+
 }

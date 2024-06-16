@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.FamilyRevision;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,8 +29,8 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
             nativeQuery = true)
     List<String> findAnotherNames(@Param("id") Long id);
 
-    @Query(value = "select fs from FamilyRevision fs left join fetch fs.anotherNames an left join fetch fs.archiveDocument ad left join fetch ad.archive " +
-            "left join fetch ad.nextRevision left join fetch fs.partner left join fetch fs.person where fs.id = :id")
+    @Query("select fr from FamilyRevision fr where fr.id = :id")
+    @EntityGraph(value = "FamilyRevision.full", type = EntityGraph.EntityGraphType.LOAD)
     Optional<FamilyRevision> findFullInfoById(@Param("id") Long id);
 
     @Modifying

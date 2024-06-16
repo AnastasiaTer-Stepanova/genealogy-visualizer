@@ -21,6 +21,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
 
@@ -30,6 +34,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "Marriage.withWitnessesAndArchiveDocument",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "witnesses", subgraph = "witnessesGraph"),
+                        @NamedAttributeNode("archiveDocument")
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "witnessesGraph", attributeNodes = @NamedAttributeNode(value = "locality", subgraph = "localityGraph")),
+                        @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                }
+        ),
+        @NamedEntityGraph(
+                name = "Marriage.withHusbandLocality",
+                attributeNodes = {@NamedAttributeNode(value = "husbandLocality", subgraph = "localityGraph")},
+                subgraphs = {@NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")})}
+        ),
+        @NamedEntityGraph(
+                name = "Marriage.withWifeLocality",
+                attributeNodes = {@NamedAttributeNode(value = "wifeLocality", subgraph = "localityGraph")},
+                subgraphs = {@NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")})}
+        ),
+        @NamedEntityGraph(
+                name = "Marriage.withPersons", attributeNodes = {@NamedAttributeNode(value = "persons", subgraph = "personsGraph")},
+                subgraphs = {@NamedSubgraph(name = "personsGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")})}
+        ),
+})
 public class Marriage implements Serializable {
 
     @Id
@@ -137,7 +168,7 @@ public class Marriage implements Serializable {
     @Comment("Комментарий")
     private String comment;
 
-    @ElementCollection(targetClass = Witness.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Witness.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "WITNESS",
             joinColumns = @JoinColumn(name = "MARRIAGE_ID",
                     foreignKey = @ForeignKey(name = "FK_MARRIAGE")))

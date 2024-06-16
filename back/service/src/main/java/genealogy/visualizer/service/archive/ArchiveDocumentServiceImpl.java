@@ -32,8 +32,11 @@ public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
 
     @Override
     public ArchiveDocument getById(Long id) {
-        return Optional.ofNullable(archiveDocumentMapper.toDTO(archiveDocumentDAO.findFullInfoById(id)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return archiveDocumentMapper.toDTO(archiveDocumentDAO.findFullInfoById(id));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Override

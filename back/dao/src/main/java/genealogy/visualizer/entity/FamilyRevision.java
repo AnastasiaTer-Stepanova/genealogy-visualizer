@@ -20,6 +20,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -27,10 +30,23 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@NamedEntityGraph(
+        name = "FamilyRevision.full",
+        attributeNodes = {
+                @NamedAttributeNode(value = "partner", subgraph = "familyRevisionGraph"),
+                @NamedAttributeNode(value = "person", subgraph = "personGraph"),
+                @NamedAttributeNode("archiveDocument"),
+                @NamedAttributeNode("anotherNames"),
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "familyRevisionGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
+        }
+)
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),
@@ -127,7 +143,7 @@ public class FamilyRevision implements Serializable {
             uniqueConstraints = @UniqueConstraint(name = "UK_ANOTHER_NAME_IN_REVISION",
                     columnNames = {"FAMILY_REVISION_ID", "ANOTHER_NAME"}))
     @Column(name = "ANOTHER_NAME", length = 50)
-    private List<String> anotherNames = new ArrayList<>();
+    private Set<String> anotherNames = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ARCHIVE_DOCUMENT_ID",
@@ -144,7 +160,7 @@ public class FamilyRevision implements Serializable {
     public FamilyRevision() {
     }
 
-    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, Boolean isLastNameClearlyStated, FullName fullName, Age age, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, List<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
+    public FamilyRevision(Long id, FamilyRevision partner, Short familyRevisionNumber, Short nextFamilyRevisionNumber, Short listNumber, Boolean isHeadOfYard, Boolean isLastNameClearlyStated, FullName fullName, Age age, Age ageInNextRevision, String departed, String arrived, Byte familyGeneration, String comment, Sex sex, FullName relative, Set<String> anotherNames, ArchiveDocument archiveDocument, Person person) {
         this.id = id;
         this.partner = partner;
         this.familyRevisionNumber = familyRevisionNumber;
@@ -294,11 +310,11 @@ public class FamilyRevision implements Serializable {
         this.relative = relative;
     }
 
-    public List<String> getAnotherNames() {
+    public Set<String> getAnotherNames() {
         return anotherNames;
     }
 
-    public void setAnotherNames(List<String> anotherNames) {
+    public void setAnotherNames(Set<String> anotherNames) {
         this.anotherNames = anotherNames;
     }
 

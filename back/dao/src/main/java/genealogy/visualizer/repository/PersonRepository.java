@@ -1,6 +1,7 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Person;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,22 +20,29 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     Person update(@Param("entity") Person entity);
 
-    @Query("select p from Person p left join fetch p.marriages where p.id = :id ")
-    Optional<Person> findByIdWithMarriages(@Param("id") Long id);
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withBirthLocalityAndDeathLocality", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithBirthLocalityAndDeathLocality(@Param("id") Long id);
 
-    @Query("select p from Person p left join fetch p.children where p.id = :id ")
-    Optional<Person> findByIdWithChildren(@Param("id") Long id);
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withPartners", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithPartners(@Param("id") Long id);
 
-    @Query("select p from Person p left join fetch p.partners where p.id = :id ")
-    Optional<Person> findByIdWithPartners(@Param("id") Long id);
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withParents", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithParents(@Param("id") Long id);
 
-    @Query("select p from Person p left join fetch p.parents where p.id = :id ")
-    Optional<Person> findByIdWithParents(@Param("id") Long id);
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withChildren", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithChildren(@Param("id") Long id);
 
-    @Query("select p from Person p left join fetch p.death left join fetch p.christening left join fetch p.birthLocality " +
-            "left join fetch p.deathLocality left join fetch p.revisions left join fetch p.christening.archiveDocument " +
-            "left join fetch p.christening.archiveDocument.archive where p.id = :id ")
-    Optional<Person> findFullInfoById(@Param("id") Long id);
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withRevisions", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithRevisions(@Param("id") Long id);
+
+    @Query("SELECT p FROM Person p WHERE p.id = :id")
+    @EntityGraph(value = "Person.withMarriages", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Person> findPersonWithMarriages(@Param("id") Long id);
 
     @Modifying
     @Query(value = "delete from person_parent where parent_id = :parentId and person_id = :personId", nativeQuery = true)

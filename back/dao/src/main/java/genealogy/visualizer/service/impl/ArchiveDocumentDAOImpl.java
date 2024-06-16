@@ -112,12 +112,12 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
     @Override
     @Transactional(readOnly = true)
     public ArchiveDocument findFullInfoById(Long id) {
-        ArchiveDocument archiveDocument = archiveDocumentRepository.findFullInfoById(id).orElse(null);
-        if (archiveDocument == null) return null;
-        archiveDocumentRepository.findByIdWithDeath(id).orElseThrow();
-        archiveDocumentRepository.findByIdWithMarriages(id).orElseThrow();
-        archiveDocumentRepository.findByIdWithFamilyRevisions(id).orElseThrow();
-        return archiveDocumentRepository.findByIdWithChristenings(id).orElseThrow();
+        String errorMes = String.format("Archive document not found by id: %d", id);
+        archiveDocumentRepository.findWithArchiveAndNextRevisionAndPreviousRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        archiveDocumentRepository.findWithDeaths(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        archiveDocumentRepository.findWithChristenings(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        archiveDocumentRepository.findWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        return archiveDocumentRepository.findWithMarriages(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 
     @Override

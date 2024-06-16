@@ -2,6 +2,7 @@ package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.model.Witness;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -51,12 +52,21 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Query(value = "insert into person_marriage (person_id, marriage_id) values (:personId, :marriageId)", nativeQuery = true)
     void insertPersonMarriageLink(@Param("personId") Long personId, @Param("marriageId") Long marriageId);
 
-    @Query("select m from Marriage m left join fetch m.archiveDocument left join fetch m.witnesses " +
-            "left join fetch m.wifeLocality left join fetch m.husbandLocality where m.id = :id")
-    Optional<Marriage> findFullInfoById(@Param("id") Long id);
+    @Query("select m from Marriage m where m.id = :id")
+    @EntityGraph(value = "Marriage.withWitnessesAndArchiveDocument", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Marriage> findWithWitnessesAndArchiveDocument(@Param("id") Long id);
 
-    @Query("select m from Marriage m left join fetch m.persons where m.id = :id")
-    Optional<Marriage> findFullInfoWithPersons(@Param("id") Long id);
+    @Query("select m from Marriage m where m.id = :id")
+    @EntityGraph(value = "Marriage.withHusbandLocality", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Marriage> findWithHusbandLocality(@Param("id") Long id);
+
+    @Query("select m from Marriage m where m.id = :id")
+    @EntityGraph(value = "Marriage.withWifeLocality", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Marriage> findWithWifeLocality(@Param("id") Long id);
+
+    @Query("select m from Marriage m where m.id = :id")
+    @EntityGraph(value = "Marriage.withPersons", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Marriage> findWithPersons(@Param("id") Long id);
 
     @Modifying
     @Query(value = "update marriage set husband_locality_id = :newHusbandLocalityId where husband_locality_id = :husbandLocalityId", nativeQuery = true)
