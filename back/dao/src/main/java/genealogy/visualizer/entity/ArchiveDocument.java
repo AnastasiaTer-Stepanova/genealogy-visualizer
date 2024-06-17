@@ -36,7 +36,14 @@ import java.util.List;
                 }),
         @NamedEntityGraph(name = "ArchiveDocument.withRevisions",
                 attributeNodes = {@NamedAttributeNode(value = "familyRevisions", subgraph = "revisionGraph")},
-                subgraphs = {@NamedSubgraph(name = "revisionGraph", type = String.class, attributeNodes = {@NamedAttributeNode("anotherNames")})}),
+                subgraphs = {@NamedSubgraph(name = "revisionGraph",
+                        attributeNodes = {
+                                @NamedAttributeNode(value = "partner", subgraph = "anotherNamesGraph"),
+                                @NamedAttributeNode("anotherNames"),
+                        }),
+                        @NamedSubgraph(name = "anotherNamesGraph", type = String.class, attributeNodes = {
+                                @NamedAttributeNode("anotherNames")})
+                }),
         @NamedEntityGraph(name = "ArchiveDocument.withDeaths", attributeNodes = {@NamedAttributeNode(value = "deaths")}),
         @NamedEntityGraph(name = "ArchiveDocument.withChristenings", attributeNodes = {@NamedAttributeNode(value = "christenings")}),
         @NamedEntityGraph(name = "ArchiveDocument.withMarriages", attributeNodes = {@NamedAttributeNode(value = "marriages")}),

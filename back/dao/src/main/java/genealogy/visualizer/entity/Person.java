@@ -71,7 +71,14 @@ import java.util.List;
                         @NamedAttributeNode(value = "christening"),
                         @NamedAttributeNode(value = "death"),
                 },
-                subgraphs = {@NamedSubgraph(name = "revisionGraph", type = String.class, attributeNodes = {@NamedAttributeNode("anotherNames")})}),
+                subgraphs = {@NamedSubgraph(name = "revisionGraph",
+                        attributeNodes = {
+                                @NamedAttributeNode(value = "partner", subgraph = "anotherNamesGraph"),
+                                @NamedAttributeNode("anotherNames"),
+                        }),
+                        @NamedSubgraph(name = "anotherNamesGraph", type = String.class, attributeNodes = {
+                                @NamedAttributeNode("anotherNames")})
+                }),
         @NamedEntityGraph(name = "Person.withMarriages", attributeNodes = {@NamedAttributeNode(value = "marriages")}),
 })
 public class Person implements Serializable {

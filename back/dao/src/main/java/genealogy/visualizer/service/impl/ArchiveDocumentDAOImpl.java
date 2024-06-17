@@ -28,8 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
@@ -118,7 +121,28 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
         archiveDocumentRepository.findWithArchiveAndNextRevisionAndPreviousRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         archiveDocumentRepository.findWithDeaths(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         archiveDocumentRepository.findWithChristenings(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
-        archiveDocumentRepository.findWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        ArchiveDocument result = archiveDocumentRepository.findWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        Map<Long, FamilyRevision> familyRevisions = new HashMap<>();
+        result.getFamilyRevisions().forEach(familyRevision -> {
+            FamilyRevision fr = familyRevisions.get(familyRevision.getId());
+            if (fr == null) {
+                familyRevisions.put(familyRevision.getId(), familyRevision);
+                return;
+            }
+            if (fr.getPartner() != null && fr.getPartner().getAnotherNames() != null
+                    && familyRevision.getPartner() != null && familyRevision.getPartner().getAnotherNames() != null) {
+                Set<String> anotherNames = fr.getPartner().getAnotherNames();
+                anotherNames.addAll(familyRevision.getPartner().getAnotherNames());
+                fr.getPartner().setAnotherNames(anotherNames);
+            }
+            if (fr.getAnotherNames() != null && familyRevision.getAnotherNames() != null) {
+                Set<String> anotherNames = fr.getAnotherNames();
+                anotherNames.addAll(familyRevision.getAnotherNames());
+                fr.setAnotherNames(anotherNames);
+            }
+            familyRevisions.put(familyRevision.getId(), familyRevision);
+        });
+        result.setFamilyRevisions(familyRevisions.values().stream().toList());
         return archiveDocumentRepository.findWithMarriages(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 

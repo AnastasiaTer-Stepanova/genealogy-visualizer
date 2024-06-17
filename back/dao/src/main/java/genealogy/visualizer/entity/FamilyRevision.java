@@ -153,7 +153,7 @@ public class FamilyRevision implements Serializable {
     @Comment(value = "Статус родственника", on = "RELATIVE_STATUS")
     private FullName relative;
 
-    @ElementCollection(targetClass = String.class)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "ANOTHER_NAME_IN_REVISION",
             joinColumns = @JoinColumn(name = "FAMILY_REVISION_ID",
                     foreignKey = @ForeignKey(name = "FK_ANOTHER_NAME_IN_REVISION")),

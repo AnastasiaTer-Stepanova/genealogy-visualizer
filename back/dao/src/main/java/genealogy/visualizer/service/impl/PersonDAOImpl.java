@@ -26,7 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
 import static genealogy.visualizer.service.helper.FilterHelper.getGraphsResult;
@@ -122,7 +125,28 @@ public class PersonDAOImpl implements PersonDAO {
         personRepository.findPersonWithPartners(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         personRepository.findPersonWithParents(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         personRepository.findPersonWithChildren(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
-        personRepository.findPersonWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        Person result = personRepository.findPersonWithRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        Map<Long, FamilyRevision> familyRevisions = new HashMap<>();
+        result.getRevisions().forEach(familyRevision -> {
+            FamilyRevision fr = familyRevisions.get(familyRevision.getId());
+            if (fr == null) {
+                familyRevisions.put(familyRevision.getId(), familyRevision);
+                return;
+            }
+            if (fr.getPartner() != null && fr.getPartner().getAnotherNames() != null
+                    && familyRevision.getPartner() != null && familyRevision.getPartner().getAnotherNames() != null) {
+                Set<String> anotherNames = fr.getPartner().getAnotherNames();
+                anotherNames.addAll(familyRevision.getPartner().getAnotherNames());
+                fr.getPartner().setAnotherNames(anotherNames);
+            }
+            if (fr.getAnotherNames() != null && familyRevision.getAnotherNames() != null) {
+                Set<String> anotherNames = fr.getAnotherNames();
+                anotherNames.addAll(familyRevision.getAnotherNames());
+                fr.setAnotherNames(anotherNames);
+            }
+            familyRevisions.put(familyRevision.getId(), familyRevision);
+        });
+        result.setRevisions(familyRevisions.values().stream().toList());
         return personRepository.findPersonWithMarriages(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
     }
 
