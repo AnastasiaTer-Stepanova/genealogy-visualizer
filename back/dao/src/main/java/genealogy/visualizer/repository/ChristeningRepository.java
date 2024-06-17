@@ -38,7 +38,9 @@ public interface ChristeningRepository extends JpaRepository<Christening, Long> 
             "where id = :#{#entity.id} returning *", nativeQuery = true)
     Christening update(@Param("entity") Christening entity);
 
-    @Query("select c from Christening c where c.id = :id")
+    @Query("select c from Christening c left join fetch c.godParents left join fetch c.godParents.locality " +
+            "left join fetch c.godParents.locality.anotherNames " +
+            "where c.id = :id")
     @EntityGraph(value = "Christening.full", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Christening> findFullInfoById(@Param("id") Long id);
 

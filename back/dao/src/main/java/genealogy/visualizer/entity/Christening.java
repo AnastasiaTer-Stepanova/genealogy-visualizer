@@ -41,12 +41,10 @@ import java.util.List;
         name = "Christening.full",
         attributeNodes = {
                 @NamedAttributeNode(value = "locality", subgraph = "localityGraph"),
-                @NamedAttributeNode(value = "godParents", subgraph = "godParentsGraph"),
                 @NamedAttributeNode(value = "person", subgraph = "personGraph"),
                 @NamedAttributeNode("archiveDocument")
         },
         subgraphs = {
-                @NamedSubgraph(name = "godParentsGraph", attributeNodes = @NamedAttributeNode(value = "locality", subgraph = "localityGraph")),
                 @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
                 @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
         }

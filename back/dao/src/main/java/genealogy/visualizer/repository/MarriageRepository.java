@@ -52,8 +52,9 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Query(value = "insert into person_marriage (person_id, marriage_id) values (:personId, :marriageId)", nativeQuery = true)
     void insertPersonMarriageLink(@Param("personId") Long personId, @Param("marriageId") Long marriageId);
 
-    @Query("select m from Marriage m where m.id = :id")
-    @EntityGraph(value = "Marriage.withWitnessesAndArchiveDocument", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("select m from Marriage m left join fetch m.witnesses left join fetch m.witnesses.locality left join fetch m.witnesses.locality.anotherNames " +
+            "where m.id = :id")
+    @EntityGraph(value = "Marriage.withArchiveDocument", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Marriage> findWithWitnessesAndArchiveDocument(@Param("id") Long id);
 
     @Query("select m from Marriage m where m.id = :id")
