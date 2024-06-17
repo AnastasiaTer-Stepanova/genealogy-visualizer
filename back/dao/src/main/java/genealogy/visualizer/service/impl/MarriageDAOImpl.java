@@ -72,6 +72,7 @@ public class MarriageDAOImpl implements MarriageDAO {
         marriageForSave.setPersons(Collections.emptyList());
         Marriage savedMarriage = marriageRepository.save(marriageForSave);
         updateLinks(savedMarriage, marriage);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedMarriage.getId());
     }
@@ -86,6 +87,7 @@ public class MarriageDAOImpl implements MarriageDAO {
         if (updatedMarriage == null)
             throw new EmptyResultDataAccessException("Updating marriage failed", 1);
         updateLinks(updatedMarriage, marriage);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedMarriage.getId());
     }

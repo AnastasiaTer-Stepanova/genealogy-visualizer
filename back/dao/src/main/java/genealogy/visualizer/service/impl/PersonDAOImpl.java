@@ -94,6 +94,7 @@ public class PersonDAOImpl implements PersonDAO {
 
         Person savedPerson = personRepository.save(personForSave);
         updateLinks(savedPerson, person);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedPerson.getId());
     }
@@ -108,6 +109,7 @@ public class PersonDAOImpl implements PersonDAO {
         if (updatedPerson == null)
             throw new EmptyResultDataAccessException("Updating person failed", 1);
         updateLinks(updatedPerson, person);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedPerson.getId());
     }

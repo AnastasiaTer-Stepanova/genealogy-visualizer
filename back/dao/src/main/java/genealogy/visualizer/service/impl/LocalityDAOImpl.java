@@ -82,6 +82,7 @@ public class LocalityDAOImpl implements LocalityDAO {
         localityForSave.setPersonsWithBirthLocality(Collections.emptyList());
         Locality savedLocality = localityRepository.save(localityForSave);
         updateLinks(savedLocality, locality);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedLocality.getId());
     }
@@ -99,6 +100,7 @@ public class LocalityDAOImpl implements LocalityDAO {
             locality.getAnotherNames().forEach(an -> localityRepository.insertAnotherName(updatedLocality.getId(), an));
         }
         updateLinks(updatedLocality, locality);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedLocality.getId());
     }

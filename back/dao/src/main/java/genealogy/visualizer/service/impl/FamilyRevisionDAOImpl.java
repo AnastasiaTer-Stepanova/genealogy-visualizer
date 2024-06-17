@@ -71,6 +71,7 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
         FamilyRevision savedFamilyRevision = familyRevisionRepository.save(familyRevisionForSave);
         updateLinks(savedFamilyRevision, familyRevision);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedFamilyRevision.getId());
     }
@@ -89,6 +90,7 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
             familyRevision.getAnotherNames().forEach(an -> familyRevisionRepository.insertAnotherName(updatedFamilyRevision.getId(), an));
         }
         updateLinks(updatedFamilyRevision, familyRevision);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedFamilyRevision.getId());
     }

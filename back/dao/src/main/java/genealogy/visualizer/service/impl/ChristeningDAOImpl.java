@@ -77,6 +77,7 @@ public class ChristeningDAOImpl implements ChristeningDAO {
         Christening updatedChristening = christeningRepository.update(christening);
         if (updatedChristening == null)
             throw new EmptyResultDataAccessException("Updating christening failed", 1);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedChristening.getId());
     }

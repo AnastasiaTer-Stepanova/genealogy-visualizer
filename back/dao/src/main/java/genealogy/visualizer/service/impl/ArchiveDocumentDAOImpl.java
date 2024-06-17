@@ -91,6 +91,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
         ArchiveDocument savedArchiveDocument = archiveDocumentRepository.save(archiveDocumentForSave);
         updateLinks(savedArchiveDocument, archiveDocument);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedArchiveDocument.getId());
     }
@@ -105,12 +106,13 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
         if (updatedArchiveDocument == null)
             throw new EmptyResultDataAccessException("Updating archive document failed", 1);
         updateLinks(updatedArchiveDocument, archiveDocument);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedArchiveDocument.getId());
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ArchiveDocument findFullInfoById(Long id) {
         String errorMes = String.format("Archive document not found by id: %d", id);
         archiveDocumentRepository.findWithArchiveAndNextRevisionAndPreviousRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));

@@ -52,6 +52,7 @@ public class ArchiveDAOImpl implements ArchiveDAO {
         archiveForSave.setArchiveDocuments(Collections.emptyList());
         Archive savedArchive = archiveRepository.save(archiveForSave);
         updateLinks(savedArchive, archive);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(savedArchive.getId());
     }
@@ -65,6 +66,7 @@ public class ArchiveDAOImpl implements ArchiveDAO {
         if (updatedArchive == null)
             throw new EmptyResultDataAccessException("Updating archive failed", 1);
         updateLinks(updatedArchive, archive);
+        entityManager.flush();
         entityManager.clear();
         return this.findFullInfoById(updatedArchive.getId());
     }
