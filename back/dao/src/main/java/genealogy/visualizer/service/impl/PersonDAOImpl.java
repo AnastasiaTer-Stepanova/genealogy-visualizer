@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
+import static genealogy.visualizer.service.helper.FilterHelper.getGraphsResult;
 
 public class PersonDAOImpl implements PersonDAO {
 
@@ -141,7 +142,7 @@ public class PersonDAOImpl implements PersonDAO {
         }
         predicates.addAll(addFullNameFilter(cb, root, filter.getFullName(), "fullName"));
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        return getGraphsResult(filter.getGraphs(), cq, entityManager);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

@@ -23,6 +23,7 @@ import java.util.List;
 
 import static genealogy.visualizer.service.helper.FilterHelper.addArchiveDocumentIdFilter;
 import static genealogy.visualizer.service.helper.FilterHelper.addFullNameFilter;
+import static genealogy.visualizer.service.helper.FilterHelper.getGraphsResult;
 
 public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
@@ -115,7 +116,7 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
             predicates.add(cb.isNull(root.get("person")));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        return getGraphsResult(filter.getGraphs(), cq, entityManager);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

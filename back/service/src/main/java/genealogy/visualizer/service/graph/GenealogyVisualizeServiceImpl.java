@@ -31,7 +31,7 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
             //TODO После добавления фильтрации изменить реализацию
             throw new BadRequestException("Фильтрация сейчас невозможна");
         }
-        List<Person> entities = personDAO.filter(new PersonFilterDTO());
+        List<Person> entities = personDAO.filter(new PersonFilterDTO(List.of("Person.withPartners", "Person.withChildren", "Person.withParents")));
         if (entities == null) {
             throw new NotFoundException();
         }

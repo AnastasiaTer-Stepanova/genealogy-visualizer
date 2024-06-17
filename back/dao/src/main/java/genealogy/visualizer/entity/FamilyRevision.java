@@ -22,6 +22,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
@@ -34,19 +35,35 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@NamedEntityGraph(
-        name = "FamilyRevision.full",
-        attributeNodes = {
-                @NamedAttributeNode(value = "partner", subgraph = "familyRevisionGraph"),
-                @NamedAttributeNode(value = "person", subgraph = "personGraph"),
-                @NamedAttributeNode("archiveDocument"),
-                @NamedAttributeNode("anotherNames"),
-        },
-        subgraphs = {
-                @NamedSubgraph(name = "familyRevisionGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
-                @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
-        }
-)
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "FamilyRevision.full",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "partner", subgraph = "familyRevisionGraph"),
+                        @NamedAttributeNode(value = "person", subgraph = "personGraph"),
+                        @NamedAttributeNode("archiveDocument"),
+                        @NamedAttributeNode("anotherNames"),
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "familyRevisionGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                        @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
+                }
+        ),
+        @NamedEntityGraph(
+                name = "FamilyRevision.withArchiveDocumentAndAnotherRevisionsInside",
+                attributeNodes = {
+                        @NamedAttributeNode(value ="archiveDocument", subgraph = "archiveDocumentGraph"),
+                        @NamedAttributeNode("anotherNames"),
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "archiveDocumentGraph", attributeNodes = {
+                                @NamedAttributeNode("nextRevision"),
+                                @NamedAttributeNode("previousRevisions"),
+                        }),
+                }
+        ),
+
+})
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(name = "UK_FAMILY_REVISION_PARTNER_ID", columnNames = {"PARTNER_ID"}),

@@ -2,6 +2,9 @@ package genealogy.visualizer.dto;
 
 import genealogy.visualizer.entity.enums.Sex;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FamilyRevisionFilterDTO {
 
     private Long archiveDocumentId;
@@ -14,12 +17,18 @@ public class FamilyRevisionFilterDTO {
 
     private Boolean isFindWithHavePerson;
 
-    public FamilyRevisionFilterDTO(Long archiveDocumentId, Short familyRevisionNumber, FullNameFilterDTO fullName, Sex sex, Boolean isFindWithHavePerson) {
+    private List<String> graphs = new ArrayList<>();
+
+    public FamilyRevisionFilterDTO() {
+    }
+
+    public FamilyRevisionFilterDTO(Long archiveDocumentId, Short familyRevisionNumber, FullNameFilterDTO fullName, Sex sex, Boolean isFindWithHavePerson, List<String> graphs) {
         this.archiveDocumentId = archiveDocumentId;
         this.familyRevisionNumber = familyRevisionNumber;
         this.fullName = fullName;
         this.sex = sex;
         this.isFindWithHavePerson = isFindWithHavePerson;
+        this.graphs = graphs;
     }
 
     public Long getArchiveDocumentId() {
@@ -60,5 +69,13 @@ public class FamilyRevisionFilterDTO {
 
     public void setFindWithHavePerson(Boolean findWithHavePerson) {
         isFindWithHavePerson = findWithHavePerson;
+    }
+
+    public List<String> getGraphs() {
+        return graphs;
+    }
+
+    public void setGraphs(List<String> graphs) {
+        this.graphs = graphs;
     }
 }

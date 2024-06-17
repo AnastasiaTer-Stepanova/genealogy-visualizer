@@ -2,7 +2,11 @@ package genealogy.visualizer.service.helper;
 
 import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.entity.ArchiveDocument;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -35,5 +39,19 @@ public class FilterHelper {
             return cb.equal(join.get("id"), archiveDocumentId);
         }
         return null;
+    }
+
+    public static <T> List<T> getGraphsResult(List<String> graphs, CriteriaQuery<T> cq, EntityManager entityManager) {
+        TypedQuery<T> query = entityManager.createQuery(cq);
+        if (graphs == null || graphs.isEmpty()) {
+            return query.getResultList();
+        }
+        List<T> results = null;
+        for (String graph : graphs) {
+            EntityGraph<?> entityGraph = entityManager.createEntityGraph(graph);
+            query.setHint("jakarta.persistence.fetchgraph", entityGraph);
+            results = query.getResultList();
+        }
+        return results;
     }
 }

@@ -2,6 +2,9 @@ package genealogy.visualizer.dto;
 
 import genealogy.visualizer.entity.enums.Sex;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PersonFilterDTO {
 
     private FullNameFilterDTO fullName;
@@ -11,6 +14,15 @@ public class PersonFilterDTO {
     private Integer deathYear;
 
     private Sex sex;
+
+    private List<String> graphs = new ArrayList<>();
+
+    public PersonFilterDTO() {
+    }
+
+    public PersonFilterDTO(List<String> graphs) {
+        this.graphs = graphs;
+    }
 
     public FullNameFilterDTO getFullName() {
         return fullName;
@@ -42,5 +54,13 @@ public class PersonFilterDTO {
 
     public void setSex(Sex sex) {
         this.sex = sex;
+    }
+
+    public List<String> getGraphs() {
+        return graphs;
+    }
+
+    public void setGraphs(List<String> graphs) {
+        this.graphs = graphs;
     }
 }

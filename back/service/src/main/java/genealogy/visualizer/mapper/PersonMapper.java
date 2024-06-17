@@ -4,6 +4,7 @@ import genealogy.visualizer.api.model.Person;
 import genealogy.visualizer.api.model.PersonFilter;
 import genealogy.visualizer.dto.PersonFilterDTO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -21,6 +22,7 @@ public interface PersonMapper {
 
     genealogy.visualizer.entity.Person toEntity(Person person);
 
+    @Mapping(target = "graphs", ignore = true)
     PersonFilterDTO toFilter(PersonFilter filter);
 
 }

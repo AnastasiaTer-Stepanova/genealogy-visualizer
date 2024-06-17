@@ -26,5 +26,6 @@ public interface FamilyRevisionMapper {
     FamilyMember toDTO(genealogy.visualizer.entity.FamilyRevision familyMember);
 
     @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
+    @Mapping(target = "graphs", ignore = true)
     FamilyRevisionFilterDTO toFilter(FamilyMemberFilter filter);
 }
