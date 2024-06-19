@@ -39,10 +39,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:3.2.5")
     testImplementation("org.springframework.data:spring-data-jpa:3.2.5")
     testImplementation("org.springframework.security:spring-security-crypto:6.2.4")
-//    testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.8"))
+    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
     testImplementation("org.testcontainers:postgresql:1.19.8")
     testImplementation("org.testcontainers:testcontainers:1.19.8")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
 tasks.named<BootJar>("bootJar") {
