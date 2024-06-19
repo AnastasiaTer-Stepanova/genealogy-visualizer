@@ -11,14 +11,15 @@ import java.util.Optional;
 
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
+    @Modifying
     @Query(value = "update person set " +
             "birth_date = :#{#entity.birthDate?.date}, birth_date_range_type = :#{#entity.birthDate?.dateRangeType.name}, " +
             "death_date = :#{#entity.deathDate?.date}, death_date_range_type = :#{#entity.deathDate?.dateRangeType.name}, " +
             "last_name = :#{#entity.fullName?.lastName}, name = :#{#entity.fullName?.name}, status = :#{#entity.fullName?.status}, " +
             "surname = :#{#entity.fullName?.surname}, birth_locality_id = :#{#entity.birthLocality?.id}, death_locality_id = :#{#entity.deathLocality?.id}, " +
             "sex = :#{#entity.sex?.name} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    Person update(@Param("entity") Person entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") Person entity);
 
     @Query("SELECT p FROM Person p WHERE p.id = :id")
     @EntityGraph(value = "Person.withBirthLocalityAndDeathLocality", type = EntityGraph.EntityGraphType.LOAD)

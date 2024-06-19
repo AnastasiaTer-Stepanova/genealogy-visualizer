@@ -27,6 +27,7 @@ public interface DeathRepository extends JpaRepository<Death, Long> {
     @Query(value = "update death set archive_document_id = :newArchiveDocumentId where id = :id", nativeQuery = true)
     void updateArchiveDocumentIdById(@Param("id") Long id, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
 
+    @Modifying
     @Query(value = "update death set " +
             "age = :#{#entity.age?.age}, age_type = :#{#entity.age?.type?.name}, burial_place = :#{#entity.burialPlace}, " +
             "last_name = :#{#entity.fullName?.lastName}, name = :#{#entity.fullName?.name}, status = :#{#entity.fullName?.status}, " +
@@ -34,8 +35,8 @@ public interface DeathRepository extends JpaRepository<Death, Long> {
             "relative_status = :#{#entity.relative?.status}, relative_surname = :#{#entity.relative?.surname}, " +
             "cause = :#{#entity.cause}, comment = :#{#entity.comment}, date = :#{#entity.date}, person_id = :#{#entity.person?.id}, " +
             "archive_document_id = :#{#entity.archiveDocument?.id}, locality_id = :#{#entity.locality?.id} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    Death update(@Param("entity") Death entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") Death entity);
 
     @Query("select d from Death d where d.id = :id")
     @EntityGraph(value = "Death.full", type = EntityGraph.EntityGraphType.LOAD)

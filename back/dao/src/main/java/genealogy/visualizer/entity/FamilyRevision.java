@@ -81,7 +81,7 @@ public class FamilyRevision implements Serializable {
     private Long id;
 
     @Comment("Идентификатор записи партнера (мужа/жены) в рамках одной семьи")
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PARTNER_ID",
             referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_FAMILY_REVISION_PARTNER"))

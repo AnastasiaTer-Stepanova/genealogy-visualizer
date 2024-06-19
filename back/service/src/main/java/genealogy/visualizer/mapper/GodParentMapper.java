@@ -1,7 +1,9 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.GodParent;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -10,7 +12,10 @@ import org.mapstruct.ReportingPolicy;
         uses = {FullNameMapper.class, EasyLocalityMapper.class})
 public interface GodParentMapper extends CommonMapper {
 
-    genealogy.visualizer.entity.model.GodParent toEntity(GodParent godParent);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "christening", ignore = true)
+    genealogy.visualizer.entity.GodParent toEntity(GodParent godParent);
 
-    GodParent toDTO(genealogy.visualizer.entity.model.GodParent godParent);
+    @BeanMapping(ignoreUnmappedSourceProperties = {"id", "christening"})
+    GodParent toDTO(genealogy.visualizer.entity.GodParent godParent);
 }

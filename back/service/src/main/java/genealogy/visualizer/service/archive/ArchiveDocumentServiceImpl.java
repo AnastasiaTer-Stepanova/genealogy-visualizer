@@ -11,7 +11,6 @@ import genealogy.visualizer.service.ArchiveDocumentDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
 
@@ -63,7 +62,10 @@ public class ArchiveDocumentServiceImpl implements ArchiveDocumentService {
 
     @Override
     public List<EasyArchiveDocument> filter(ArchiveDocumentFilter filter) {
-        return Optional.ofNullable(easyArchiveDocumentMapper.toDTOs(archiveDocumentDAO.filter(archiveDocumentMapper.toFilterDTO(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyArchiveDocumentMapper.toDTOs(archiveDocumentDAO.filter(archiveDocumentMapper.toFilterDTO(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Archive documents by filter not found");
+        }
     }
 }

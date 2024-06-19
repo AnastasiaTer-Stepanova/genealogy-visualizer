@@ -1,7 +1,7 @@
 package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.Christening;
-import genealogy.visualizer.entity.model.GodParent;
+import genealogy.visualizer.entity.GodParent;
 import genealogy.visualizer.parser.impl.ChristeningSheetParser;
 import genealogy.visualizer.service.ChristeningDAO;
 import org.apache.poi.ss.usermodel.Row;

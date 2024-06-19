@@ -1,5 +1,6 @@
 package genealogy.visualizer.parser;
 
+import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.parser.impl.FileExcelParser;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -38,6 +39,8 @@ class FileExcelParserTest extends AbstractTest {
     @SuppressWarnings("unchecked")
     void checkParseTest(@TempDir(cleanup = CleanupMode.ALWAYS) Path tempDir) throws IOException {
         ArchiveDocument archiveDocument = generator.nextObject(ArchiveDocument.class);
+        Archive archive = generator.nextObject(Archive.class);
+        archiveDocument.setArchive(archive);
         when(parserMap.get(archiveDocument.getType().getName())).thenReturn(sheetParser);
         FileExcelParser fileExcelParser = new FileExcelParser(parserMap);
 

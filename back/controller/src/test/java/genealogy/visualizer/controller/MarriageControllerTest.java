@@ -4,18 +4,14 @@ import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.api.model.Marriage;
-import genealogy.visualizer.api.model.MarriageFilter;
 import genealogy.visualizer.api.model.Witness;
 import genealogy.visualizer.mapper.WitnessMapper;
-import genealogy.visualizer.service.MarriageDAO;
-import org.jeasy.random.randomizers.text.StringRandomizer;
-import org.junit.jupiter.api.AfterEach;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,236 +22,156 @@ import java.util.stream.Collectors;
 import static genealogy.visualizer.controller.ArchiveDocumentControllerTest.assertArchiveDocument;
 import static genealogy.visualizer.controller.LocalityControllerTest.assertLocality;
 import static genealogy.visualizer.controller.PersonControllerTest.assertPerson;
+import static genealogy.visualizer.controller.PersonControllerTest.assertPersons;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarriageControllerTest extends IntegrationTest {
 
     @Autowired
-    MarriageDAO marriageDAO;
-
-    @Autowired
-    WitnessMapper witnessMapper;
+    private WitnessMapper witnessMapper;
 
     private static final String PATH = "/marriage";
 
     @Test
-    void saveTest() throws Exception {
-        Marriage marriageSave = generator.nextObject(Marriage.class);
-        EasyArchiveDocument archiveDocumentSave = generator.nextObject(EasyArchiveDocument.class);
-        marriageSave.setArchiveDocument(archiveDocumentSave);
-        List<EasyPerson> personsSave = generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList();
-        marriageSave.setPersons(personsSave);
-        EasyLocality localitySave = generator.nextObject(EasyLocality.class);
-        marriageSave.setHusbandLocality(localitySave);
-        marriageSave.setWifeLocality(localityMapper.toDTO(localityExisting));
-        List<Witness> witnessesSave = generator.objects(Witness.class, generator.nextInt(5, 10)).toList();
-        witnessesSave.forEach(w -> w.setLocality(generator.nextBoolean() ? localitySave : generator.nextObject(EasyLocality.class)));
-        marriageSave.setWitnesses(witnessesSave);
-        String responseJson = postRequest(PATH, objectMapper.writeValueAsString(marriageSave));
-        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
+    void getByIdTest() throws Exception {
+        genealogy.visualizer.entity.Marriage marriageExist = existingMarriages.stream()
+                .filter(e -> e.getPersons() != null && !e.getPersons().isEmpty()).findAny().orElse(existingMarriages.getFirst());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+
+        Marriage response = objectMapper.readValue(getRequest(PATH + "/" + marriageExist.getId()), Marriage.class);
+        assertEquals(5, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        assertMarriage(response, marriageExist);
+
+        getNotFoundRequest(PATH + "/" + generator.nextLong());
+    }
+
+    @Test
+    void findByFilterTest() throws Exception {
+        marriageFilter.isFindWithHavePerson(false);
+        marriageFilter.setArchiveDocumentId(existingArchiveDocuments.stream().max(Comparator.comparingInt(ad -> ad.getMarriages().size()))
+                .orElse(existingArchiveDocuments.getFirst()).getId());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        List<EasyMarriage> response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(marriageFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyMarriage.class));
         assertNotNull(response);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        List<Long> existIds = getIdsByFilter();
+        Set<Long> findIds = response.stream().map(EasyMarriage::getId).collect(Collectors.toSet());
+        assertEquals(existIds.size(), findIds.size());
+        assertTrue(existIds.containsAll(findIds));
+
+        marriageFilter.isFindWithHavePerson(true);
+        statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(marriageFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyMarriage.class));
+        assertNotNull(response);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        existIds = getIdsByFilter();
+        findIds = response.stream().map(EasyMarriage::getId).collect(Collectors.toSet());
+        assertEquals(existIds.size(), findIds.size());
+        assertTrue(existIds.containsAll(findIds));
+
+        marriageFilter.getWifeFullName().setName("Абракадабра");
+        getNotFoundRequest(PATH + "/filter", objectMapper.writeValueAsString(marriageFilter));
+    }
+
+    @Test
+    void saveTest() throws Exception {
+        Marriage marriageSave = getMarriage(existingMarriages.stream()
+                .filter(e -> e.getPersons() != null && !e.getPersons().isEmpty()).findAny().orElse(existingMarriages.getFirst()));
+        marriageSave.setId(null);
+        Marriage response = objectMapper.readValue(postRequest(PATH, objectMapper.writeValueAsString(marriageSave)), Marriage.class);
         assertMarriage(response, marriageSave);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
-        assertNotNull(responseGet);
+
+        Marriage responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Marriage.class);
         assertMarriage(responseGet, marriageSave);
+
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(marriageSave));
     }
 
     @Test
     void updateTest() throws Exception {
-        genealogy.visualizer.entity.Marriage marriageExist = generateRandomExistMarriage();
-        Marriage marriageUpdate = generator.nextObject(Marriage.class);
-        marriageUpdate.setId(marriageExist.getId());
-        EasyArchiveDocument archiveDocumentUpdate = generator.nextObject(EasyArchiveDocument.class);
-        marriageUpdate.setArchiveDocument(archiveDocumentUpdate);
-        List<EasyPerson> personsUpdate = generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList();
-        marriageUpdate.setPersons(personsUpdate);
-        EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
-        marriageUpdate.setHusbandLocality(localityUpdate);
-        marriageUpdate.setWifeLocality(localityUpdate);
-        List<Witness> witnessesUpdate = new ArrayList<>(generator.objects(Witness.class, generator.nextInt(5, 10)).toList());
-        witnessesUpdate.forEach(w -> {
-            w.getFullName().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
-            w.setLocality(generator.nextBoolean() ? localityUpdate : generator.nextObject(EasyLocality.class));
-        });
-        marriageExist.getWitnesses().forEach(w -> {
-            if (generator.nextBoolean()) {
-                witnessesUpdate.add(witnessMapper.toDTO(w));
-            }
-        });
-        marriageUpdate.setWitnesses(witnessesUpdate);
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate));
-        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
-        assertNotNull(response);
-        assertMarriage(response, marriageUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
-        assertNotNull(responseGet);
-        assertMarriage(responseGet, marriageUpdate);
-    }
+        genealogy.visualizer.entity.Marriage marriageExist = existingMarriages.stream()
+                .filter(e -> e.getPersons() != null && !e.getPersons().isEmpty()).findAny().orElse(existingMarriages.getFirst());
+        Marriage marriageUpdate = getMarriage(marriageExist);
 
-    @Test
-    void updateWithNullFieldTest() throws Exception {
-        genealogy.visualizer.entity.Marriage marriageExist = generateRandomExistMarriage();
-        Marriage marriageUpdate = generator.nextObject(Marriage.class);
-        marriageUpdate.setId(marriageExist.getId());
+        Marriage response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate)), Marriage.class);
+        assertMarriage(response, marriageUpdate);
+
+        Marriage responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Marriage.class);
+        assertMarriage(responseGet, marriageUpdate);
+
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(marriageUpdate));
+
         marriageUpdate.setArchiveDocument(null);
         marriageUpdate.setWifeLocality(null);
         marriageUpdate.setHusbandLocality(null);
         marriageUpdate.setPersons(Collections.emptyList());
         marriageUpdate.setWitnesses(Collections.emptyList());
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate));
-        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
-        assertNotNull(response);
+        response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(marriageUpdate)), Marriage.class);
         assertMarriage(response, marriageUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Marriage responseGet = objectMapper.readValue(responseJsonGet, Marriage.class);
-        assertNotNull(responseGet);
-        assertMarriage(responseGet, marriageUpdate);
     }
 
     @Test
     void deleteTest() throws Exception {
-        genealogy.visualizer.entity.Marriage marriageExist = generateRandomExistMarriage();
-        String responseJson = deleteRequest(PATH + "/" + marriageExist.getId());
-        assertTrue(responseJson.isEmpty());
+        genealogy.visualizer.entity.Marriage marriageExist = existingMarriages.stream()
+                .filter(e -> e.getPersons() != null && !e.getPersons().isEmpty() && e.getArchiveDocument() != null)
+                .findAny().orElse(existingMarriages.getFirst());
+        assertTrue(deleteRequest(PATH + "/" + marriageExist.getId()).isEmpty());
+        existingMarriages.remove(marriageExist);
+
         assertTrue(marriageRepository.findById(marriageExist.getId()).isEmpty());
-        assertFalse(archiveDocumentRepository.findById(marriageExist.getArchiveDocument().getId()).isEmpty());
-        assertFalse(localityRepository.findById(marriageExist.getHusbandLocality().getId()).isEmpty());
-        assertFalse(localityRepository.findById(marriageExist.getWifeLocality().getId()).isEmpty());
-        marriageExist.getPersons().forEach(person -> assertFalse(personRepository.findById(person.getId()).isEmpty()));
-    }
-
-    @Test
-    void getByIdTest() throws Exception {
-        genealogy.visualizer.entity.Marriage marriageExist = generateRandomExistMarriage();
-        String responseJson = getRequest(PATH + "/" + marriageExist.getId());
-        Marriage response = objectMapper.readValue(responseJson, Marriage.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), marriageExist.getId());
-        assertMarriage(response, marriageExist);
-    }
-
-    @Test
-    void findByFilterTest() throws Exception {
-        StringRandomizer stringRandomizer = new StringRandomizer(3);
-        FullNameFilter husbandFullNameFilter = new FullNameFilter()
-                .name("Иван")
-                .surname("Иванович")
-                .lastName("Иванов");
-        FullNameFilter wifeFullNameFilter = new FullNameFilter()
-                .name("Елена")
-                .surname("Петровна")
-                .lastName("Сидорова");
-        MarriageFilter filter = new MarriageFilter()
-                .husbandFullName(husbandFullNameFilter)
-                .wifeFullName(wifeFullNameFilter)
-                .archiveDocumentId(archiveDocumentExisting.getId())
-                .marriageYear(1850)
-                .isFindWithHavePerson(false);
-        List<genealogy.visualizer.entity.Marriage> marriagesSave = generator.objects(genealogy.visualizer.entity.Marriage.class, generator.nextInt(5, 10)).toList();
-        byte count = 0;
-        for (genealogy.visualizer.entity.Marriage marriage : marriagesSave) {
-            marriage.setWifeLocality(null);
-            marriage.setHusbandLocality(null);
-            marriage.setWitnesses(null);
-            if (generator.nextBoolean()) {
-                marriage.setPersons(Collections.emptyList());
-                marriage.setArchiveDocument(archiveDocumentExisting);
-                genealogy.visualizer.entity.model.FullName husbandFullName = new genealogy.visualizer.entity.model.FullName();
-                husbandFullName.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? husbandFullNameFilter.getName() : husbandFullNameFilter.getName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                husbandFullName.setSurname(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? husbandFullNameFilter.getSurname() : husbandFullNameFilter.getSurname().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                husbandFullName.setLastName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? husbandFullNameFilter.getLastName() : husbandFullNameFilter.getLastName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                marriage.setHusband(husbandFullName);
-                genealogy.visualizer.entity.model.FullName wifeFullName = new genealogy.visualizer.entity.model.FullName();
-                wifeFullName.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? wifeFullNameFilter.getName() : wifeFullNameFilter.getName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                wifeFullName.setSurname(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? wifeFullNameFilter.getSurname() : wifeFullNameFilter.getSurname().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                wifeFullName.setLastName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? wifeFullNameFilter.getLastName() : wifeFullNameFilter.getLastName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                marriage.setWife(wifeFullName);
-                LocalDate marriageDate = LocalDate.of(filter.getMarriageYear(), generator.nextInt(1, 12), generator.nextInt(1, 28));
-                marriage.setDate(marriageDate);
-                count++;
-            } else {
-                marriage.setArchiveDocument(getEmptySavedArchiveDocument());
-                marriage.setPersons(getEmptySavedPersons());
-            }
+        if (marriageExist.getArchiveDocument() != null) {
+            assertFalse(archiveDocumentRepository.findById(marriageExist.getArchiveDocument().getId()).isEmpty());
         }
-        List<genealogy.visualizer.entity.Marriage> marriagesExist = marriageRepository.saveAllAndFlush(marriagesSave);
-        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
-        List<EasyMarriage> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyMarriage.class));
-        assertNotNull(response);
-        assertEquals(response.size(), count);
-        Set<Long> findIds = response.stream().map(EasyMarriage::getId).collect(Collectors.toSet());
-        for (genealogy.visualizer.entity.Marriage marriage : marriagesExist) {
-            if (marriage.getHusband().getName().toLowerCase().contains(filter.getHusbandFullName().getName().toLowerCase()) &&
-                    marriage.getHusband().getSurname().toLowerCase().contains(filter.getHusbandFullName().getSurname().toLowerCase()) &&
-                    marriage.getHusband().getLastName().toLowerCase().contains(filter.getHusbandFullName().getLastName().toLowerCase()) &&
-                    marriage.getWife().getName().toLowerCase().contains(filter.getWifeFullName().getName().toLowerCase()) &&
-                    marriage.getWife().getSurname().toLowerCase().contains(filter.getWifeFullName().getSurname().toLowerCase()) &&
-                    marriage.getWife().getLastName().toLowerCase().contains(filter.getWifeFullName().getLastName().toLowerCase()) &&
-                    marriage.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
-                    marriage.getDate().getYear() == filter.getMarriageYear()) {
-                assertTrue(findIds.contains(marriage.getId()));
-            }
+        if (marriageExist.getHusbandLocality() != null) {
+            assertFalse(localityRepository.findById(marriageExist.getHusbandLocality().getId()).isEmpty());
         }
+        if (marriageExist.getWifeLocality() != null) {
+            assertFalse(localityRepository.findById(marriageExist.getWifeLocality().getId()).isEmpty());
+        }
+        if (marriageExist.getPersons() != null) {
+            marriageExist.getPersons().forEach(person -> assertFalse(personRepository.findById(person.getId()).isEmpty()));
+        }
+
+        deleteUnauthorizedRequest(PATH + "/" + marriageExist.getId());
     }
 
-    @Test
-    void saveUnauthorizedTest() throws Exception {
-        Marriage object = generator.nextObject(Marriage.class);
-        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    private List<Long> getIdsByFilter() {
+        List<genealogy.visualizer.entity.Marriage> filteredMarriages = existingMarriages.stream()
+                .filter(this::matchesFilter)
+                .toList();
+        if (!marriageFilter.getIsFindWithHavePerson()) {
+            filteredMarriages = filteredMarriages.stream()
+                    .filter(marriage -> marriage.getPersons() == null || marriage.getPersons().isEmpty())
+                    .toList();
+        }
+        return filteredMarriages.stream().map(genealogy.visualizer.entity.Marriage::getId).toList();
     }
 
-    @Test
-    void updateUnauthorizedTest() throws Exception {
-        Marriage object = generator.nextObject(Marriage.class);
-        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
-    }
-
-    @Test
-    void deleteUnauthorizedTest() throws Exception {
-        Marriage object = generator.nextObject(Marriage.class);
-        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
-    }
-
-    @AfterEach
-    void tearDown() {
-        System.out.println("----------------------End test------------------------");
-        marriageRepository.deleteAll();
-        personRepository.deleteAll();
-        super.tearDown();
+    private boolean matchesFilter(genealogy.visualizer.entity.Marriage marriage) {
+        return containsIgnoreCase(marriage.getHusband().getName(), marriageFilter.getHusbandFullName().getName()) &&
+                containsIgnoreCase(marriage.getHusband().getSurname(), marriageFilter.getHusbandFullName().getSurname()) &&
+                containsIgnoreCase(marriage.getHusband().getLastName(), marriageFilter.getHusbandFullName().getLastName()) &&
+                containsIgnoreCase(marriage.getWife().getName(), marriageFilter.getWifeFullName().getName()) &&
+                containsIgnoreCase(marriage.getWife().getSurname(), marriageFilter.getWifeFullName().getSurname()) &&
+                containsIgnoreCase(marriage.getWife().getLastName(), marriageFilter.getWifeFullName().getLastName()) &&
+                marriage.getArchiveDocument() != null && marriage.getArchiveDocument().getId().equals(marriageFilter.getArchiveDocumentId()) &&
+                marriage.getDate().getYear() == marriageFilter.getMarriageYear();
     }
 
     static void assertMarriage(Marriage marriage1, Marriage marriage2) {
-        assertNotNull(marriage1);
-        assertNotNull(marriage2);
-        assertEquals(marriage1.getDate(), marriage2.getDate());
-        assertFullName(marriage1.getHusband(), marriage2.getHusband());
-        assertFullName(marriage1.getWife(), marriage2.getWife());
-        assertFullName(marriage1.getWifesFather(), marriage2.getWifesFather());
-        assertFullName(marriage1.getHusbandsFather(), marriage2.getHusbandsFather());
-        assertEquals(marriage1.getHusbandMarriageNumber(), marriage2.getHusbandMarriageNumber());
-        assertEquals(marriage1.getWifeMarriageNumber(), marriage2.getWifeMarriageNumber());
-        assertEquals(marriage1.getComment(), marriage2.getComment());
-        assertAge(marriage1.getWifeAge(), marriage2.getWifeAge());
-        assertAge(marriage1.getHusbandAge(), marriage2.getHusbandAge());
-        assertLocality(marriage1.getWifeLocality(), marriage2.getWifeLocality());
-        assertLocality(marriage1.getHusbandLocality(), marriage2.getHusbandLocality());
+        assertMarriage(toEasyMarriage(marriage1), toEasyMarriage(marriage2));
         assertArchiveDocument(marriage1.getArchiveDocument(), marriage2.getArchiveDocument());
         if (marriage2.getWitnesses() != null) {
             assertEquals(marriage1.getWitnesses().size(), marriage2.getWitnesses().size());
@@ -265,53 +181,55 @@ class MarriageControllerTest extends IntegrationTest {
                 assertWitness(witnesses1.get(i), witnesses2.get(i));
             }
         }
-        if (marriage2.getPersons() != null) {
-            assertEquals(marriage1.getPersons().size(), marriage2.getPersons().size());
-            List<EasyPerson> persons1 = marriage1.getPersons().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            List<EasyPerson> persons2 = marriage2.getPersons().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            for (int i = 0; i < persons1.size(); i++) {
-                assertPerson(persons1.get(i), persons2.get(i));
-            }
-        }
+        assertPerson(marriage1.getPersons(), marriage2.getPersons());
     }
 
     static void assertMarriage(Marriage marriage1, genealogy.visualizer.entity.Marriage marriage2) {
-        assertNotNull(marriage1);
-        assertNotNull(marriage2);
-        assertEquals(marriage1.getDate(), marriage2.getDate());
-        assertFullName(marriage1.getHusband(), marriage2.getHusband());
-        assertFullName(marriage1.getWife(), marriage2.getWife());
-        assertFullName(marriage1.getWifesFather(), marriage2.getWifesFather());
-        assertFullName(marriage1.getHusbandsFather(), marriage2.getHusbandsFather());
-        assertEquals(marriage1.getHusbandMarriageNumber(), marriage2.getHusbandMarriageNumber().intValue());
-        assertEquals(marriage1.getWifeMarriageNumber(), marriage2.getWifeMarriageNumber().intValue());
-        assertEquals(marriage1.getComment(), marriage2.getComment());
-        assertAge(marriage1.getWifeAge(), marriage2.getWifeAge());
-        assertAge(marriage1.getHusbandAge(), marriage2.getHusbandAge());
-        assertLocality(marriage1.getWifeLocality(), marriage2.getWifeLocality());
-        assertLocality(marriage1.getHusbandLocality(), marriage2.getHusbandLocality());
+        assertMarriage(toEasyMarriage(marriage1), toEasyMarriage(marriage2));
         assertArchiveDocument(marriage1.getArchiveDocument(), marriage2.getArchiveDocument());
         if (marriage2.getWitnesses() != null) {
             assertEquals(marriage1.getWitnesses().size(), marriage2.getWitnesses().size());
             List<Witness> witnesses1 = marriage1.getWitnesses().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            List<genealogy.visualizer.entity.model.Witness> witnesses2 = marriage2.getWitnesses().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
+            List<genealogy.visualizer.entity.Witness> witnesses2 = marriage2.getWitnesses().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
             for (int i = 0; i < witnesses1.size(); i++) {
                 assertWitness(witnesses1.get(i), witnesses2.get(i));
             }
         }
-        if (marriage2.getPersons() != null) {
-            assertEquals(marriage1.getPersons().size(), marriage2.getPersons().size());
-            List<EasyPerson> persons1 = marriage1.getPersons().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            List<genealogy.visualizer.entity.Person> persons2 = marriage2.getPersons().stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
-            for (int i = 0; i < persons1.size(); i++) {
-                assertPerson(persons1.get(i), persons2.get(i));
-            }
+        assertPersons(marriage1.getPersons(), marriage2.getPersons());
+    }
+
+    static void assertMarriages(List<EasyMarriage> marriage1, List<genealogy.visualizer.entity.Marriage> marriage2) {
+        assertNotNull(marriage2);
+        assertMarriage(marriage1, marriage2.stream().map(MarriageControllerTest::toEasyMarriage).toList());
+    }
+
+    static void assertMarriage(List<EasyMarriage> marriage1, List<EasyMarriage> marriage2) {
+        if (marriage1 == null || marriage2 == null) {
+            assertNull(marriage1);
+            assertNull(marriage2);
+            return;
+        }
+        assertNotNull(marriage1);
+        assertNotNull(marriage2);
+        assertEquals(marriage1.size(), marriage2.size());
+        List<EasyMarriage> marriagesSorted1 = marriage1.stream().sorted(Comparator.comparing(m -> m.getWife().getName())).toList();
+        List<EasyMarriage> marriagesSorted2 = marriage2.stream().sorted(Comparator.comparing(m -> m.getWife().getName())).toList();
+        for (int i = 0; i < marriagesSorted1.size(); i++) {
+            assertMarriage(marriagesSorted1.get(i), marriagesSorted2.get(i));
         }
     }
 
     static void assertMarriage(EasyMarriage marriage1, EasyMarriage marriage2) {
+        if (marriage1 == null || marriage2 == null) {
+            assertNull(marriage1);
+            assertNull(marriage2);
+            return;
+        }
         assertNotNull(marriage1);
         assertNotNull(marriage2);
+        if (marriage1.getId() != null && marriage2.getId() != null) {
+            assertEquals(marriage1.getId(), marriage2.getId());
+        }
         assertEquals(marriage1.getDate(), marriage2.getDate());
         assertFullName(marriage1.getHusband(), marriage2.getHusband());
         assertFullName(marriage1.getWife(), marriage2.getWife());
@@ -325,18 +243,7 @@ class MarriageControllerTest extends IntegrationTest {
     }
 
     static void assertMarriage(EasyMarriage marriage1, genealogy.visualizer.entity.Marriage marriage2) {
-        assertNotNull(marriage1);
-        assertNotNull(marriage2);
-        assertEquals(marriage1.getDate(), marriage2.getDate());
-        assertFullName(marriage1.getHusband(), marriage2.getHusband());
-        assertFullName(marriage1.getWife(), marriage2.getWife());
-        assertFullName(marriage1.getWifesFather(), marriage2.getWifesFather());
-        assertFullName(marriage1.getHusbandsFather(), marriage2.getHusbandsFather());
-        assertEquals(marriage1.getHusbandMarriageNumber(), marriage2.getHusbandMarriageNumber().intValue());
-        assertEquals(marriage1.getWifeMarriageNumber(), marriage2.getWifeMarriageNumber().intValue());
-        assertEquals(marriage1.getComment(), marriage2.getComment());
-        assertAge(marriage1.getWifeAge(), marriage2.getWifeAge());
-        assertAge(marriage1.getHusbandAge(), marriage2.getHusbandAge());
+        assertMarriage(marriage1, toEasyMarriage(marriage2));
     }
 
     static void assertWitness(Witness witness1, Witness witness2) {
@@ -347,7 +254,7 @@ class MarriageControllerTest extends IntegrationTest {
         assertLocality(witness1.getLocality(), witness2.getLocality());
     }
 
-    static void assertWitness(Witness witness1, genealogy.visualizer.entity.model.Witness witness2) {
+    static void assertWitness(Witness witness1, genealogy.visualizer.entity.Witness witness2) {
         assertNotNull(witness1);
         assertNotNull(witness2);
         assertFullName(witness1.getFullName(), witness2.getFullName());
@@ -355,49 +262,72 @@ class MarriageControllerTest extends IntegrationTest {
         assertLocality(witness1.getLocality(), witness2.getLocality());
     }
 
-    private genealogy.visualizer.entity.Marriage generateRandomExistMarriage() {
-        genealogy.visualizer.entity.Marriage marriageSave = generator.nextObject(genealogy.visualizer.entity.Marriage.class);
-        marriageSave.setArchiveDocument(getEmptySavedArchiveDocument());
-
-        marriageSave.setPersons(getEmptySavedPersons());
-
-        List<genealogy.visualizer.entity.model.Witness> witnessesSave = generator.objects(genealogy.visualizer.entity.model.Witness.class, generator.nextInt(5, 10)).toList();
-        witnessesSave.forEach(gp -> gp.setLocality(localityExisting));
-        marriageSave.setWitnesses(witnessesSave);
-        marriageSave.setHusbandLocality(localityExisting);
-        marriageSave.setWifeLocality(localityExisting);
-        return marriageRepository.save(marriageSave);
+    private static EasyMarriage toEasyMarriage(genealogy.visualizer.entity.Marriage marriage) {
+        if (marriage == null) {
+            return null;
+        }
+        return new EasyMarriage()
+                .id(marriage.getId())
+                .date(marriage.getDate())
+                .husbandMarriageNumber(marriage.getHusbandMarriageNumber().intValue())
+                .wifeMarriageNumber(marriage.getWifeMarriageNumber().intValue())
+                .wife(toFullName(marriage.getWife()))
+                .wifesFather(toFullName(marriage.getWifesFather()))
+                .wifeAge(toAge(marriage.getWifeAge()))
+                .husband(toFullName(marriage.getHusband()))
+                .husbandsFather(toFullName(marriage.getHusbandsFather()))
+                .husbandAge(toAge(marriage.getHusbandAge()))
+                .comment(marriage.getComment());
     }
 
-    private List<genealogy.visualizer.entity.Person> getEmptySavedPersons() {
-        List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
-        personsSave.forEach(p -> {
-            p.setChristening(null);
-            p.setPartners(Collections.emptyList());
-            p.setChildren(Collections.emptyList());
-            p.setRevisions(Collections.emptyList());
-            p.setMarriages(Collections.emptyList());
-            p.setParents(Collections.emptyList());
-            p.setDeath(null);
-            p.setDeathLocality(localityExisting);
-            p.setBirthLocality(localityExisting);
+    private static EasyMarriage toEasyMarriage(Marriage marriage) {
+        if (marriage == null) {
+            return null;
+        }
+        return new EasyMarriage()
+                .id(marriage.getId())
+                .date(marriage.getDate())
+                .husbandMarriageNumber(marriage.getHusbandMarriageNumber())
+                .wifeMarriageNumber(marriage.getWifeMarriageNumber())
+                .wife(marriage.getWife())
+                .wifesFather(marriage.getWifesFather())
+                .wifeAge(marriage.getWifeAge())
+                .husband(marriage.getHusband())
+                .husbandsFather(marriage.getHusbandsFather())
+                .husbandAge(marriage.getHusbandAge())
+                .comment(marriage.getComment());
+    }
+
+    private Marriage getMarriage(genealogy.visualizer.entity.Marriage marriageExist) {
+        Marriage marriage = generator.nextObject(Marriage.class);
+        marriage.setId(marriageExist.getId());
+        marriage.setArchiveDocument(generator.nextObject(EasyArchiveDocument.class));
+        List<EasyPerson> persons = new ArrayList<>(generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList());
+        marriageExist.getPersons().forEach(p -> {
+            if (generator.nextBoolean()) {
+                persons.add(easyPersonMapper.toDTO(p));
+            }
         });
-        return personRepository.saveAllAndFlush(personsSave);
-    }
-
-    private genealogy.visualizer.entity.ArchiveDocument getEmptySavedArchiveDocument() {
-        genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveSave.setArchiveDocuments(null);
-
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentSave.setArchive(archiveRepository.saveAndFlush(archiveSave));
-        archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-        archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-        archiveDocumentSave.setChristenings(Collections.emptyList());
-        archiveDocumentSave.setMarriages(Collections.emptyList());
-        archiveDocumentSave.setDeaths(Collections.emptyList());
-        archiveDocumentSave.setNextRevision(null);
-
-        return archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
+        marriage.setPersons(persons);
+        marriage.getWife().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+        marriage.getWifesFather().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+        marriage.getHusband().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+        marriage.getHusbandsFather().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+        EasyLocality easyLocality = generator.nextObject(EasyLocality.class);
+        easyLocality.setAnotherNames(generator.objects(String.class, 4).toList());
+        marriage.setHusbandLocality(easyLocality);
+        marriage.setWifeLocality(easyLocalityMapper.toDTO(existingLocalities.get(generator.nextInt(existingLocalities.size()))));
+        List<Witness> witnessesUpdate = new ArrayList<>(generator.objects(Witness.class, generator.nextInt(5, 10)).toList());
+        witnessesUpdate.forEach(w -> {
+            w.getFullName().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+            w.setLocality(generator.nextBoolean() ? easyLocalityMapper.toDTO(existingLocalities.get(generator.nextInt(existingLocalities.size()))) : easyLocality);
+        });
+        marriageExist.getWitnesses().forEach(w -> {
+            if (generator.nextBoolean()) {
+                witnessesUpdate.add(witnessMapper.toDTO(w));
+            }
+        });
+        marriage.setWitnesses(witnessesUpdate);
+        return marriage;
     }
 }

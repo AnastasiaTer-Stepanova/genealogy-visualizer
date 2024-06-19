@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, Long> {
 
+    @Modifying
     @Query(value = "update family_revision fs set " +
             "age = :#{#entity.age?.age}, age_type = :#{#entity.age?.type?.name}, age_in_next_revision = :#{#entity.ageInNextRevision?.age}, " +
             "age_type_in_next_revision = :#{#entity.ageInNextRevision?.type?.name}, arrived = :#{#entity.arrived}, comment = :#{#entity.comment}, " +
@@ -22,8 +23,8 @@ public interface FamilyRevisionRepository extends JpaRepository<FamilyRevision, 
             "relative_last_name = :#{#entity.relative?.lastName}, relative_name = :#{#entity.relative?.name}, relative_status = :#{#entity.relative?.status}, " +
             "relative_surname = :#{#entity.relative?.surname}, sex = :#{#entity.sex?.name}, archive_document_id = :#{#entity.archiveDocument?.id}, " +
             "partner_id = :#{#entity.partner?.id}, person_id = :#{#entity.person?.id} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    FamilyRevision update(@Param("entity") FamilyRevision entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") FamilyRevision entity);
 
     @Query(value = "select anir.another_name from another_name_in_revision anir where anir.family_revision_id = :id",
             nativeQuery = true)

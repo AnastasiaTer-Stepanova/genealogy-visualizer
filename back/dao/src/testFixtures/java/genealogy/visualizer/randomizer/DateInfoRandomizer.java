@@ -9,12 +9,14 @@ import org.jeasy.random.randomizers.range.IntegerRangeRandomizer;
 
 public class DateInfoRandomizer implements Randomizer<DateInfo> {
 
+    private Integer year;
+
     @Override
     public DateInfo getRandomValue() {
         BooleanRandomizer booleanRandomizer = new BooleanRandomizer();
         IntegerRangeRandomizer integerYearRandomizer = new IntegerRangeRandomizer(1500, 1980);
         StringBuilder dateString = new StringBuilder();
-        dateString.append(integerYearRandomizer.getRandomValue());
+        dateString.append(year != null ? year : integerYearRandomizer.getRandomValue());
         if (booleanRandomizer.getRandomValue()) {
             IntegerRangeRandomizer integerMonthRandomizer = new IntegerRangeRandomizer(1, 12);
             dateString.insert(0, integerMonthRandomizer.getRandomValue().toString() + "-");
@@ -25,5 +27,9 @@ public class DateInfoRandomizer implements Randomizer<DateInfo> {
         }
         EnumRandomizer<DateRangeType> enumRandomizer = new EnumRandomizer<>(DateRangeType.class);
         return new DateInfo(dateString.toString(), enumRandomizer.getRandomValue());
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
     }
 }

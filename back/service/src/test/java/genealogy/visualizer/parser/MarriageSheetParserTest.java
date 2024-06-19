@@ -2,7 +2,7 @@ package genealogy.visualizer.parser;
 
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.enums.WitnessType;
-import genealogy.visualizer.entity.model.Witness;
+import genealogy.visualizer.entity.Witness;
 import genealogy.visualizer.parser.impl.MarriageSheetParser;
 import genealogy.visualizer.service.MarriageDAO;
 import org.apache.poi.ss.usermodel.Row;

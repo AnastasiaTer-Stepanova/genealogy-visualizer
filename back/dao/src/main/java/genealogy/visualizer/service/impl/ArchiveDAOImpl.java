@@ -38,14 +38,16 @@ public class ArchiveDAOImpl implements ArchiveDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id) {
+    public void delete(Long id) throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete archive without id");
         archiveDocumentRepository.updateArchiveId(id, null);
         archiveRepository.deleteById(id);
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Archive save(Archive archive) {
+    public Archive save(Archive archive) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (archive.getId() != null)
             throw new IllegalArgumentException("Cannot save archive with id");
         Archive archiveForSave = archive.clone();
@@ -59,28 +61,28 @@ public class ArchiveDAOImpl implements ArchiveDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Archive update(Archive archive) {
-        if (archive.getId() == null)
+    public Archive update(Archive archive) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = archive.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update archive without id");
-        Archive updatedArchive = archiveRepository.update(archive);
-        if (updatedArchive == null)
-            throw new EmptyResultDataAccessException("Updating archive failed", 1);
-        updateLinks(updatedArchive, archive);
+        Archive existInfo = this.findFullInfoById(id);
+        archiveRepository.update(archive).orElseThrow(() -> new EmptyResultDataAccessException("Updating archive failed", 1));
+        updateLinks(existInfo, archive);
         entityManager.flush();
         entityManager.clear();
-        return this.findFullInfoById(updatedArchive.getId());
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Archive findFullInfoById(Long id) {
+    public Archive findFullInfoById(Long id) throws EmptyResultDataAccessException {
         return archiveRepository.findFullInfoById(id)
                 .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Archive not found by id: %d", id), 1));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Archive> filter(ArchiveFilterDTO filter) {
+    public List<Archive> filter(ArchiveFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Archive> cq = cb.createQuery(Archive.class);
         Root<Archive> aRoot = cq.from(Archive.class);
@@ -92,7 +94,11 @@ public class ArchiveDAOImpl implements ArchiveDAO {
             predicates.add(cb.like(cb.lower(aRoot.get("name")), "%" + filter.getName().toLowerCase() + "%"));
         }
         cq.select(aRoot).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        List<Archive> result = entityManager.createQuery(cq).getResultList();
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Archive not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

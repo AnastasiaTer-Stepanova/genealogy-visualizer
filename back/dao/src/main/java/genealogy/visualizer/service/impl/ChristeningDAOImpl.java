@@ -3,16 +3,16 @@ package genealogy.visualizer.service.impl;
 import genealogy.visualizer.dto.ChristeningFilterDTO;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
+import genealogy.visualizer.entity.GodParent;
 import genealogy.visualizer.entity.Locality;
 import genealogy.visualizer.entity.Person;
-import genealogy.visualizer.entity.model.GodParent;
 import genealogy.visualizer.repository.ArchiveDocumentRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
+import genealogy.visualizer.repository.GodParentRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.PersonRepository;
 import genealogy.visualizer.service.ChristeningDAO;
 import genealogy.visualizer.service.helper.RepositoryEasyModelHelper;
-import genealogy.visualizer.service.helper.RepositoryEmbeddableModelHelper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,64 +34,76 @@ public class ChristeningDAOImpl implements ChristeningDAO {
     private final PersonRepository personRepository;
     private final LocalityRepository localityRepository;
     private final ArchiveDocumentRepository archiveDocumentRepository;
+    private final GodParentRepository godParentRepository;
     private final EntityManager entityManager;
 
     public ChristeningDAOImpl(ChristeningRepository christeningRepository,
                               PersonRepository personRepository,
                               LocalityRepository localityRepository,
                               ArchiveDocumentRepository archiveDocumentRepository,
+                              GodParentRepository godParentRepository,
                               EntityManager entityManager) {
         this.christeningRepository = christeningRepository;
         this.personRepository = personRepository;
         this.localityRepository = localityRepository;
         this.archiveDocumentRepository = archiveDocumentRepository;
+        this.godParentRepository = godParentRepository;
         this.entityManager = entityManager;
     }
 
     private static final RepositoryEasyModelHelper<ArchiveDocument> archiveDocumentHelper = new RepositoryEasyModelHelper<>();
     private static final RepositoryEasyModelHelper<Locality> localityHelper = new RepositoryEasyModelHelper<>();
     private static final RepositoryEasyModelHelper<Person> personHelper = new RepositoryEasyModelHelper<>();
-    private static final RepositoryEmbeddableModelHelper<GodParent> godParentHelper = new RepositoryEmbeddableModelHelper<>();
+    private static final RepositoryEasyModelHelper<GodParent> godParentHelper = new RepositoryEasyModelHelper<>();
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id) {
+    public void delete(Long id) throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete christening without id");
+        godParentRepository.deleteGodParentsByChristeningId(id);
         christeningRepository.deleteById(id);
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Christening save(Christening christening) {
+    public Christening save(Christening christening) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (christening.getId() != null)
             throw new IllegalArgumentException("Cannot save christening with id");
         christening = updateLinks(christening);
-        return christeningRepository.save(christening);
+        Christening savedChristening = christeningRepository.save(christening);
+        updateLinks(savedChristening, christening);
+        return savedChristening;
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Christening update(Christening christening) {
-        if (christening.getId() == null)
+    public Christening update(Christening christening) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = christening.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update christening without id");
+        Christening existInfo = this.findFullInfoById(id);
         christening = updateLinks(christening);
-        Christening updatedChristening = christeningRepository.update(christening);
-        if (updatedChristening == null)
-            throw new EmptyResultDataAccessException("Updating christening failed", 1);
+        christeningRepository.update(christening).orElseThrow(() -> new EmptyResultDataAccessException("Updating christening failed", 1));
+        updateLinks(existInfo, christening);
         entityManager.flush();
         entityManager.clear();
-        return this.findFullInfoById(updatedChristening.getId());
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Christening findFullInfoById(Long id) {
-        return christeningRepository.findFullInfoById(id)
-                .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Christening not found by id: %d", id), 1));
+    public Christening findFullInfoById(Long id) throws EmptyResultDataAccessException {
+        String errorMes = String.format("Christening not found by id: %d", id);
+        christeningRepository.findWithLocalityAndPersonAndArchiveDocument(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        Christening result = christeningRepository.findWithGodParents(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
+        result.setGodParents(result.getGodParents().stream().distinct().toList());
+        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Christening> filter(ChristeningFilterDTO filter) {
+    public List<Christening> filter(ChristeningFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Christening> cq = cb.createQuery(Christening.class);
         Root<Christening> root = cq.from(Christening.class);
@@ -111,26 +123,36 @@ public class ChristeningDAOImpl implements ChristeningDAO {
             predicates.add(cb.isNull(root.get("person")));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        List<Christening> result = entityManager.createQuery(cq).getResultList();
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Christenings not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected Christening updateLinks(Christening info) {
-        info.setGodParents(godParentHelper.updateEmbeddable(
-                info.getId(),
-                info.getGodParents(),
-                (GodParent gp) -> gp.setLocality(localityRepository.save(gp.getLocality())),
-                christeningRepository::deleteGodParentsById,
-                christeningRepository::insertGodParent));
-        info.setPerson(info.getPerson() != null ?
-                personHelper.saveEntityIfNotExist(info.getPerson(), info.getPerson().getId(), personRepository) :
-                null);
-        info.setLocality(info.getLocality() != null ?
-                localityHelper.saveEntityIfNotExist(info.getLocality(), info.getLocality().getId(), localityRepository) :
-                null);
-        info.setArchiveDocument(info.getArchiveDocument() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), info.getArchiveDocument().getId(), archiveDocumentRepository) :
-                null);
+        info.setPerson(personHelper.saveEntityIfNotExist(info.getPerson(), Person::getId, personRepository));
+        info.setLocality(localityHelper.saveEntityIfNotExist(info.getLocality(), Locality::getId, localityRepository));
+        info.setArchiveDocument(archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), ArchiveDocument::getId, archiveDocumentRepository));
         return info;
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    protected void updateLinks(Christening existInfo, Christening newInfo) {
+        newInfo.getGodParents()
+                .forEach(gp -> {
+                    gp.setLocality(localityHelper.saveEntityIfNotExist(gp.getLocality(), Locality::getId, localityRepository));
+                    gp.setChristening(existInfo);
+                });
+
+        godParentHelper.updateEntities(
+                existInfo.getId(),
+                existInfo.getGodParents(),
+                newInfo.getGodParents(),
+                GodParent::getId,
+                godParentRepository,
+                null,
+                godParentRepository::deleteById);
     }
 }

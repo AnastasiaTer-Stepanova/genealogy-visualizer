@@ -11,7 +11,6 @@ import genealogy.visualizer.service.ChristeningDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ChristeningServiceImpl implements ChristeningService {
 
@@ -65,7 +64,10 @@ public class ChristeningServiceImpl implements ChristeningService {
 
     @Override
     public List<EasyChristening> filter(ChristeningFilter filter) {
-        return Optional.ofNullable(easyChristeningMapper.toDTOs(christeningDAO.filter(christeningMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyChristeningMapper.toDTOs(christeningDAO.filter(christeningMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Christenings by filter not found");
+        }
     }
 }

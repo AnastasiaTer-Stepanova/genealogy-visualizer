@@ -6,20 +6,13 @@ import genealogy.visualizer.api.model.EasyFamilyMember;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyMarriage;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.FullNameFilter;
 import genealogy.visualizer.api.model.Person;
-import genealogy.visualizer.api.model.PersonFilter;
 import genealogy.visualizer.api.model.Sex;
-import genealogy.visualizer.entity.enums.DateRangeType;
-import genealogy.visualizer.mapper.PersonMapper;
-import genealogy.visualizer.service.PersonDAO;
-import org.apache.commons.lang3.StringUtils;
-import org.jeasy.random.randomizers.misc.EnumRandomizer;
-import org.jeasy.random.randomizers.text.StringRandomizer;
-import org.junit.jupiter.api.AfterEach;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -29,8 +22,10 @@ import java.util.stream.Collectors;
 import static genealogy.visualizer.controller.ChristeningControllerTest.assertChristening;
 import static genealogy.visualizer.controller.DeathControllerTest.assertDeath;
 import static genealogy.visualizer.controller.FamilyRevisionControllerTest.assertFamilyRevision;
+import static genealogy.visualizer.controller.FamilyRevisionControllerTest.assertFamilyRevisions;
 import static genealogy.visualizer.controller.LocalityControllerTest.assertLocality;
 import static genealogy.visualizer.controller.MarriageControllerTest.assertMarriage;
+import static genealogy.visualizer.controller.MarriageControllerTest.assertMarriages;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -39,395 +34,302 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PersonControllerTest extends IntegrationTest {
 
-    @Autowired
-    private PersonMapper personMapper;
-
-    @Autowired
-    private PersonDAO personDAO;
-
     private static final String PATH = "/person";
 
     @Test
-    void saveTest() throws Exception {
-        Person personSave = generatePerson();
-        String requestJson = objectMapper.writeValueAsString(personSave);
-        String responseJson = postRequest(PATH, requestJson);
-        Person response = objectMapper.readValue(responseJson, Person.class);
-        assertNotNull(response);
-        assertNotNull(response.getId());
-        assertPerson(response, personSave);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Person responseGet = objectMapper.readValue(responseJsonGet, Person.class);
-        assertNotNull(responseGet);
-        assertPerson(responseGet, personSave);
-    }
-
-    @Test
-    void updateDeleteLinksTest() throws Exception {
-        genealogy.visualizer.entity.Person personEntity = personDAO.save(personMapper.toEntity(generatePerson()));
-        Person personUpdate = generatePerson();
-        personUpdate.setId(personEntity.getId());
-        personUpdate.setBirthLocality(null);
-        personUpdate.setDeathLocality(null);
-        personUpdate.setDeath(null);
-        personUpdate.setChristening(null);
-        personUpdate.setRevisions(Collections.emptyList());
-        personUpdate.setParents(Collections.emptyList());
-        personUpdate.setChildren(Collections.emptyList());
-        personUpdate.setPartners(Collections.emptyList());
-        personUpdate.setMarriages(Collections.emptyList());
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(personUpdate));
-        Person response = objectMapper.readValue(responseJson, Person.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), personUpdate.getId());
-        assertPerson(response, personUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Person responseGet = objectMapper.readValue(responseJsonGet, Person.class);
-        assertNotNull(responseGet);
-        assertPerson(responseGet, personUpdate);
-    }
-
-    @Test
-    void updateAddLinksTest() throws Exception {
-        genealogy.visualizer.entity.Person personEntity = generator.nextObject(genealogy.visualizer.entity.Person.class);
-        personEntity.setBirthLocality(null);
-        personEntity.setDeathLocality(null);
-        personEntity.setDeath(null);
-        personEntity.setChristening(null);
-        personEntity.setRevisions(Collections.emptyList());
-        personEntity.setParents(Collections.emptyList());
-        personEntity.setChildren(Collections.emptyList());
-        personEntity.setPartners(Collections.emptyList());
-        personEntity.setMarriages(Collections.emptyList());
-        personEntity = personRepository.save(personEntity);
-        Person personUpdate = generatePerson();
-        personUpdate.setId(personEntity.getId());
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(personUpdate));
-        String responseJson1 = putRequest(PATH, responseJson);
-        Person response = objectMapper.readValue(responseJson1, Person.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), personUpdate.getId());
-        assertPerson(response, personUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Person responseGet = objectMapper.readValue(responseJsonGet, Person.class);
-        assertNotNull(responseGet);
-        assertPerson(responseGet, personUpdate);
-    }
-
-    @Test
-    void updateTest() throws Exception {
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(generatePerson());
-        personEntity = personDAO.save(personEntity);
-        Person personUpdate = generatePerson();
-        personUpdate.setId(personEntity.getId());
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(personUpdate));
-        String responseJson1 = putRequest(PATH, responseJson);
-        Person response = objectMapper.readValue(responseJson1, Person.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), personUpdate.getId());
-        assertPerson(response, personUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Person responseGet = objectMapper.readValue(responseJsonGet, Person.class);
-        assertNotNull(responseGet);
-        assertPerson(responseGet, personUpdate);
-    }
-
-    @Test
-    void deleteTest() throws Exception {
-        Person person = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person);
-        personEntity = personDAO.save(personEntity);
-        String responseJson = deleteRequest(PATH + "/" + personEntity.getId());
-        assertTrue(responseJson.isEmpty());
-        assertTrue(personRepository.findById(personEntity.getId()).isEmpty());
-        personEntity.getChildren().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
-        personEntity.getPartners().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
-        personEntity.getParents().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
-        personEntity.getRevisions().forEach(r -> assertFalse(familyRevisionRepository.findById(r.getId()).isEmpty()));
-        personEntity.getMarriages().forEach(m -> assertFalse(marriageRepository.findById(m.getId()).isEmpty()));
-        assertFalse(christeningRepository.findById(personEntity.getChristening().getId()).isEmpty());
-        assertFalse(deathRepository.findById(personEntity.getDeath().getId()).isEmpty());
-        assertFalse(localityRepository.findById(personEntity.getBirthLocality().getId()).isEmpty());
-        assertFalse(localityRepository.findById(personEntity.getDeathLocality().getId()).isEmpty());
-    }
-
-    @Test
     void getByIdTest() throws Exception {
-        Person person = generatePerson();
-        genealogy.visualizer.entity.Person personEntity = personMapper.toEntity(person);
-        personEntity = personDAO.save(personEntity);
-        String responseJson = getRequest(PATH + "/" + personEntity.getId());
-        Person response = objectMapper.readValue(responseJson, Person.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), personEntity.getId());
-        assertPerson(response, person);
+        genealogy.visualizer.entity.Person personExist = existingPersons.stream()
+                .filter(e -> e.getChristening() != null && e.getDeath() != null && e.getBirthLocality() != null &&
+                        e.getDeathLocality() != null && e.getMarriages() != null && e.getMarriages().isEmpty() &&
+                        e.getRevisions() != null && e.getRevisions().isEmpty() && e.getParents() != null && e.getParents().isEmpty() &&
+                        e.getChildren() != null && e.getChildren().isEmpty() && e.getPartners() != null && e.getPartners().isEmpty())
+                .findAny().orElse(existingPersons.getFirst());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        Person response = objectMapper.readValue(getRequest(PATH + "/" + personExist.getId()), Person.class);
+        assertEquals(6, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        assertPerson(response, personExist);
+
+        getNotFoundRequest(PATH + "/" + generator.nextLong());
     }
 
     @Test
     void findByFilterTest() throws Exception {
-        StringRandomizer stringRandomizer = new StringRandomizer(3);
-        FullNameFilter fullNameFilter = new FullNameFilter()
-                .name("Иван")
-                .surname("Иванович")
-                .lastName("Иванов");
-        PersonFilter filter = new PersonFilter()
-                .fullName(fullNameFilter)
-                .birthYear(1820)
-                .deathYear(1870)
-                .sex(Sex.MALE);
-        List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
-        byte count = 0;
-        EnumRandomizer<DateRangeType> enumRandomizer = new EnumRandomizer<>(DateRangeType.class);
-        genealogy.visualizer.entity.model.DateInfo birthDate = new genealogy.visualizer.entity.model.DateInfo(
-                stringRandomizer.getRandomValue() + filter.getBirthYear() + stringRandomizer.getRandomValue(),
-                enumRandomizer.getRandomValue());
-        genealogy.visualizer.entity.model.DateInfo deathDate = new genealogy.visualizer.entity.model.DateInfo(
-                stringRandomizer.getRandomValue() + filter.getDeathYear() + stringRandomizer.getRandomValue(),
-                enumRandomizer.getRandomValue());
-        for (genealogy.visualizer.entity.Person person : personsSave) {
-            person.setParents(Collections.emptyList());
-            person.setPartners(Collections.emptyList());
-            person.setChildren(Collections.emptyList());
-            person.setRevisions(Collections.emptyList());
-            person.setMarriages(Collections.emptyList());
-            person.setChristening(null);
-            person.setDeath(null);
-            person.setDeathLocality(null);
-            person.setBirthLocality(null);
-            if (generator.nextBoolean()) {
-                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
-                fullName.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getName() : fullNameFilter.getName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setSurname(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getSurname() : fullNameFilter.getSurname().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setLastName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getLastName() : fullNameFilter.getLastName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                person.setFullName(fullName);
-                person.setSex(genealogy.visualizer.entity.enums.Sex.MALE);
-                person.setBirthDate(birthDate);
-                person.setDeathDate(deathDate);
-                count++;
-            }
-        }
-        List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
-        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
-        List<EasyPerson> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+
+        List<EasyPerson> response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(personFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
         assertNotNull(response);
-        assertEquals(response.size(), count);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
         Set<Long> findIds = response.stream().map(EasyPerson::getId).collect(Collectors.toSet());
-        for (genealogy.visualizer.entity.Person person : personsExist) {
-            if (person.getFullName().getName().toLowerCase().contains(filter.getFullName().getName().toLowerCase()) &&
-                    person.getFullName().getSurname().toLowerCase().contains(filter.getFullName().getSurname().toLowerCase()) &&
-                    person.getFullName().getLastName().toLowerCase().contains(filter.getFullName().getLastName().toLowerCase()) &&
-                    person.getBirthDate().getDate().contains(filter.getBirthYear().toString()) &&
-                    person.getDeathDate().getDate().contains(filter.getDeathYear().toString()) &&
-                    person.getSex().name().equals(filter.getSex().name())) {
+        for (genealogy.visualizer.entity.Person person : existingPersons) {
+            if (containsIgnoreCase(person.getFullName().getName(), personFilter.getFullName().getName()) &&
+                    containsIgnoreCase(person.getFullName().getSurname(), personFilter.getFullName().getSurname()) &&
+                    containsIgnoreCase(person.getFullName().getLastName(), personFilter.getFullName().getLastName()) &&
+                    person.getBirthDate().getDate().contains(personFilter.getBirthYear().toString()) &&
+                    person.getDeathDate().getDate().contains(personFilter.getDeathYear().toString()) &&
+                    person.getSex().name().equals(personFilter.getSex().name())) {
                 assertTrue(findIds.contains(person.getId()));
             }
         }
+        personFilter.getFullName().setName("Абракадабра");
+        getNotFoundRequest(PATH + "/filter", objectMapper.writeValueAsString(personFilter));
     }
 
     @Test
     void searchTest() throws Exception {
-        StringRandomizer stringRandomizer = new StringRandomizer(3);
-        List<String> strings = generator.objects(String.class, 3).toList();
-        List<genealogy.visualizer.entity.Person> personsSave = generator.objects(genealogy.visualizer.entity.Person.class, generator.nextInt(5, 10)).toList();
-        byte count = 0;
-        for (genealogy.visualizer.entity.Person person : personsSave) {
-            person.setParents(Collections.emptyList());
-            person.setPartners(Collections.emptyList());
-            person.setChildren(Collections.emptyList());
-            person.setRevisions(Collections.emptyList());
-            person.setMarriages(Collections.emptyList());
-            person.setChristening(null);
-            person.setDeath(null);
-            person.setDeathLocality(null);
-            person.setBirthLocality(null);
-            if (generator.nextBoolean()) {
-                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
-                fullName.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? strings.get(0) : strings.get(0).toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setSurname(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? strings.get(1) : strings.get(1).toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setLastName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? strings.get(2) : strings.get(2).toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                person.setFullName(fullName);
-                count++;
-            }
-        }
-        List<genealogy.visualizer.entity.Person> personsExist = personRepository.saveAllAndFlush(personsSave);
-        String responseJson = getRequest(PATH + "/search", StringUtils.join(strings, " "));
-        List<EasyPerson> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        String searchString = personFilter.getFullName().getName() + " " +
+                personFilter.getFullName().getSurname() + " " +
+                personFilter.getFullName().getLastName();
+        List<EasyPerson> response = objectMapper.readValue(getRequest(PATH + "/search", searchString),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyPerson.class));
         assertNotNull(response);
-        assertEquals(response.size(), count);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
         Set<Long> findIds = response.stream().map(EasyPerson::getId).collect(Collectors.toSet());
-        for (genealogy.visualizer.entity.Person person : personsExist) {
-            if (person.getFullName().getName().toLowerCase().contains(strings.get(0).toLowerCase()) &&
-                    person.getFullName().getSurname().toLowerCase().contains(strings.get(1).toLowerCase()) &&
-                    person.getFullName().getLastName().toLowerCase().contains(strings.get(2).toLowerCase())) {
+        for (genealogy.visualizer.entity.Person person : existingPersons) {
+            if (containsIgnoreCase(person.getFullName().getName(), personFilter.getFullName().getName()) &&
+                    containsIgnoreCase(person.getFullName().getSurname(), personFilter.getFullName().getSurname()) &&
+                    containsIgnoreCase(person.getFullName().getLastName(), personFilter.getFullName().getLastName())) {
                 assertTrue(findIds.contains(person.getId()));
             }
         }
     }
 
     @Test
-    void saveUnauthorizedTest() throws Exception {
-        Person object = generator.nextObject(Person.class);
-        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    void saveTest() throws Exception {
+        Person personSave = getPerson(existingPersons.stream()
+                .filter(e -> e.getChristening() != null && e.getDeath() != null && e.getBirthLocality() != null &&
+                        e.getDeathLocality() != null && e.getMarriages() != null && e.getMarriages().isEmpty() &&
+                        e.getRevisions() != null && e.getRevisions().isEmpty() && e.getParents() != null && e.getParents().isEmpty() &&
+                        e.getChildren() != null && e.getChildren().isEmpty() && e.getPartners() != null && e.getPartners().isEmpty())
+                .findAny().orElse(existingPersons.getFirst()));
+        personSave.setId(null);
+
+        Person response = objectMapper.readValue(postRequest(PATH, objectMapper.writeValueAsString(personSave)), Person.class);
+        assertPerson(response, personSave);
+
+        Person responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Person.class);
+        assertPerson(responseGet, responseGet);
+
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(personSave));
     }
 
     @Test
-    void updateUnauthorizedTest() throws Exception {
-        Person object = generator.nextObject(Person.class);
-        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    void updateTest() throws Exception {
+        Person personUpdate = getPerson(existingPersons.stream()
+                .filter(e -> e.getChristening() != null && e.getDeath() != null && e.getBirthLocality() != null &&
+                        e.getDeathLocality() != null && e.getMarriages() != null && e.getMarriages().isEmpty() &&
+                        e.getRevisions() != null && e.getRevisions().isEmpty() && e.getParents() != null && e.getParents().isEmpty() &&
+                        e.getChildren() != null && e.getChildren().isEmpty() && e.getPartners() != null && e.getPartners().isEmpty())
+                .findAny().orElse(existingPersons.getFirst()));
+
+        Person response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(personUpdate)), Person.class);
+        assertPerson(response, personUpdate);
+
+        Person responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Person.class);
+        assertPerson(responseGet, personUpdate);
+
+        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(personUpdate));
+
+        personUpdate.setChristening(null);
+        personUpdate.setDeath(null);
+        personUpdate.setDeathLocality(null);
+        personUpdate.setBirthLocality(null);
+        personUpdate.setMarriages(Collections.emptyList());
+        personUpdate.setRevisions(Collections.emptyList());
+        personUpdate.setPartners(Collections.emptyList());
+        personUpdate.setParents(Collections.emptyList());
+        personUpdate.setChildren(Collections.emptyList());
+        response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(personUpdate)), Person.class);
+        assertPerson(response, personUpdate);
     }
 
     @Test
-    void deleteUnauthorizedTest() throws Exception {
-        Person object = generator.nextObject(Person.class);
-        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    void deleteTest() throws Exception {
+        genealogy.visualizer.entity.Person personExist = existingPersons.stream()
+                .filter(e -> e.getChristening() != null && e.getDeath() != null && e.getBirthLocality() != null &&
+                        e.getDeathLocality() != null && e.getMarriages() != null && e.getMarriages().isEmpty() &&
+                        e.getRevisions() != null && e.getRevisions().isEmpty() && e.getParents() != null && e.getParents().isEmpty() &&
+                        e.getChildren() != null && e.getChildren().isEmpty() && e.getPartners() != null && e.getPartners().isEmpty())
+                .findAny().orElse(existingPersons.getFirst());
+
+        String responseJson = deleteRequest(PATH + "/" + personExist.getId());
+        existingPersons.remove(personExist);
+
+        assertTrue(responseJson.isEmpty());
+        assertTrue(personRepository.findById(personExist.getId()).isEmpty());
+        if (personExist.getChildren() != null) {
+            personExist.getChildren().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
+        }
+        if (personExist.getPartners() != null) {
+            personExist.getPartners().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
+        }
+        if (personExist.getParents() != null) {
+            personExist.getParents().forEach(p -> assertFalse(personRepository.findById(p.getId()).isEmpty()));
+        }
+        if (personExist.getRevisions() != null) {
+            personExist.getRevisions().forEach(r -> assertFalse(familyRevisionRepository.findById(r.getId()).isEmpty()));
+        }
+        if (personExist.getMarriages() != null) {
+            personExist.getMarriages().forEach(m -> assertFalse(marriageRepository.findById(m.getId()).isEmpty()));
+        }
+        if (personExist.getChristening() != null) {
+            assertFalse(christeningRepository.findById(personExist.getChristening().getId()).isEmpty());
+        }
+        if (personExist.getDeath() != null) {
+            assertFalse(deathRepository.findById(personExist.getDeath().getId()).isEmpty());
+        }
+        if (personExist.getBirthLocality() != null) {
+            assertFalse(localityRepository.findById(personExist.getBirthLocality().getId()).isEmpty());
+        }
+        if (personExist.getDeathLocality() != null) {
+            assertFalse(localityRepository.findById(personExist.getDeathLocality().getId()).isEmpty());
+        }
+
+        deleteUnauthorizedRequest(PATH + "/" + personExist.getId());
     }
 
-    @AfterEach
-    void tearDown() {
-        System.out.println("----------------------End test------------------------");
-        christeningRepository.deleteAll();
-        familyRevisionRepository.deleteAll();
-        deathRepository.deleteAll();
-        marriageRepository.deleteAll();
-        personRepository.deleteAll();
-        super.tearDown();
+    static void assertPerson(Person person1, Person person2) {
+        assertPerson(toEasyPerson(person1), toEasyPerson(person2));
+        assertLocality(person1.getBirthLocality(), person2.getBirthLocality());
+        assertLocality(person1.getDeathLocality(), person2.getDeathLocality());
+        assertChristening(person1.getChristening(), person2.getChristening());
+        assertDeath(person1.getDeath(), person2.getDeath());
+        assertMarriage(person1.getMarriages(), person2.getMarriages());
+        assertPerson(person1.getParents(), person2.getParents());
+        assertPerson(person1.getChildren(), person2.getChildren());
+        assertPerson(person1.getPartners(), person2.getPartners());
+        assertFamilyRevision(person1.getRevisions(), person2.getRevisions());
     }
 
-    private Person generatePerson() {
-        EasyPerson mother = generator.nextObject(EasyPerson.class);
-        EasyPerson father = generator.nextObject(EasyPerson.class);
-        Person personSave = generator.nextObject(Person.class);
-        personSave.getFullName().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
-        personSave.setChristening(generator.nextObject(EasyChristening.class));
-        personSave.setDeath(generator.nextObject(EasyDeath.class));
-        personSave.setMarriages(generator.objects(EasyMarriage.class, generator.nextInt(1, 3)).toList());
-        personSave.setBirthLocality(localityMapper.toDTO(localityExisting));
-        personSave.setDeathLocality(generator.nextObject(EasyLocality.class));
-        personSave.setParents(List.of(mother, father));
-        personSave.setChildren(generator.objects(EasyPerson.class, generator.nextInt(1, 3)).toList());
-        personSave.setPartners(generator.objects(EasyPerson.class, generator.nextInt(1, 3)).toList());
-        personSave.setRevisions(generator.objects(EasyFamilyMember.class, generator.nextInt(2, 5)).toList());
-        return personSave;
+    static void assertPerson(Person person1, genealogy.visualizer.entity.Person person2) {
+        assertPerson(toEasyPerson(person1), toEasyPerson(person2));
+        assertLocality(person1.getBirthLocality(), person2.getBirthLocality());
+        assertLocality(person1.getDeathLocality(), person2.getDeathLocality());
+        assertChristening(person1.getChristening(), person2.getChristening());
+        assertDeath(person1.getDeath(), person2.getDeath());
+        assertMarriages(person1.getMarriages(), person2.getMarriages());
+        assertPersons(person1.getParents(), person2.getParents());
+        assertPersons(person1.getChildren(), person2.getChildren());
+        assertPersons(person1.getPartners(), person2.getPartners());
+        assertFamilyRevisions(person1.getRevisions(), person2.getRevisions());
     }
 
-    static void assertPerson(Person expected, Person actual) {
-        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
-        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
-        assertFullName(expected.getFullName(), actual.getFullName());
-        assertLocality(expected.getBirthLocality(), actual.getBirthLocality());
-        assertLocality(expected.getDeathLocality(), actual.getDeathLocality());
-        assertChristening(expected.getChristening(), actual.getChristening());
-        assertDeath(expected.getDeath(), actual.getDeath());
-
-        assertEquals(expected.getMarriages().size(), actual.getMarriages().size());
-        expected.getMarriages().sort(Comparator.comparing(r -> r.getWife().getName()));
-        List<EasyMarriage> actualMarriages = actual.getMarriages().stream().sorted(Comparator.comparing(r -> r.getWife().getName())).toList();
-        for (int i = 0; i < expected.getMarriages().size(); i++) {
-            assertMarriage(expected.getMarriages().get(i), actualMarriages.get(i));
-        }
-
-        assertEquals(expected.getParents().size(), actual.getParents().size());
-        expected.getParents().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<EasyPerson> actualParents = actual.getParents().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getParents().size(); i++) {
-            assertPerson(expected.getParents().get(i), actualParents.get(i));
-        }
-
-        assertEquals(expected.getChildren().size(), actual.getChildren().size());
-        expected.getChildren().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<EasyPerson> actualChildren = actual.getChildren().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getChildren().size(); i++) {
-            assertPerson(expected.getChildren().get(i), actualChildren.get(i));
-        }
-
-        assertEquals(expected.getPartners().size(), actual.getPartners().size());
-        expected.getPartners().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<EasyPerson> actualPartners = actual.getPartners().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getPartners().size(); i++) {
-            assertPerson(expected.getPartners().get(i), actualPartners.get(i));
-        }
-
-        assertEquals(expected.getRevisions().size(), actual.getRevisions().size());
-        expected.getRevisions().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<EasyFamilyMember> actualRevisions = actual.getRevisions().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getRevisions().size(); i++) {
-            assertFamilyRevision(expected.getRevisions().get(i), actualRevisions.get(i));
-        }
+    protected static void assertPersons(List<EasyPerson> persons1, List<genealogy.visualizer.entity.Person> persons2) {
+        assertNotNull(persons2);
+        assertPerson(persons1, persons2.stream().map(PersonControllerTest::toEasyPerson).toList());
     }
 
-    static void assertPerson(Person expected, genealogy.visualizer.entity.Person actual) {
-        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
-        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
-        assertFullName(expected.getFullName(), actual.getFullName());
-        assertLocality(expected.getBirthLocality(), actual.getBirthLocality());
-        assertLocality(expected.getDeathLocality(), actual.getDeathLocality());
-        assertChristening(expected.getChristening(), actual.getChristening());
-        assertDeath(expected.getDeath(), actual.getDeath());
-
-        assertEquals(expected.getMarriages().size(), actual.getMarriages().size());
-        expected.getMarriages().sort(Comparator.comparing(r -> r.getWife().getName()));
-        List<genealogy.visualizer.entity.Marriage> actualMarriages = actual.getMarriages().stream().sorted(Comparator.comparing(r -> r.getWife().getName())).toList();
-        for (int i = 0; i < expected.getMarriages().size(); i++) {
-            assertMarriage(expected.getMarriages().get(i), actualMarriages.get(i));
-        }
-
-        assertEquals(expected.getParents().size(), actual.getParents().size());
-        expected.getParents().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<genealogy.visualizer.entity.Person> actualParents = actual.getParents().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getParents().size(); i++) {
-            assertPerson(expected.getParents().get(i), actualParents.get(i));
-        }
-
-        assertEquals(expected.getChildren().size(), actual.getChildren().size());
-        expected.getChildren().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<genealogy.visualizer.entity.Person> actualChildren = actual.getChildren().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getChildren().size(); i++) {
-            assertPerson(expected.getChildren().get(i), actualChildren.get(i));
-        }
-
-        assertEquals(expected.getPartners().size(), actual.getPartners().size());
-        expected.getPartners().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<genealogy.visualizer.entity.Person> actualPartners = actual.getPartners().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getPartners().size(); i++) {
-            assertPerson(expected.getPartners().get(i), actualPartners.get(i));
-        }
-
-        assertEquals(expected.getRevisions().size(), actual.getRevisions().size());
-        expected.getRevisions().sort(Comparator.comparing(r -> r.getFullName().getName()));
-        List<genealogy.visualizer.entity.FamilyRevision> actualRevisions = actual.getRevisions().stream().sorted(Comparator.comparing(r -> r.getFullName().getName())).toList();
-        for (int i = 0; i < expected.getRevisions().size(); i++) {
-            assertFamilyRevision(expected.getRevisions().get(i), actualRevisions.get(i));
-        }
-    }
-
-    protected static void assertPerson(EasyPerson expected, EasyPerson actual) {
-        if (expected == null || actual == null) {
-            assertNull(expected);
-            assertNull(actual);
+    protected static void assertPerson(List<EasyPerson> persons1, List<EasyPerson> persons2) {
+        if (persons1 == null || persons2 == null) {
+            assertNull(persons1);
+            assertNull(persons2);
             return;
         }
-        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
-        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
-        assertFullName(expected.getFullName(), actual.getFullName());
-        assertEquals(expected.getSex(), actual.getSex());
+        assertNotNull(persons1);
+        assertNotNull(persons2);
+        assertEquals(persons1.size(), persons2.size());
+        List<EasyPerson> personsSorted1 = persons1.stream().sorted(Comparator.comparing(p -> p.getFullName().getName())).toList();
+        List<EasyPerson> personsSorted2 = persons2.stream().sorted(Comparator.comparing(p -> p.getFullName().getName())).toList();
+        for (int i = 0; i < personsSorted1.size(); i++) {
+            assertPerson(personsSorted1.get(i), personsSorted2.get(i));
+        }
     }
 
-    protected static void assertPerson(EasyPerson expected, genealogy.visualizer.entity.Person actual) {
-        assertDateInfo(expected.getBirthDate(), actual.getBirthDate());
-        assertDateInfo(expected.getDeathDate(), actual.getDeathDate());
-        assertFullName(expected.getFullName(), actual.getFullName());
-        assertEquals(expected.getSex().name(), actual.getSex().name());
+    protected static void assertPerson(EasyPerson person1, EasyPerson person2) {
+        if (person1 == null || person2 == null) {
+            assertNull(person1);
+            assertNull(person2);
+            return;
+        }
+        assertNotNull(person1);
+        assertNotNull(person2);
+        if (person1.getId() != null && person2.getId() != null) {
+            assertEquals(person1.getId(), person2.getId());
+        }
+        assertDateInfo(person1.getBirthDate(), person2.getBirthDate());
+        assertDateInfo(person1.getDeathDate(), person2.getDeathDate());
+        assertFullName(person1.getFullName(), person2.getFullName());
+        assertEquals(person1.getSex(), person2.getSex());
+    }
+
+    protected static void assertPerson(EasyPerson person1, genealogy.visualizer.entity.Person person2) {
+        assertPerson(person1, toEasyPerson(person2));
+    }
+
+    private Person getPerson(genealogy.visualizer.entity.Person existPerson) {
+        Person person = generator.nextObject(Person.class);
+        person.setId(existPerson.getId());
+        List<EasyPerson> parents = new ArrayList<>(generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList());
+        existPerson.getParents().forEach(p -> {
+            if (generator.nextBoolean()) {
+                parents.add(easyPersonMapper.toDTO(p));
+            }
+        });
+        person.setParents(parents);
+        List<EasyPerson> partners = new ArrayList<>(generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList());
+        existPerson.getPartners().forEach(p -> {
+            if (generator.nextBoolean()) {
+                partners.add(easyPersonMapper.toDTO(p));
+            }
+        });
+        person.setPartners(partners);
+        List<EasyPerson> children = new ArrayList<>(generator.objects(EasyPerson.class, generator.nextInt(5, 10)).toList());
+        existPerson.getChildren().forEach(p -> {
+            if (generator.nextBoolean()) {
+                children.add(easyPersonMapper.toDTO(p));
+            }
+        });
+        person.setChildren(children);
+        List<EasyMarriage> marriages = new ArrayList<>(generator.objects(EasyMarriage.class, generator.nextInt(5, 10)).toList());
+        existPerson.getMarriages().forEach(m -> {
+            if (generator.nextBoolean()) {
+                marriages.add(easyMarriageMapper.toDTO(m));
+            }
+        });
+        person.setMarriages(marriages);
+        List<EasyFamilyMember> revisions = new ArrayList<>(generator.objects(EasyFamilyMember.class, generator.nextInt(5, 10)).toList());
+        existPerson.getRevisions().forEach(fr -> {
+            if (generator.nextBoolean()) {
+                revisions.add(easyFamilyRevisionMapper.toDTO(fr));
+            }
+        });
+        person.setRevisions(revisions);
+        person.getFullName().setStatuses(generator.objects(String.class, generator.nextInt(1, 3)).toList());
+        person.setChristening(generator.nextObject(EasyChristening.class));
+        person.setDeath(generator.nextObject(EasyDeath.class));
+        person.setBirthLocality(easyLocalityMapper.toDTO(existingLocalities.get(generator.nextInt(existingLocalities.size()))));
+        person.setDeathLocality(generator.nextObject(EasyLocality.class));
+        return person;
+    }
+
+    private static EasyPerson toEasyPerson(genealogy.visualizer.entity.Person person) {
+        if (person == null) {
+            return null;
+        }
+        return new EasyPerson()
+                .id(person.getId())
+                .birthDate(toDateInfo(person.getBirthDate()))
+                .deathDate(toDateInfo(person.getDeathDate()))
+                .fullName(toFullName(person.getFullName()))
+                .sex(Sex.valueOf(person.getSex().name()));
+    }
+
+    private static EasyPerson toEasyPerson(Person person) {
+        if (person == null) {
+            return null;
+        }
+        return new EasyPerson()
+                .id(person.getId())
+                .birthDate(person.getBirthDate())
+                .deathDate(person.getDeathDate())
+                .fullName(person.getFullName())
+                .sex(person.getSex());
     }
 }

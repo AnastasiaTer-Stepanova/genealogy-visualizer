@@ -69,7 +69,9 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id) {
+    public void delete(Long id)throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete archive document without id");
         archiveDocumentRepository.updateNextRevisionId(id, null);
         familyRevisionRepository.updateArchiveDocumentId(id, null);
         christeningRepository.updateArchiveDocumentId(id, null);
@@ -80,7 +82,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public ArchiveDocument save(ArchiveDocument archiveDocument) {
+    public ArchiveDocument save(ArchiveDocument archiveDocument) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (archiveDocument.getId() != null)
             throw new IllegalArgumentException("Cannot save archive document with id");
         archiveDocument = updateLinks(archiveDocument);
@@ -101,22 +103,22 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public ArchiveDocument update(ArchiveDocument archiveDocument) {
-        if (archiveDocument.getId() == null)
+    public ArchiveDocument update(ArchiveDocument archiveDocument) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = archiveDocument.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update archive document without id");
+        ArchiveDocument existInfo = this.findFullInfoById(id);
         archiveDocument = updateLinks(archiveDocument);
-        ArchiveDocument updatedArchiveDocument = archiveDocumentRepository.update(archiveDocument);
-        if (updatedArchiveDocument == null)
-            throw new EmptyResultDataAccessException("Updating archive document failed", 1);
-        updateLinks(updatedArchiveDocument, archiveDocument);
+        archiveDocumentRepository.update(archiveDocument).orElseThrow(() -> new EmptyResultDataAccessException("Updating archive document failed", 1));
+        updateLinks(existInfo, archiveDocument);
         entityManager.flush();
         entityManager.clear();
-        return this.findFullInfoById(updatedArchiveDocument.getId());
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public ArchiveDocument findFullInfoById(Long id) {
+    public ArchiveDocument findFullInfoById(Long id) throws EmptyResultDataAccessException {
         String errorMes = String.format("Archive document not found by id: %d", id);
         archiveDocumentRepository.findWithArchiveAndNextRevisionAndPreviousRevisions(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         archiveDocumentRepository.findWithDeaths(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
@@ -148,7 +150,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ArchiveDocument> filter(ArchiveDocumentFilterDTO filter) {
+    public List<ArchiveDocument> filter(ArchiveDocumentFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ArchiveDocument> cq = cb.createQuery(ArchiveDocument.class);
         Root<ArchiveDocument> root = cq.from(ArchiveDocument.class);
@@ -170,7 +172,11 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
             predicates.add(cb.equal(join.get("id"), filter.getArchiveId()));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        List<ArchiveDocument> result = entityManager.createQuery(cq).getResultList();
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Archive documents not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Override
@@ -226,12 +232,8 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected ArchiveDocument updateLinks(ArchiveDocument info) {
-        info.setArchive(info.getArchive() != null ?
-                archiveHelper.saveEntityIfNotExist(info.getArchive(), info.getArchive().getId(), archiveRepository) :
-                null);
-        info.setNextRevision(info.getNextRevision() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(info.getNextRevision(), info.getNextRevision().getId(), archiveDocumentRepository) :
-                null);
+        info.setArchive(archiveHelper.saveEntityIfNotExist(info.getArchive(), Archive::getId, archiveRepository));
+        info.setNextRevision(archiveDocumentHelper.saveEntityIfNotExist(info.getNextRevision(), ArchiveDocument::getId, archiveDocumentRepository));
         return info;
     }
 

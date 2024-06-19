@@ -13,7 +13,6 @@ import genealogy.visualizer.service.PersonDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class PersonServiceImpl implements PersonService {
 
@@ -65,8 +64,11 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<EasyPerson> filter(PersonFilter filter) {
-        return Optional.ofNullable(easyPersonMapper.toDTOs(personDAO.filter(personMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyPersonMapper.toDTOs(personDAO.filter(personMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Persons by filter not found");
+        }
     }
 
     //TODO Планируется перейти на поиск в elasticSearch
@@ -79,7 +81,10 @@ public class PersonServiceImpl implements PersonService {
         fullName.setLastName(strings.length > 2 ? strings[2] : null);
         PersonFilterDTO filter = new PersonFilterDTO();
         filter.setFullName(fullName);
-        return Optional.ofNullable(easyPersonMapper.toDTOs(personDAO.filter(filter)))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyPersonMapper.toDTOs(personDAO.filter(filter));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Persons not found");
+        }
     }
 }

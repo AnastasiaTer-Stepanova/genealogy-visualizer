@@ -1,7 +1,6 @@
 package genealogy.visualizer.repository;
 
 import genealogy.visualizer.entity.Marriage;
-import genealogy.visualizer.entity.model.Witness;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,6 +19,7 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Query(value = "update marriage set archive_document_id = :newArchiveDocumentId where id = :id", nativeQuery = true)
     void updateArchiveDocumentIdById(@Param("id") Long id, @Param("newArchiveDocumentId") Long newArchiveDocumentId);
 
+    @Modifying
     @Query(value = "update marriage c set " +
             "comment = :#{#entity.comment}, date = :#{#entity.date}, husband_last_name = :#{#entity.husband?.lastName}, " +
             "husband_name = :#{#entity.husband?.name}, husband_status = :#{#entity.husband?.status}, husband_surname = :#{#entity.husband?.surname}, " +
@@ -33,8 +33,8 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
             "wifes_father_status = :#{#entity.wifesFather?.status}, wifes_father_surname = :#{#entity.wifesFather?.surname}, " +
             "archive_document_id = :#{#entity.archiveDocument?.id}, husband_locality_id = :#{#entity.husbandLocality?.id}, " +
             "wife_locality_id = :#{#entity.wifeLocality?.id} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    Marriage update(@Param("entity") Marriage entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") Marriage entity);
 
     @Modifying
     @Query(value = "delete from person_marriage where person_id = :personId and marriage_id = :marriageId", nativeQuery = true)
@@ -52,10 +52,13 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Query(value = "insert into person_marriage (person_id, marriage_id) values (:personId, :marriageId)", nativeQuery = true)
     void insertPersonMarriageLink(@Param("personId") Long personId, @Param("marriageId") Long marriageId);
 
-    @Query("select m from Marriage m left join fetch m.witnesses left join fetch m.witnesses.locality left join fetch m.witnesses.locality.anotherNames " +
-            "where m.id = :id")
+    @Query("select m from Marriage m where m.id = :id")
+    @EntityGraph(value = "Marriage.withWitnesses", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Marriage> findWithWitnesses(@Param("id") Long id);
+
+    @Query("select m from Marriage m where m.id = :id")
     @EntityGraph(value = "Marriage.withArchiveDocument", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<Marriage> findWithWitnessesAndArchiveDocument(@Param("id") Long id);
+    Optional<Marriage> findWithArchiveDocument(@Param("id") Long id);
 
     @Query("select m from Marriage m where m.id = :id")
     @EntityGraph(value = "Marriage.withHusbandLocality", type = EntityGraph.EntityGraphType.LOAD)
@@ -85,18 +88,4 @@ public interface MarriageRepository extends JpaRepository<Marriage, Long> {
     @Query(value = "update marriage set wife_locality_id = :newWifeLocalityId where id = :id", nativeQuery = true)
     void updateWifeLocalityIdById(@Param("id") Long id, @Param("newWifeLocalityId") Long newWifeLocalityId);
 
-    @Modifying
-    @Query(value = "update witness set locality_id = :newLocalityId where locality_id = :localityId", nativeQuery = true)
-    void updateWitnessLocalityId(@Param("localityId") Long localityId, @Param("newLocalityId") Long newLocalityId);
-
-    @Modifying
-    @Query(value = "delete from witness where marriage_id = :id", nativeQuery = true)
-    void deleteWitnessesById(@Param("id") Long id);
-
-    @Modifying
-    @Query(value = "insert into witness (marriage_id, last_name, name, status, surname, locality_id, witness_type) " +
-            "values (:marriageId, :#{#entity.fullName?.lastName}, :#{#entity.fullName?.name}, :#{#entity.fullName?.status}, " +
-            ":#{#entity.fullName?.surname}, :#{#entity.locality?.id}, :#{#entity.witnessType?.name})",
-            nativeQuery = true)
-    void insertWitness(@Param("marriageId") Long marriageId, @Param("entity") Witness entity);
 }

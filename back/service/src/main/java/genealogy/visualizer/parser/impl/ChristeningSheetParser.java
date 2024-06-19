@@ -3,7 +3,7 @@ package genealogy.visualizer.parser.impl;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Christening;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
-import genealogy.visualizer.entity.model.GodParent;
+import genealogy.visualizer.entity.GodParent;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;

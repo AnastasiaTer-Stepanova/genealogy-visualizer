@@ -21,4 +21,12 @@ public class ArchiveFilterDTO {
     public void setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
     }
+
+    @Override
+    public String toString() {
+        return "ArchiveFilterDTO{" +
+                "name='" + name + '\'' +
+                ", abbreviation='" + abbreviation + '\'' +
+                '}';
+    }
 }

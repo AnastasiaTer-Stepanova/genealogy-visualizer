@@ -52,13 +52,15 @@ public class DeathDAOImpl implements DeathDAO {
     private static final RepositoryEasyModelHelper<Person> personHelper = new RepositoryEasyModelHelper<>();
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id) throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete death without id");
         deathRepository.deleteById(id);
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Death save(Death death) {
+    public Death save(Death death) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (death.getId() != null)
             throw new IllegalArgumentException("Cannot save death with id");
         return deathRepository.save(updateLinks(death));
@@ -66,25 +68,26 @@ public class DeathDAOImpl implements DeathDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Death update(Death death) {
-        if (death.getId() == null)
+    public Death update(Death death) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = death.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update death without id");
-        Death updatedDeath = deathRepository.update(updateLinks(death));
-        if (updatedDeath == null)
-            throw new EmptyResultDataAccessException("Updating christening failed", 1);
-        return updatedDeath;
+        deathRepository.update(updateLinks(death)).orElseThrow(() -> new EmptyResultDataAccessException("Updating christening failed", 1));
+        entityManager.flush();
+        entityManager.clear();
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Death findFullInfoById(Long id) {
+    public Death findFullInfoById(Long id) throws EmptyResultDataAccessException {
         return deathRepository.findFullInfoById(id)
                 .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Death not found by id: %d", id), 1));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Death> filter(DeathFilterDTO filter) {
+    public List<Death> filter(DeathFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Death> cq = cb.createQuery(Death.class);
         Root<Death> root = cq.from(Death.class);
@@ -99,20 +102,18 @@ public class DeathDAOImpl implements DeathDAO {
             predicates.add(cb.isNull(root.get("person")));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return entityManager.createQuery(cq).getResultList();
+        List<Death> result = entityManager.createQuery(cq).getResultList();
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Deaths not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected Death updateLinks(Death info) {
-        info.setArchiveDocument(info.getArchiveDocument() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), info.getArchiveDocument().getId(), archiveDocumentRepository) :
-                null);
-        info.setLocality(info.getLocality() != null ?
-                localityHelper.saveEntityIfNotExist(info.getLocality(), info.getLocality().getId(), localityRepository) :
-                null);
-        info.setPerson(info.getPerson() != null ?
-                personHelper.saveEntityIfNotExist(info.getPerson(), info.getPerson().getId(), personRepository) :
-                null);
+        info.setArchiveDocument(archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), ArchiveDocument::getId, archiveDocumentRepository));
+        info.setLocality(localityHelper.saveEntityIfNotExist(info.getLocality(), Locality::getId, localityRepository));
+        info.setPerson(personHelper.saveEntityIfNotExist(info.getPerson(), Person::getId, personRepository));
         return info;
     }
 }

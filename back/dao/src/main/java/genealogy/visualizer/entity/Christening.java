@@ -3,15 +3,10 @@ package genealogy.visualizer.entity;
 import genealogy.visualizer.converter.SexConverter;
 import genealogy.visualizer.entity.enums.Sex;
 import genealogy.visualizer.entity.model.FullName;
-import genealogy.visualizer.entity.model.GodParent;
-import jakarta.persistence.AssociationOverride;
-import jakarta.persistence.AssociationOverrides;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,7 +18,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.NamedSubgraph;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -37,18 +34,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@NamedEntityGraph(
-        name = "Christening.full",
-        attributeNodes = {
-                @NamedAttributeNode(value = "locality", subgraph = "localityGraph"),
-                @NamedAttributeNode(value = "person", subgraph = "personGraph"),
-                @NamedAttributeNode("archiveDocument")
-        },
-        subgraphs = {
-                @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
-                @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
-        }
-)
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "Christening.withGodParents",
+                attributeNodes = {@NamedAttributeNode(value = "godParents", subgraph = "godParentGraph")},
+                subgraphs = {
+                        @NamedSubgraph(name = "godParentGraph", type = Witness.class,
+                                attributeNodes = {@NamedAttributeNode(value = "locality", subgraph = "localityGraph")}),
+                        @NamedSubgraph(name = "localityGraph", type = Locality.class,
+                                attributeNodes = {@NamedAttributeNode("anotherNames")})
+                }),
+        @NamedEntityGraph(
+                name = "Christening.withLocalityAndPersonAndArchiveDocument",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "locality", subgraph = "localityGraph"),
+                        @NamedAttributeNode(value = "person", subgraph = "personGraph"),
+                        @NamedAttributeNode("archiveDocument")
+                },
+                subgraphs = {
+                        @NamedSubgraph(name = "localityGraph", attributeNodes = {@NamedAttributeNode("anotherNames")}),
+                        @NamedSubgraph(name = "personGraph", attributeNodes = {@NamedAttributeNode("christening"), @NamedAttributeNode("death")}),
+                })
+})
 @Table(uniqueConstraints = @UniqueConstraint(name = "UK_CHRISTENING_PERSON_ID", columnNames = {"PERSON_ID"}))
 public class Christening implements Serializable {
 
@@ -116,15 +123,7 @@ public class Christening implements Serializable {
             foreignKey = @ForeignKey(name = "FK_LOCALITY"))
     private Locality locality;
 
-    @ElementCollection(targetClass = GodParent.class, fetch = FetchType.LAZY)
-    @CollectionTable(name = "GOD_PARENT",
-            joinColumns = @JoinColumn(name = "CHRISTENING_ID",
-                    foreignKey = @ForeignKey(name = "FK_GOD_PARENT")))
-    @AssociationOverrides({
-            @AssociationOverride(name = "locality",
-                    joinColumns = @JoinColumn(name = "LOCALITY_ID"),
-                    foreignKey = @ForeignKey(name = "FK_GOD_PARENT_LOCALITY"))
-    })
+    @OneToMany(mappedBy = "christening", fetch = FetchType.LAZY)
     private List<GodParent> godParents = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)

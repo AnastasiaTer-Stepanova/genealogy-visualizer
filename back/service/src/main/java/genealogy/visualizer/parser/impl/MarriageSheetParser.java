@@ -4,7 +4,7 @@ import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.Marriage;
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 import genealogy.visualizer.entity.enums.WitnessType;
-import genealogy.visualizer.entity.model.Witness;
+import genealogy.visualizer.entity.Witness;
 import genealogy.visualizer.parser.SheetParser;
 import genealogy.visualizer.parser.util.StringParserHelper;
 import genealogy.visualizer.service.ArchiveDocumentDAO;

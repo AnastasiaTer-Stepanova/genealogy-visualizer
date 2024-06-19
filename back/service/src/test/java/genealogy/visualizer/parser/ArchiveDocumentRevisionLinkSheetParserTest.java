@@ -1,5 +1,6 @@
 package genealogy.visualizer.parser;
 
+import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.parser.impl.ArchiveDocumentRevisionLinkSheetParser;
 import org.apache.poi.ss.usermodel.Row;
@@ -78,6 +79,7 @@ class ArchiveDocumentRevisionLinkSheetParserTest extends AbstractTest {
     private List<ArchiveDocument> generateArchiveDocuments() {
         List<ArchiveDocument> archiveDocuments = generator.objects(ArchiveDocument.class, generator.nextInt(5, 15)).toList();
         for (ArchiveDocument archiveDocument : archiveDocuments) {
+            archiveDocument.setArchive(generator.nextObject(Archive.class));
             if (generator.nextBoolean()) {
                 archiveDocument.setNextRevision(archiveDocuments.get(generator.nextInt(archiveDocuments.size())));
             }

@@ -1,7 +1,9 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.Witness;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -10,7 +12,10 @@ import org.mapstruct.ReportingPolicy;
         uses = {FullNameMapper.class, EasyLocalityMapper.class})
 public interface WitnessMapper extends CommonMapper {
 
-    genealogy.visualizer.entity.model.Witness toEntity(Witness witness);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "marriage", ignore = true)
+    genealogy.visualizer.entity.Witness toEntity(Witness witness);
 
-    Witness toDTO(genealogy.visualizer.entity.model.Witness witness);
+    @BeanMapping(ignoreUnmappedSourceProperties = {"id", "marriage"})
+    Witness toDTO(genealogy.visualizer.entity.Witness witness);
 }

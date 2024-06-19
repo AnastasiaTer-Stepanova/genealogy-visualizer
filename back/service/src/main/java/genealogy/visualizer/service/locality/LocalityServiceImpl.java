@@ -11,7 +11,6 @@ import genealogy.visualizer.service.LocalityDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class LocalityServiceImpl implements LocalityService {
 
@@ -65,7 +64,10 @@ public class LocalityServiceImpl implements LocalityService {
 
     @Override
     public List<EasyLocality> filter(LocalityFilter filter) {
-        return Optional.ofNullable(easyLocalityMapper.toDTOs(localityDAO.filter(localityMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyLocalityMapper.toDTOs(localityDAO.filter(localityMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Localities by filter not found");
+        }
     }
 }

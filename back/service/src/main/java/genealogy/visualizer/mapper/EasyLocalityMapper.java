@@ -19,10 +19,12 @@ public interface EasyLocalityMapper extends CommonMapper {
     @Mapping(target = "personsWithBirthLocality", ignore = true)
     @Mapping(target = "marriagesWithHusbandLocality", ignore = true)
     @Mapping(target = "marriagesWithWifeLocality", ignore = true)
+    @Mapping(target = "witnesses", ignore = true)
+    @Mapping(target = "godParents", ignore = true)
     genealogy.visualizer.entity.Locality toEntity(EasyLocality locality);
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"christenings", "deaths", "personsWithDeathLocality", "personsWithBirthLocality",
-            "marriagesWithHusbandLocality", "marriagesWithWifeLocality"})
+            "marriagesWithHusbandLocality", "marriagesWithWifeLocality", "witnesses", "godParents"})
     EasyLocality toDTO(genealogy.visualizer.entity.Locality locality);
 
     List<EasyLocality> toDTOs(List<genealogy.visualizer.entity.Locality> locality);

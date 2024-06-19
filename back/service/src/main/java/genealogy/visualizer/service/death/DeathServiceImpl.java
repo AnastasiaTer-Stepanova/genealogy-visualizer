@@ -11,7 +11,6 @@ import genealogy.visualizer.service.DeathDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class DeathServiceImpl implements DeathService {
 
@@ -65,7 +64,10 @@ public class DeathServiceImpl implements DeathService {
 
     @Override
     public List<EasyDeath> filter(DeathFilter filter) {
-        return Optional.ofNullable(easyDeathMapper.toDTOs(deathDAO.filter(deathMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyDeathMapper.toDTOs(deathDAO.filter(deathMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Deaths by filter not found");
+        }
     }
 }

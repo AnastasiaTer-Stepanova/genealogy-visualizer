@@ -1,14 +1,14 @@
 package genealogy.visualizer.controller;
 
 import genealogy.visualizer.api.model.Archive;
-import genealogy.visualizer.api.model.ArchiveFilter;
 import genealogy.visualizer.api.model.EasyArchive;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
-import org.jeasy.random.randomizers.text.StringRandomizer;
-import org.junit.jupiter.api.AfterEach;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -26,33 +26,60 @@ class ArchiveControllerTest extends IntegrationTest {
     private static final String PATH = "/archive";
 
     @Test
-    void saveTest() throws Exception {
-        Archive archiveSave = generator.nextObject(Archive.class);
-        List<EasyArchiveDocument> archiveDocumentsSave = generator.objects(EasyArchiveDocument.class, generator.nextInt(5, 10)).toList();
-        archiveSave.setArchiveDocuments(archiveDocumentsSave);
-        String responseJson = postRequest(PATH, objectMapper.writeValueAsString(archiveSave));
-        Archive response = objectMapper.readValue(responseJson, Archive.class);
-        assertNotNull(response);
-        assertArchive(response, archiveSave);
-        String responseGetJson = getRequest(PATH + "/" + response.getId());
-        Archive responseGet = objectMapper.readValue(responseGetJson, Archive.class);
-        assertNotNull(responseGet);
-        assertArchive(responseGet, archiveSave);
+    void getByIdTest() throws Exception {
+        genealogy.visualizer.entity.Archive archiveExist = existingArchives.stream()
+                .filter(e -> e.getArchiveDocuments() != null && !e.getArchiveDocuments().isEmpty()).findAny().orElse(existingArchives.getFirst());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+
+        Archive response = objectMapper.readValue(getRequest(PATH + "/" + archiveExist.getId()), Archive.class);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        assertArchive(response, archiveExist);
+
+        getNotFoundRequest(PATH + "/" + generator.nextLong());
     }
 
     @Test
-    void getByIdTest() throws Exception {
-        genealogy.visualizer.entity.Archive archiveExist = generateRandomExistArchive();
-        String responseJson = getRequest(PATH + "/" + archiveExist.getId());
-        Archive response = objectMapper.readValue(responseJson, Archive.class);
+    void findByFilterTest() throws Exception {
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+
+        List<EasyArchive> response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(archiveFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyArchive.class));
         assertNotNull(response);
-        assertEquals(response.getId(), archiveExist.getId());
-        assertArchive(response, archiveExist);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        List<Long> existIds = existingArchives.stream()
+                .filter(a -> containsIgnoreCase(a.getAbbreviation(), archiveFilter.getAbbreviation()) &&
+                        containsIgnoreCase(a.getName(), archiveFilter.getName()))
+                .map(genealogy.visualizer.entity.Archive::getId)
+                .toList();
+        Set<Long> findIds = response.stream().map(EasyArchive::getId).collect(Collectors.toSet());
+        assertEquals(existIds.size(), findIds.size());
+        assertTrue(existIds.containsAll(findIds));
+
+        archiveFilter.setName("Абракадабра");
+        getNotFoundRequest(PATH + "/filter", objectMapper.writeValueAsString(archiveFilter));
+    }
+
+    @Test
+    void saveTest() throws Exception {
+        Archive archiveSave = generator.nextObject(Archive.class);
+        archiveSave.setArchiveDocuments(generator.objects(EasyArchiveDocument.class, generator.nextInt(5, 10)).toList());
+        Archive response = objectMapper.readValue(postRequest(PATH, objectMapper.writeValueAsString(archiveSave)), Archive.class);
+        assertArchive(response, archiveSave);
+
+        Archive responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Archive.class);
+        assertArchive(responseGet, archiveSave);
+
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveSave));
     }
 
     @Test
     void updateTest() throws Exception {
-        genealogy.visualizer.entity.Archive archiveExist = generateRandomExistArchive();
+        genealogy.visualizer.entity.Archive archiveExist = existingArchives.stream()
+                .filter(e -> e.getArchiveDocuments() != null && !e.getArchiveDocuments().isEmpty()).findAny().orElse(existingArchives.getFirst());
         Archive archiveUpdate = generator.nextObject(Archive.class);
         archiveUpdate.setId(archiveExist.getId());
         List<EasyArchiveDocument> archiveDocumentsUpdates = new ArrayList<>(generator.objects(EasyArchiveDocument.class, generator.nextInt(3, 7)).toList());
@@ -62,108 +89,38 @@ class ArchiveControllerTest extends IntegrationTest {
             }
         }
         archiveUpdate.setArchiveDocuments(archiveDocumentsUpdates);
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
-        Archive response = objectMapper.readValue(responseJson, Archive.class);
-        assertNotNull(response);
+
+        Archive response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(archiveUpdate)), Archive.class);
         assertArchive(response, archiveUpdate);
-        String responseGetJson = getRequest(PATH + "/" + response.getId());
-        Archive responseGet = objectMapper.readValue(responseGetJson, Archive.class);
-        assertNotNull(responseGet);
+
+        Archive responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Archive.class);
         assertArchive(responseGet, archiveUpdate);
-    }
 
-    @Test
-    void deleteExistingTest() throws Exception {
-        genealogy.visualizer.entity.Archive archiveExist = generateRandomExistArchive();
-        String responseJson = deleteRequest(PATH + "/" + archiveExist.getId());
-        assertTrue(responseJson.isEmpty());
-        assertTrue(archiveRepository.findById(archiveExist.getId()).isEmpty());
-        for (genealogy.visualizer.entity.ArchiveDocument ad : archiveExist.getArchiveDocuments()) {
-            assertFalse(archiveDocumentRepository.findById(ad.getId()).isEmpty());
-        }
-    }
+        archiveUpdate.setArchiveDocuments(Collections.emptyList());
+        response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(archiveUpdate)), Archive.class);
+        assertArchive(response, archiveUpdate);
 
-    @Test
-    void findByFilterTest() throws Exception {
-        StringRandomizer stringRandomizer = new StringRandomizer(5);
-        ArchiveFilter filter = new ArchiveFilter().abbreviation("ГАРО").name("гос архив");
-        List<genealogy.visualizer.entity.Archive> archivesSave = generator.objects(genealogy.visualizer.entity.Archive.class, generator.nextInt(5, 10)).toList();
-        byte count = 0;
-        for (genealogy.visualizer.entity.Archive archive : archivesSave) {
-            byte localCount = 0;
-            archive.setId(null);
-            archive.setArchiveDocuments(null);
-            if (generator.nextBoolean()) {
-                archive.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? filter.getName() : filter.getName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                localCount++;
-            }
-            if (generator.nextBoolean()) {
-                archive.setAbbreviation(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? filter.getAbbreviation() : filter.getAbbreviation().toLowerCase()) +
-                        stringRandomizer.getRandomValue());
-                localCount++;
-            }
-            if (localCount == 2) {
-                count++;
-            }
-        }
-        List<genealogy.visualizer.entity.Archive> archivesExist = archiveRepository.saveAllAndFlush(archivesSave);
-        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
-        List<EasyArchive> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyArchive.class));
-        assertNotNull(response);
-        assertEquals(response.size(), count);
-        Set<Long> findIds = response.stream().map(EasyArchive::getId).collect(Collectors.toSet());
-        for (genealogy.visualizer.entity.Archive archive : archivesExist) {
-            if (archive.getAbbreviation().toLowerCase().contains(filter.getAbbreviation().toLowerCase()) &&
-                    archive.getName().toLowerCase().contains(filter.getName().toLowerCase())) {
-                assertTrue(findIds.contains(archive.getId()));
-            }
-        }
-    }
+        responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Archive.class);
+        assertArchive(responseGet, archiveUpdate);
 
-    @Test
-    void saveUnauthorizedTest() throws Exception {
-        Archive archiveSave = generator.nextObject(Archive.class);
-        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveSave));
-    }
-
-    @Test
-    void updateUnauthorizedTest() throws Exception {
-        Archive archiveUpdate = generator.nextObject(Archive.class);
         putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
     }
 
     @Test
-    void deleteUnauthorizedTest() throws Exception {
-        Archive archiveUpdate = generator.nextObject(Archive.class);
-        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(archiveUpdate));
-    }
+    void deleteTest() throws Exception {
+        genealogy.visualizer.entity.Archive archiveExist = existingArchives.stream()
+                .filter(e -> e.getArchiveDocuments() != null && !e.getArchiveDocuments().isEmpty()).findAny().orElse(existingArchives.getFirst());
 
-    @AfterEach
-    void tearDown() {
-        super.tearDown();
-    }
+        String responseJson = deleteRequest(PATH + "/" + archiveExist.getId());
+        existingArchives.remove(archiveExist);
 
-    protected static void assertArchive(Archive archive1, Archive archive2) {
-        assertNotNull(archive1);
-        assertNotNull(archive2);
-        if (archive1.getId() != null && archive2.getId() != null) {
-            assertEquals(archive1.getId(), archive2.getId());
+        assertTrue(responseJson.isEmpty());
+        assertTrue(archiveRepository.findById(archiveExist.getId()).isEmpty());
+        if (archiveExist.getArchiveDocuments() != null) {
+            archiveExist.getArchiveDocuments().forEach(ad -> assertFalse(archiveDocumentRepository.findById(ad.getId()).isEmpty()));
         }
-        assertEquals(archive1.getName(), archive2.getName());
-        assertEquals(archive1.getAbbreviation(), archive2.getAbbreviation());
-        assertEquals(archive1.getAddress(), archive2.getAddress());
-        assertEquals(archive1.getComment(), archive2.getComment());
-        assertEquals(archive1.getArchiveDocuments().size(), archive2.getArchiveDocuments().size());
-        archive1.getArchiveDocuments().sort(Comparator.comparing(EasyArchiveDocument::getName));
-        List<EasyArchiveDocument> sortedArchive2 = archive2.getArchiveDocuments().stream()
-                .sorted(Comparator.comparing(EasyArchiveDocument::getName))
-                .toList();
-        for (int i = 0; i < archive1.getArchiveDocuments().size(); i++) {
-            assertArchiveDocument(archive1.getArchiveDocuments().get(i), sortedArchive2.get(i));
-        }
+
+        deleteUnauthorizedRequest(PATH + "/" + archiveExist.getId());
     }
 
     protected static void assertArchive(EasyArchive archive1, EasyArchive archive2) {
@@ -183,16 +140,20 @@ class ArchiveControllerTest extends IntegrationTest {
         assertEquals(archive1.getComment(), archive2.getComment());
     }
 
-    protected static void assertArchive(Archive archive1, genealogy.visualizer.entity.Archive archive2) {
-        assertNotNull(archive1);
-        assertNotNull(archive2);
-        if (archive1.getId() != null && archive2.getId() != null) {
-            assertEquals(archive1.getId(), archive2.getId());
+    protected static void assertArchive(Archive archive1, Archive archive2) {
+        assertArchive(toEasyArchive(archive1), toEasyArchive(archive2));
+        assertEquals(archive1.getArchiveDocuments().size(), archive2.getArchiveDocuments().size());
+        archive1.getArchiveDocuments().sort(Comparator.comparing(EasyArchiveDocument::getName));
+        List<EasyArchiveDocument> sortedArchive2 = archive2.getArchiveDocuments().stream()
+                .sorted(Comparator.comparing(EasyArchiveDocument::getName))
+                .toList();
+        for (int i = 0; i < archive1.getArchiveDocuments().size(); i++) {
+            assertArchiveDocument(archive1.getArchiveDocuments().get(i), sortedArchive2.get(i));
         }
-        assertEquals(archive1.getName(), archive2.getName());
-        assertEquals(archive1.getAbbreviation(), archive2.getAbbreviation());
-        assertEquals(archive1.getAddress(), archive2.getAddress());
-        assertEquals(archive1.getComment(), archive2.getComment());
+    }
+
+    protected static void assertArchive(Archive archive1, genealogy.visualizer.entity.Archive archive2) {
+        assertArchive(toEasyArchive(archive1), toEasyArchive(archive2));
         assertEquals(archive1.getArchiveDocuments().size(), archive2.getArchiveDocuments().size());
         archive1.getArchiveDocuments().sort(Comparator.comparing(EasyArchiveDocument::getName));
         List<genealogy.visualizer.entity.ArchiveDocument> sortedArchive2 = archive2.getArchiveDocuments().stream()
@@ -203,29 +164,27 @@ class ArchiveControllerTest extends IntegrationTest {
         }
     }
 
-    protected static void assertArchive(EasyArchive archive1, genealogy.visualizer.entity.Archive archive2) {
-        assertNotNull(archive1);
-        assertNotNull(archive2);
-        if (archive1.getId() != null && archive2.getId() != null) {
-            assertEquals(archive1.getId(), archive2.getId());
+    private static EasyArchive toEasyArchive(genealogy.visualizer.entity.Archive archive) {
+        if (archive == null) {
+            return null;
         }
-        assertEquals(archive1.getName(), archive2.getName());
-        assertEquals(archive1.getAbbreviation(), archive2.getAbbreviation());
-        assertEquals(archive1.getAddress(), archive2.getAddress());
-        assertEquals(archive1.getComment(), archive2.getComment());
+        return new EasyArchive()
+                .id(archive.getId())
+                .name(archive.getName())
+                .abbreviation(archive.getAbbreviation())
+                .comment(archive.getComment())
+                .address(archive.getAddress());
     }
 
-    private genealogy.visualizer.entity.Archive generateRandomExistArchive() {
-        genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveSave.setArchiveDocuments(null);
-        genealogy.visualizer.entity.Archive archiveExist = archiveRepository.saveAndFlush(archiveSave);
-        List<genealogy.visualizer.entity.ArchiveDocument> archiveDocumentsSave = generator.objects(genealogy.visualizer.entity.ArchiveDocument.class, generator.nextInt(5, 10)).toList();
-        List<genealogy.visualizer.entity.ArchiveDocument> archiveDocumentsExist = new ArrayList<>(archiveDocumentsSave.size());
-        for (genealogy.visualizer.entity.ArchiveDocument ad : archiveDocumentsSave) {
-            ad.setArchive(archiveSave);
-            archiveDocumentsExist.add(archiveDocumentRepository.saveAndFlush(ad));
+    private static EasyArchive toEasyArchive(Archive archive) {
+        if (archive == null) {
+            return null;
         }
-        archiveExist.setArchiveDocuments(archiveDocumentsExist);
-        return archiveExist;
+        return new EasyArchive()
+                .id(archive.getId())
+                .name(archive.getName())
+                .abbreviation(archive.getAbbreviation())
+                .comment(archive.getComment())
+                .address(archive.getAddress());
     }
 }

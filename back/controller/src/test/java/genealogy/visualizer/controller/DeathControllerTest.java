@@ -1,20 +1,15 @@
 package genealogy.visualizer.controller;
 
 import genealogy.visualizer.api.model.Death;
-import genealogy.visualizer.api.model.DeathFilter;
 import genealogy.visualizer.api.model.EasyArchiveDocument;
 import genealogy.visualizer.api.model.EasyDeath;
 import genealogy.visualizer.api.model.EasyLocality;
 import genealogy.visualizer.api.model.EasyPerson;
-import genealogy.visualizer.api.model.FullNameFilter;
-import genealogy.visualizer.service.DeathDAO;
-import org.jeasy.random.randomizers.text.StringRandomizer;
-import org.junit.jupiter.api.AfterEach;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,211 +25,171 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeathControllerTest extends IntegrationTest {
 
-    @Autowired
-    DeathDAO deathDAO;
-
     private static final String PATH = "/death";
 
     @Test
-    void saveTest() throws Exception {
-        Death deathSave = generator.nextObject(Death.class);
-        EasyArchiveDocument archiveDocumentSave = generator.nextObject(EasyArchiveDocument.class);
-        deathSave.setArchiveDocument(archiveDocumentSave);
-        EasyPerson personSave = generator.nextObject(EasyPerson.class);
-        deathSave.setPerson(personSave);
-        EasyLocality localitySave = generator.nextObject(EasyLocality.class);
-        deathSave.setLocality(localitySave);
-        String responseJson = postRequest(PATH, objectMapper.writeValueAsString(deathSave));
-        Death response = objectMapper.readValue(responseJson, Death.class);
-        assertNotNull(response);
-        assertDeath(response, deathSave);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
-        assertNotNull(responseGet);
-        assertDeath(responseGet, deathSave);
-    }
-
-    @Test
-    void updateTest() throws Exception {
-        genealogy.visualizer.entity.Death deathExist = generateRandomExistDeath();
-        Death deathUpdate = generator.nextObject(Death.class);
-        deathUpdate.setId(deathExist.getId());
-        EasyArchiveDocument archiveDocumentUpdate = generator.nextObject(EasyArchiveDocument.class);
-        deathUpdate.setArchiveDocument(archiveDocumentUpdate);
-        EasyPerson personUpdate = generator.nextObject(EasyPerson.class);
-        deathUpdate.setPerson(personUpdate);
-        EasyLocality localityUpdate = generator.nextObject(EasyLocality.class);
-        deathUpdate.setLocality(localityUpdate);
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
-        Death response = objectMapper.readValue(responseJson, Death.class);
-        assertNotNull(response);
-        assertDeath(response, deathUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
-        assertNotNull(responseGet);
-        assertDeath(responseGet, deathUpdate);
-    }
-
-    @Test
-    void updateWithNullFieldTest() throws Exception {
-        genealogy.visualizer.entity.Death deathExist = generateRandomExistDeath();
-        Death deathUpdate = generator.nextObject(Death.class);
-        deathUpdate.setId(deathExist.getId());
-        deathUpdate.setArchiveDocument(null);
-        deathUpdate.setPerson(null);
-        deathUpdate.setLocality(null);
-        String responseJson = putRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
-        Death response = objectMapper.readValue(responseJson, Death.class);
-        assertNotNull(response);
-        assertDeath(response, deathUpdate);
-        String responseJsonGet = getRequest(PATH + "/" + response.getId());
-        Death responseGet = objectMapper.readValue(responseJsonGet, Death.class);
-        assertNotNull(responseGet);
-        assertDeath(responseGet, deathUpdate);
-    }
-
-    @Test
-    void deleteTest() throws Exception {
-        genealogy.visualizer.entity.Death deathExist = generateRandomExistDeath();
-        String responseJson = deleteRequest(PATH + "/" + deathExist.getId());
-        assertTrue(responseJson.isEmpty());
-        assertTrue(deathRepository.findById(deathExist.getId()).isEmpty());
-        assertFalse(archiveDocumentRepository.findById(deathExist.getArchiveDocument().getId()).isEmpty());
-        assertFalse(localityRepository.findById(deathExist.getLocality().getId()).isEmpty());
-        assertFalse(personRepository.findById(deathExist.getPerson().getId()).isEmpty());
-    }
-
-    @Test
     void getByIdTest() throws Exception {
-        genealogy.visualizer.entity.Death deathExist = generateRandomExistDeath();
-        String responseJson = getRequest(PATH + "/" + deathExist.getId());
-        Death response = objectMapper.readValue(responseJson, Death.class);
-        assertNotNull(response);
-        assertEquals(response.getId(), deathExist.getId());
+        genealogy.visualizer.entity.Death deathExist = existingDeaths.stream()
+                .filter(e -> e.getPerson() != null && e.getArchiveDocument() != null).findAny().orElse(existingDeaths.getFirst());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+
+        Death response = objectMapper.readValue(getRequest(PATH + "/" + deathExist.getId()), Death.class);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
         assertDeath(response, deathExist);
+
+        getNotFoundRequest(PATH + "/" + generator.nextLong());
     }
 
     @Test
     void findByFilterTest() throws Exception {
-        StringRandomizer stringRandomizer = new StringRandomizer(3);
-        FullNameFilter fullNameFilter = new FullNameFilter()
-                .name("Иван")
-                .surname("Иванович")
-                .lastName("Иванов");
-        DeathFilter filter = new DeathFilter()
-                .fullName(fullNameFilter)
-                .archiveDocumentId(archiveDocumentExisting.getId())
-                .deathYear(1850)
-                .isFindWithHavePerson(false);
-        List<genealogy.visualizer.entity.Death> deathsSave = generator.objects(genealogy.visualizer.entity.Death.class, generator.nextInt(5, 10)).toList();
-        byte count = 0;
-        for (genealogy.visualizer.entity.Death death : deathsSave) {
-            death.setLocality(null);
-            if (generator.nextBoolean()) {
-                death.setPerson(null);
-                death.setArchiveDocument(archiveDocumentExisting);
-                genealogy.visualizer.entity.model.FullName fullName = new genealogy.visualizer.entity.model.FullName();
-                fullName.setName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getName() : fullNameFilter.getName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setSurname(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getSurname() : fullNameFilter.getSurname().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                fullName.setLastName(stringRandomizer.getRandomValue() +
-                        (generator.nextBoolean() ? fullNameFilter.getLastName() : fullNameFilter.getLastName().toUpperCase()) +
-                        stringRandomizer.getRandomValue());
-                death.setFullName(fullName);
-                LocalDate date = LocalDate.of(filter.getDeathYear(), generator.nextInt(1, 12), generator.nextInt(1, 28));
-                death.setDate(date);
-                count++;
-            } else {
-                death.setPerson(getEmptySavedPerson());
-                death.setArchiveDocument(getEmptySavedArchiveDocument());
-            }
-        }
-        List<genealogy.visualizer.entity.Death> deathsExist = deathRepository.saveAllAndFlush(deathsSave);
-        String responseJson = getRequest(PATH + "/filter", objectMapper.writeValueAsString(filter));
-        List<EasyDeath> response = objectMapper.readValue(responseJson, objectMapper.getTypeFactory().constructCollectionType(List.class, EasyDeath.class));
+        deathFilter.isFindWithHavePerson(false);
+        deathFilter.setArchiveDocumentId(existingArchiveDocuments.stream().max(Comparator.comparingInt(ad -> ad.getDeaths().size()))
+                .orElse(existingArchiveDocuments.getFirst()).getId());
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        long initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        List<EasyDeath> response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(deathFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyDeath.class));
         assertNotNull(response);
-        assertEquals(response.size(), count);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        List<Long> existIds = getIdsByFilter();
         Set<Long> findIds = response.stream().map(EasyDeath::getId).collect(Collectors.toSet());
-        for (genealogy.visualizer.entity.Death death : deathsExist) {
-            if (death.getFullName().getName().toLowerCase().contains(filter.getFullName().getName().toLowerCase()) &&
-                    death.getFullName().getSurname().toLowerCase().contains(filter.getFullName().getSurname().toLowerCase()) &&
-                    death.getFullName().getLastName().toLowerCase().contains(filter.getFullName().getLastName().toLowerCase()) &&
-                    death.getArchiveDocument().getId().equals(filter.getArchiveDocumentId()) &&
-                    death.getDate().getYear() == filter.getDeathYear()) {
-                assertTrue(findIds.contains(death.getId()));
-            }
+        assertEquals(existIds.size(), findIds.size());
+        assertTrue(existIds.containsAll(findIds));
+
+        deathFilter.isFindWithHavePerson(true);
+        statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        initialQueryExecutionCount = statistics.getQueryExecutionCount();
+        response = objectMapper.readValue(getRequest(PATH + "/filter", objectMapper.writeValueAsString(deathFilter)),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, EasyDeath.class));
+        assertNotNull(response);
+        assertEquals(1, statistics.getQueryExecutionCount() - initialQueryExecutionCount);
+        existIds = getIdsByFilter();
+        findIds = response.stream().map(EasyDeath::getId).collect(Collectors.toSet());
+        assertEquals(existIds.size(), findIds.size());
+        assertTrue(existIds.containsAll(findIds));
+
+        deathFilter.getFullName().setName("Абракадабра");
+        getNotFoundRequest(PATH + "/filter", objectMapper.writeValueAsString(deathFilter));
+    }
+
+    @Test
+    void saveTest() throws Exception {
+        Death deathSave = getDeath(existingDeaths.stream()
+                .filter(e -> e.getPerson() != null && e.getArchiveDocument() != null).findAny().orElse(existingDeaths.getFirst()));
+        deathSave.setId(null);
+        Death response = objectMapper.readValue(postRequest(PATH, objectMapper.writeValueAsString(deathSave)), Death.class);
+        assertDeath(response, deathSave);
+
+        Death responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Death.class);
+        assertDeath(responseGet, deathSave);
+
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(deathSave));
+    }
+
+    @Test
+    void updateTest() throws Exception {
+        Death deathUpdate = getDeath(existingDeaths.stream()
+                .filter(e -> e.getPerson() != null && e.getArchiveDocument() != null).findAny().orElse(existingDeaths.getFirst()));
+
+        Death response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(deathUpdate)), Death.class);
+        assertDeath(response, deathUpdate);
+
+        Death responseGet = objectMapper.readValue(getRequest(PATH + "/" + response.getId()), Death.class);
+        assertDeath(responseGet, deathUpdate);
+
+        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(deathUpdate));
+
+        deathUpdate.setArchiveDocument(null);
+        deathUpdate.setPerson(null);
+        deathUpdate.setLocality(null);
+
+        response = objectMapper.readValue(putRequest(PATH, objectMapper.writeValueAsString(deathUpdate)), Death.class);
+        assertDeath(response, deathUpdate);
+    }
+
+    @Test
+    void deleteTest() throws Exception {
+        genealogy.visualizer.entity.Death deathExist = existingDeaths.stream()
+                .filter(e -> e.getPerson() != null && e.getArchiveDocument() != null).findAny().orElse(existingDeaths.getFirst());
+        String responseJson = deleteRequest(PATH + "/" + deathExist.getId());
+        existingDeaths.remove(deathExist);
+
+        assertTrue(responseJson.isEmpty());
+        assertTrue(deathRepository.findById(deathExist.getId()).isEmpty());
+        if (deathExist.getArchiveDocument() != null) {
+            assertFalse(archiveDocumentRepository.findById(deathExist.getArchiveDocument().getId()).isEmpty());
         }
+        if (deathExist.getLocality() != null) {
+            assertFalse(localityRepository.findById(deathExist.getLocality().getId()).isEmpty());
+        }
+        if (deathExist.getPerson() != null) {
+            assertFalse(personRepository.findById(deathExist.getPerson().getId()).isEmpty());
+        }
+
+        deleteUnauthorizedRequest(PATH + "/" + deathExist.getId());
     }
 
-    @Test
-    void saveUnauthorizedTest() throws Exception {
-        Death object = generator.nextObject(Death.class);
-        postUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
+    private List<Long> getIdsByFilter() {
+        List<genealogy.visualizer.entity.Death> filteredDeath = existingDeaths.stream()
+                .filter(this::matchesFilter)
+                .toList();
+        if (!deathFilter.getIsFindWithHavePerson()) {
+            filteredDeath = filteredDeath.stream()
+                    .filter(death -> death.getPerson() == null)
+                    .toList();
+        }
+        return filteredDeath.stream().map(genealogy.visualizer.entity.Death::getId).toList();
     }
 
-    @Test
-    void updateUnauthorizedTest() throws Exception {
-        Death object = generator.nextObject(Death.class);
-        putUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
-    }
-
-    @Test
-    void deleteUnauthorizedTest() throws Exception {
-        Death object = generator.nextObject(Death.class);
-        deleteUnauthorizedRequest(PATH, objectMapper.writeValueAsString(object));
-    }
-
-    @AfterEach
-    void tearDown() {
-        System.out.println("----------------------End test------------------------");
-        deathRepository.deleteAll();
-        personRepository.deleteAll();
-        super.tearDown();
+    private boolean matchesFilter(genealogy.visualizer.entity.Death death) {
+        return containsIgnoreCase(death.getFullName().getName(), deathFilter.getFullName().getName()) &&
+                containsIgnoreCase(death.getFullName().getSurname(), deathFilter.getFullName().getSurname()) &&
+                containsIgnoreCase(death.getFullName().getLastName(), deathFilter.getFullName().getLastName()) &&
+                death.getArchiveDocument() != null && death.getArchiveDocument().getId().equals(deathFilter.getArchiveDocumentId()) &&
+                death.getDate().getYear() == deathFilter.getDeathYear();
     }
 
     static void assertDeath(EasyDeath death1, genealogy.visualizer.entity.Death death2) {
-        assertNotNull(death1);
-        assertNotNull(death2);
-        assertEquals(death1.getDate(), death2.getDate());
-        assertFullName(death1.getFullName(), death2.getFullName());
-        assertFullName(death1.getRelative(), death2.getRelative());
-        assertAge(death1.getAge(), death2.getAge());
-        assertEquals(death1.getCause(), death2.getCause());
-        assertEquals(death1.getComment(), death2.getComment());
-        assertEquals(death1.getBurialPlace(), death2.getBurialPlace());
+        assertDeath(death1, toEasyDeath(death2));
     }
 
     static void assertDeath(Death death1, Death death2) {
-        assertNotNull(death1);
-        assertNotNull(death2);
-        assertEquals(death1.getDate(), death2.getDate());
-        assertFullName(death1.getFullName(), death2.getFullName());
-        assertFullName(death1.getRelative(), death2.getRelative());
-        assertAge(death1.getAge(), death2.getAge());
-        assertEquals(death1.getCause(), death2.getCause());
-        assertEquals(death1.getComment(), death2.getComment());
-        assertEquals(death1.getBurialPlace(), death2.getBurialPlace());
+        assertDeath(toEasyDeath(death1), toEasyDeath(death2));
         assertLocality(death1.getLocality(), death2.getLocality());
         assertPerson(death1.getPerson(), death2.getPerson());
         assertArchiveDocument(death1.getArchiveDocument(), death2.getArchiveDocument());
     }
 
     static void assertDeath(Death death1, genealogy.visualizer.entity.Death death2) {
-        assertNotNull(death1);
-        assertNotNull(death2);
-        assertEquals(death1.getDate(), death2.getDate());
-        assertFullName(death1.getFullName(), death2.getFullName());
-        assertFullName(death1.getRelative(), death2.getRelative());
-        assertAge(death1.getAge(), death2.getAge());
-        assertEquals(death1.getCause(), death2.getCause());
-        assertEquals(death1.getComment(), death2.getComment());
-        assertEquals(death1.getBurialPlace(), death2.getBurialPlace());
+        assertDeath(toEasyDeath(death1), toEasyDeath(death2));
         assertLocality(death1.getLocality(), death2.getLocality());
         assertPerson(death1.getPerson(), death2.getPerson());
         assertArchiveDocument(death1.getArchiveDocument(), death2.getArchiveDocument());
+    }
+
+    static void assertDeaths(List<EasyDeath> death1, List<genealogy.visualizer.entity.Death> death2) {
+        assertNotNull(death2);
+        assertDeath(death1, death2.stream().map(DeathControllerTest::toEasyDeath).toList());
+    }
+
+    static void assertDeath(List<EasyDeath> death1, List<EasyDeath> death2) {
+        if (death1 == null || death2 == null) {
+            assertNull(death1);
+            assertNull(death2);
+            return;
+        }
+        assertNotNull(death1);
+        assertNotNull(death2);
+        assertEquals(death1.size(), death2.size());
+        List<EasyDeath> deathsSorted1 = death1.stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
+        List<EasyDeath> deathsSorted2 = death2.stream().sorted(Comparator.comparing(d -> d.getFullName().getName())).toList();
+        for (int i = 0; i < deathsSorted1.size(); i++) {
+            assertDeath(deathsSorted1.get(i), deathsSorted2.get(i));
+        }
     }
 
     static void assertDeath(EasyDeath death1, EasyDeath death2) {
@@ -245,6 +200,9 @@ class DeathControllerTest extends IntegrationTest {
         }
         assertNotNull(death1);
         assertNotNull(death2);
+        if (death1.getId() != null && death2.getId() != null) {
+            assertEquals(death1.getId(), death2.getId());
+        }
         assertEquals(death1.getDate(), death2.getDate());
         assertFullName(death1.getFullName(), death2.getFullName());
         assertFullName(death1.getRelative(), death2.getRelative());
@@ -254,43 +212,42 @@ class DeathControllerTest extends IntegrationTest {
         assertEquals(death1.getBurialPlace(), death2.getBurialPlace());
     }
 
-    private genealogy.visualizer.entity.Death generateRandomExistDeath() {
-        genealogy.visualizer.entity.Death deathSave = generator.nextObject(genealogy.visualizer.entity.Death.class);
-        deathSave.setArchiveDocument(archiveDocumentRepository.saveAndFlush(getEmptySavedArchiveDocument()));
-
-        deathSave.setPerson(getEmptySavedPerson());
-
-        deathSave.setLocality(localityExisting);
-        return deathRepository.save(deathSave);
+    private static Death getDeath(genealogy.visualizer.entity.Death deathExist) {
+        Death death = generator.nextObject(Death.class);
+        death.setId(deathExist.getId());
+        death.setArchiveDocument(generator.nextObject(EasyArchiveDocument.class));
+        death.setPerson(generator.nextObject(EasyPerson.class));
+        death.setLocality(generator.nextObject(EasyLocality.class));
+        return death;
     }
 
-    private genealogy.visualizer.entity.Person getEmptySavedPerson() {
-        genealogy.visualizer.entity.Person personSave = generator.nextObject(genealogy.visualizer.entity.Person.class);
-        personSave.setChristening(null);
-        personSave.setPartners(Collections.emptyList());
-        personSave.setChildren(Collections.emptyList());
-        personSave.setRevisions(Collections.emptyList());
-        personSave.setMarriages(Collections.emptyList());
-        personSave.setParents(Collections.emptyList());
-        personSave.setDeath(null);
-        personSave.setDeathLocality(localityExisting);
-        personSave.setBirthLocality(localityExisting);
-        return personRepository.saveAndFlush(personSave);
+    private static EasyDeath toEasyDeath(genealogy.visualizer.entity.Death death) {
+        if (death == null) {
+            return null;
+        }
+        return new EasyDeath()
+                .id(death.getId())
+                .date(death.getDate())
+                .fullName(toFullName(death.getFullName()))
+                .relative(toFullName(death.getRelative()))
+                .age(toAge(death.getAge()))
+                .cause(death.getCause())
+                .comment(death.getComment())
+                .burialPlace(death.getBurialPlace());
     }
 
-    private genealogy.visualizer.entity.ArchiveDocument getEmptySavedArchiveDocument() {
-        genealogy.visualizer.entity.Archive archiveSave = generator.nextObject(genealogy.visualizer.entity.Archive.class);
-        archiveSave.setArchiveDocuments(null);
-
-        genealogy.visualizer.entity.ArchiveDocument archiveDocumentSave = generator.nextObject(genealogy.visualizer.entity.ArchiveDocument.class);
-        archiveDocumentSave.setArchive(archiveRepository.saveAndFlush(archiveSave));
-        archiveDocumentSave.setPreviousRevisions(Collections.emptyList());
-        archiveDocumentSave.setFamilyRevisions(Collections.emptyList());
-        archiveDocumentSave.setChristenings(Collections.emptyList());
-        archiveDocumentSave.setMarriages(Collections.emptyList());
-        archiveDocumentSave.setDeaths(Collections.emptyList());
-        archiveDocumentSave.setNextRevision(null);
-
-        return archiveDocumentRepository.saveAndFlush(archiveDocumentSave);
+    private static EasyDeath toEasyDeath(Death death) {
+        if (death == null) {
+            return null;
+        }
+        return new EasyDeath()
+                .id(death.getId())
+                .date(death.getDate())
+                .fullName(death.getFullName())
+                .relative(death.getRelative())
+                .age(death.getAge())
+                .cause(death.getCause())
+                .comment(death.getComment())
+                .burialPlace(death.getBurialPlace());
     }
 }

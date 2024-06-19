@@ -11,7 +11,6 @@ import genealogy.visualizer.service.MarriageDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
-import java.util.Optional;
 
 public class MarriageServiceImpl implements MarriageService {
 
@@ -65,7 +64,10 @@ public class MarriageServiceImpl implements MarriageService {
 
     @Override
     public List<EasyMarriage> filter(MarriageFilter filter) {
-        return Optional.ofNullable(easyMarriageMapper.toDTOs(marriageDAO.filter(marriageMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyMarriageMapper.toDTOs(marriageDAO.filter(marriageMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Marriages by filter not found");
+        }
     }
 }

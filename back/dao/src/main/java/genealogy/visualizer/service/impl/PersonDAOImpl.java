@@ -69,7 +69,9 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id) {
+    public void delete(Long id) throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete person without id");
         personRepository.deleteParentLinkById(id);
         personRepository.deletePartnerLinkById(id);
         personRepository.deleteMarriageLinkById(id);
@@ -81,7 +83,7 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Person save(Person person) {
+    public Person save(Person person) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (person.getId() != null)
             throw new IllegalArgumentException("Cannot save person with id");
         person = updateLinks(person);
@@ -104,22 +106,22 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Person update(Person person) {
-        if (person.getId() == null)
+    public Person update(Person person) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = person.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update person without id");
+        Person existInfo = this.findFullInfoById(id);
         person = updateLinks(person);
-        Person updatedPerson = personRepository.update(person);
-        if (updatedPerson == null)
-            throw new EmptyResultDataAccessException("Updating person failed", 1);
-        updateLinks(updatedPerson, person);
+        personRepository.update(person).orElseThrow(() -> new EmptyResultDataAccessException("Updating person failed", 1));
+        updateLinks(existInfo, person);
         entityManager.flush();
         entityManager.clear();
-        return this.findFullInfoById(updatedPerson.getId());
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Person findFullInfoById(Long id) {
+    public Person findFullInfoById(Long id) throws EmptyResultDataAccessException {
         String errorMes = String.format("Person not found by id: %d", id);
         personRepository.findPersonWithBirthLocalityAndDeathLocality(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
         personRepository.findPersonWithPartners(id).orElseThrow(() -> new EmptyResultDataAccessException(errorMes, 1));
@@ -152,7 +154,7 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Person> filter(PersonFilterDTO filter) {
+    public List<Person> filter(PersonFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Person> cq = cb.createQuery(Person.class);
         Root<Person> root = cq.from(Person.class);
@@ -168,17 +170,17 @@ public class PersonDAOImpl implements PersonDAO {
         }
         predicates.addAll(addFullNameFilter(cb, root, filter.getFullName(), "fullName"));
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return getGraphsResult(filter.getGraphs(), cq, entityManager);
+        List<Person> result = getGraphsResult(filter.getGraphs(), cq, entityManager);
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Persons not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected Person updateLinks(Person info) {
-        info.setDeathLocality(info.getDeathLocality() != null ?
-                localityHelper.saveEntityIfNotExist(info.getDeathLocality(), info.getDeathLocality().getId(), localityRepository) :
-                null);
-        info.setBirthLocality(info.getBirthLocality() != null ?
-                localityHelper.saveEntityIfNotExist(info.getBirthLocality(), info.getBirthLocality().getId(), localityRepository) :
-                null);
+        info.setDeathLocality(localityHelper.saveEntityIfNotExist(info.getDeathLocality(), Locality::getId, localityRepository));
+        info.setBirthLocality(localityHelper.saveEntityIfNotExist(info.getBirthLocality(), Locality::getId, localityRepository));
         return info;
     }
 

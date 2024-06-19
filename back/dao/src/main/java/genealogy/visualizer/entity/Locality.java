@@ -47,6 +47,22 @@ import java.util.Set;
                 attributeNodes = {@NamedAttributeNode(value = "marriagesWithWifeLocality"),}),
         @NamedEntityGraph(name = "Locality.withMarriagesWithHusbandLocality",
                 attributeNodes = {@NamedAttributeNode(value = "marriagesWithHusbandLocality")}),
+        @NamedEntityGraph(name = "Locality.withGodParents",
+                attributeNodes = {@NamedAttributeNode(value = "godParents", subgraph = "godParentGraph")},
+                subgraphs = {
+                        @NamedSubgraph(name = "godParentGraph", type = Witness.class,
+                                attributeNodes = {@NamedAttributeNode(value = "locality", subgraph = "localityGraph")}),
+                        @NamedSubgraph(name = "localityGraph", type = Locality.class,
+                                attributeNodes = {@NamedAttributeNode("anotherNames")})
+                }),
+        @NamedEntityGraph(name = "Locality.withWitnesses",
+                attributeNodes = {@NamedAttributeNode(value = "witnesses", subgraph = "witnessGraph")},
+                subgraphs = {
+                        @NamedSubgraph(name = "witnessGraph", type = Witness.class,
+                                attributeNodes = {@NamedAttributeNode(value = "locality", subgraph = "localityGraph")}),
+                        @NamedSubgraph(name = "localityGraph", type = Locality.class,
+                                attributeNodes = {@NamedAttributeNode("anotherNames")})
+                }),
 })
 @Table(indexes = {@Index(name = "IDX_LOCALITY_NAME", columnList = "NAME")})
 public class Locality implements Serializable {
@@ -96,6 +112,12 @@ public class Locality implements Serializable {
     @OneToMany(mappedBy = "wifeLocality", fetch = FetchType.LAZY)
     private List<Marriage> marriagesWithWifeLocality = new ArrayList<>();
 
+    @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
+    private List<Witness> witnesses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "locality", fetch = FetchType.LAZY)
+    private List<GodParent> godParents = new ArrayList<>();
+
     public Locality() {
     }
 
@@ -111,7 +133,7 @@ public class Locality implements Serializable {
         this.anotherNames = anotherNames;
     }
 
-    public Locality(Long id, String name, LocalityType type, String address, Set<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality, List<Marriage> marriagesWithHusbandLocality, List<Marriage> marriagesWithWifeLocality) {
+    public Locality(Long id, String name, LocalityType type, String address, Set<String> anotherNames, List<Christening> christenings, List<Death> deaths, List<Person> personsWithBirthLocality, List<Person> personsWithDeathLocality, List<Marriage> marriagesWithHusbandLocality, List<Marriage> marriagesWithWifeLocality, List<Witness> witnesses, List<GodParent> godParents) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -123,6 +145,8 @@ public class Locality implements Serializable {
         this.personsWithDeathLocality = personsWithDeathLocality;
         this.marriagesWithHusbandLocality = marriagesWithHusbandLocality;
         this.marriagesWithWifeLocality = marriagesWithWifeLocality;
+        this.witnesses = witnesses;
+        this.godParents = godParents;
     }
 
     public Long getId() {
@@ -213,8 +237,24 @@ public class Locality implements Serializable {
         this.marriagesWithWifeLocality = marriagesWithWifeLocality;
     }
 
+    public List<Witness> getWitnesses() {
+        return witnesses;
+    }
+
+    public void setWitnesses(List<Witness> witnesses) {
+        this.witnesses = witnesses;
+    }
+
+    public List<GodParent> getGodParents() {
+        return godParents;
+    }
+
+    public void setGodParents(List<GodParent> godParents) {
+        this.godParents = godParents;
+    }
+
     public Locality clone() {
         return new Locality(id, name, type, address, anotherNames, christenings, deaths, personsWithBirthLocality,
-                personsWithDeathLocality, marriagesWithHusbandLocality, marriagesWithWifeLocality);
+                personsWithDeathLocality, marriagesWithHusbandLocality, marriagesWithWifeLocality, witnesses, godParents);
     }
 }

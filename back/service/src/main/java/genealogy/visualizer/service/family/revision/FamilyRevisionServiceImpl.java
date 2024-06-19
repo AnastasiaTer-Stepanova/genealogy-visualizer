@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
@@ -79,8 +78,11 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
 
     @Override
     public List<EasyFamilyMember> filter(FamilyMemberFilter filter) {
-        return Optional.ofNullable(easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter))))
-                .orElseThrow(NotFoundException::new);
+        try {
+            return easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter)));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Family members by filter not found");
+        }
     }
 
     @Override
@@ -88,7 +90,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         if (familyFilter.getArchiveDocumentId() == null || familyFilter.getFamilyRevisionNumber() == null) {
             throw new BadRequestException();
         }
-        List<FamilyRevision> familyMembers = familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
+        return findFamilyMembers(new FamilyRevisionFilterDTO(
                 familyFilter.getArchiveDocumentId(),
                 familyFilter.getFamilyRevisionNumber().shortValue(),
                 null,
@@ -96,11 +98,8 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                 familyFilter.getIsFindWithHavePerson(),
                 familyFilter.getIsFindInAllRevision() ?
                         List.of("FamilyRevision.withArchiveDocumentAndAnotherRevisionsInside") :
-                        Collections.emptyList()));
-        if (familyMembers == null || familyMembers.isEmpty()) {
-            throw new NotFoundException();
-        }
-        return familyMembers.stream()
+                        Collections.emptyList()))
+                .stream()
                 .map(fr -> familyFilter.getIsFindInAllRevision() ?
                         getFamilyMemberFullInfo(fr, familyFilter.getIsFindWithHavePerson()) :
                         new FamilyMemberFullInfo().familyMember(easyFamilyRevisionMapper.toDTO(fr)))
@@ -143,7 +142,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             archiveDocument = archiveDocument.getNextRevision();
             if (familyMember.getNextFamilyRevisionNumber() != null) {
                 archiveDocumentMap.put(archiveDocument, easyFamilyRevisionMapper.toDTOs(
-                        familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
+                        findFamilyMembers(new FamilyRevisionFilterDTO(
                                 archiveDocument.getId(),
                                 familyMember.getNextFamilyRevisionNumber(),
                                 null,
@@ -165,7 +164,7 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
         for (ArchiveDocument previousRevision : archiveDocument.getPreviousRevisions()) {
             if (!archiveDocumentMap.containsKey(previousRevision)) {
                 List<EasyFamilyMember> members = easyFamilyRevisionMapper.toDTOs(
-                        familyRevisionDAO.filter(new FamilyRevisionFilterDTO(
+                        findFamilyMembers(new FamilyRevisionFilterDTO(
                                 previousRevision.getId(),
                                 familyRevisionNumber,
                                 null,
@@ -181,5 +180,13 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
             }
         }
         return archiveDocumentMap;
+    }
+
+    private List<FamilyRevision> findFamilyMembers(FamilyRevisionFilterDTO filter) {
+        try {
+            return familyRevisionDAO.filter(filter);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 }

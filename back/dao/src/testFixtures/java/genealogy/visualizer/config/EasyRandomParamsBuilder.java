@@ -1,5 +1,6 @@
 package genealogy.visualizer.config;
 
+import genealogy.visualizer.entity.Archive;
 import genealogy.visualizer.entity.ArchiveDocument;
 import genealogy.visualizer.entity.FamilyRevision;
 import genealogy.visualizer.entity.Person;
@@ -55,10 +56,11 @@ public class EasyRandomParamsBuilder {
                         () -> new StringRandomizer(10).getRandomValue())
                 .randomize(named("abbreviation").and(ofType(String.class)), () -> new AbbreviationRandomizer().getRandomValue())
                 .randomize(named("partner").and(ofType(FamilyRevision.class)), () -> null)
+                .randomize(named("archive").and(ofType(Archive.class)), () -> null)
                 .randomize(named("person").and(ofType(Person.class)), () -> null)
                 .randomize(named("nextRevision").and(ofType(ArchiveDocument.class)), () -> null)
                 .randomize(named("previousRevisions").and(ofType(List.class)), Collections::emptyList)
-                .randomize(named("anotherNames").and(ofType(List.class)), () -> new ListRandomizer(StringRandomizer::new, 5).getRandomValue())
+                .randomize(named("anotherNames").and(ofType(List.class)), () -> new ListRandomizer(StringRandomizer::new, 3).getRandomValue())
                 .randomize(Age.class, new AgeRandomizer())
                 .randomize(DateInfo.class, new DateInfoRandomizer());
     }

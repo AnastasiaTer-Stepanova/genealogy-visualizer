@@ -11,10 +11,11 @@ import java.util.Optional;
 
 public interface LocalityRepository extends JpaRepository<Locality, Long> {
 
+    @Modifying
     @Query(value = "update locality c set " +
             "address = :#{#entity.address}, name = :#{#entity.name}, type = :#{#entity.type?.name} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    Locality update(@Param("entity") Locality entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") Locality entity);
 
     @Query("select l from Locality l where l.id = :id")
     @EntityGraph(value = "Locality.withAnotherNames", type = EntityGraph.EntityGraphType.LOAD)
@@ -43,6 +44,14 @@ public interface LocalityRepository extends JpaRepository<Locality, Long> {
     @Query("select l from Locality l where l.id = :id")
     @EntityGraph(value = "Locality.withMarriagesWithHusbandLocality", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Locality> findWithMarriagesWithHusbandLocality(@Param("id") Long id);
+
+    @Query("select l from Locality l where l.id = :id")
+    @EntityGraph(value = "Locality.withWitnesses", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Locality> findWithWitnesses(@Param("id") Long id);
+
+    @Query("select l from Locality l where l.id = :id")
+    @EntityGraph(value = "Locality.withGodParents", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<Locality> findWithGodParents(@Param("id") Long id);
 
     @Modifying
     @Query(value = "delete from another_locality_name where locality_id = :id", nativeQuery = true)

@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import org.hibernate.annotations.Comment;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 public class FullName implements Serializable {
@@ -64,5 +65,21 @@ public class FullName implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FullName fullName = (FullName) o;
+        return Objects.equals(lastName, fullName.lastName) &&
+                Objects.equals(name, fullName.name) &&
+                Objects.equals(surname, fullName.surname) &&
+                Objects.equals(status, fullName.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lastName, name, surname, status);
     }
 }

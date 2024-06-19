@@ -5,11 +5,13 @@ import genealogy.visualizer.repository.ArchiveRepository;
 import genealogy.visualizer.repository.ChristeningRepository;
 import genealogy.visualizer.repository.DeathRepository;
 import genealogy.visualizer.repository.FamilyRevisionRepository;
+import genealogy.visualizer.repository.GodParentRepository;
 import genealogy.visualizer.repository.LocalityRepository;
 import genealogy.visualizer.repository.MarriageRepository;
 import genealogy.visualizer.repository.ParamRepository;
 import genealogy.visualizer.repository.PersonRepository;
 import genealogy.visualizer.repository.UserRepository;
+import genealogy.visualizer.repository.WitnessRepository;
 import genealogy.visualizer.service.ArchiveDAO;
 import genealogy.visualizer.service.ArchiveDocumentDAO;
 import genealogy.visualizer.service.ChristeningDAO;
@@ -71,8 +73,10 @@ public class DaoConfig {
                                          @Autowired PersonRepository personRepository,
                                          @Autowired LocalityRepository localityRepository,
                                          @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                         @Autowired GodParentRepository godParentRepository,
                                          @Autowired EntityManager entityManager) {
-        return new ChristeningDAOImpl(christeningRepository, personRepository, localityRepository, archiveDocumentRepository, entityManager);
+        return new ChristeningDAOImpl(christeningRepository, personRepository, localityRepository, archiveDocumentRepository,
+                godParentRepository, entityManager);
     }
 
     @Bean
@@ -81,9 +85,11 @@ public class DaoConfig {
                                    @Autowired DeathRepository deathRepository,
                                    @Autowired PersonRepository personRepository,
                                    @Autowired MarriageRepository marriageRepository,
+                                   @Autowired WitnessRepository witnessRepository,
+                                   @Autowired GodParentRepository godParentRepository,
                                    @Autowired EntityManager entityManager) {
         return new LocalityDAOImpl(localityRepository, christeningRepository, deathRepository, personRepository,
-                marriageRepository, entityManager);
+                marriageRepository, witnessRepository, godParentRepository, entityManager);
     }
 
     @Bean
@@ -91,8 +97,10 @@ public class DaoConfig {
                                    @Autowired PersonRepository personRepository,
                                    @Autowired LocalityRepository localityRepository,
                                    @Autowired ArchiveDocumentRepository archiveDocumentRepository,
+                                   @Autowired WitnessRepository witnessRepository,
                                    @Autowired EntityManager entityManager) {
-        return new MarriageDAOImpl(marriageRepository, personRepository, localityRepository, archiveDocumentRepository, entityManager);
+        return new MarriageDAOImpl(marriageRepository, personRepository, localityRepository, archiveDocumentRepository,
+                witnessRepository, entityManager);
     }
 
     @Bean

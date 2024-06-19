@@ -2,14 +2,9 @@ package genealogy.visualizer.entity;
 
 import genealogy.visualizer.entity.model.Age;
 import genealogy.visualizer.entity.model.FullName;
-import genealogy.visualizer.entity.model.Witness;
-import jakarta.persistence.AssociationOverride;
-import jakarta.persistence.AssociationOverrides;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,6 +20,7 @@ import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.NamedSubgraph;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import org.hibernate.annotations.Comment;
 
@@ -35,6 +31,15 @@ import java.util.List;
 
 @Entity
 @NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "Marriage.withWitnesses",
+                attributeNodes = {@NamedAttributeNode(value = "witnesses", subgraph = "witnessGraph")},
+                subgraphs = {
+                        @NamedSubgraph(name = "witnessGraph", type = Witness.class,
+                                attributeNodes = {@NamedAttributeNode(value = "locality", subgraph = "localityGraph")}),
+                        @NamedSubgraph(name = "localityGraph", type = Locality.class,
+                                attributeNodes = {@NamedAttributeNode("anotherNames")})
+                }),
         @NamedEntityGraph(
                 name = "Marriage.withArchiveDocument",
                 attributeNodes = {@NamedAttributeNode("archiveDocument")}),
@@ -157,15 +162,7 @@ public class Marriage implements Serializable {
     @Comment("Комментарий")
     private String comment;
 
-    @ElementCollection(targetClass = Witness.class, fetch = FetchType.LAZY)
-    @CollectionTable(name = "WITNESS",
-            joinColumns = @JoinColumn(name = "MARRIAGE_ID",
-                    foreignKey = @ForeignKey(name = "FK_MARRIAGE")))
-    @AssociationOverrides({
-            @AssociationOverride(name = "locality",
-                    joinColumns = @JoinColumn(name = "LOCALITY_ID"),
-                    foreignKey = @ForeignKey(name = "FK_WITNESS_LOCALITY"))
-    })
+    @OneToMany(mappedBy = "marriage", fetch = FetchType.LAZY)
     private List<Witness> witnesses = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

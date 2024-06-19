@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,11 @@ import java.util.stream.Collectors;
 public class RepositoryEasyModelHelper<E> {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public E saveEntityIfNotExist(E entity, Long id, JpaRepository<E, Long> repository) {
+    public E saveEntityIfNotExist(E entity, Function<E, Long> getIdFunction, JpaRepository<E, Long> repository) {
+        if (entity == null) {
+            return null;
+        }
+        Long id = getIdFunction.apply(entity);
         return id != null ?
                 repository.findById(id).orElseThrow() :
                 repository.save(entity);
@@ -35,7 +40,7 @@ public class RepositoryEasyModelHelper<E> {
         }
         List<E> result = new ArrayList<>();
         for (E entity : entities) {
-            result.add(saveEntityIfNotExist(entity, getIdFunction.apply(entity), repository));
+            result.add(saveEntityIfNotExist(entity, getIdFunction, repository));
         }
         return result;
     }
@@ -43,9 +48,20 @@ public class RepositoryEasyModelHelper<E> {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<E> updateEntities(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
                                   JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
+
+        return updateEntities(parentId, entities, newEntities, getIdFunction,
+                repository, updateIdFunction, null);
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public List<E> updateEntities(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
+                                  JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction,
+                                  Consumer<Long> deleteIdFunction) {
         newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
         if (entities == null || entities.isEmpty()) {
-            newEntities.forEach(entity -> updateIdFunction.accept(getIdFunction.apply(entity), parentId));
+            if (updateIdFunction != null) {
+                newEntities.forEach(entity -> updateIdFunction.accept(getIdFunction.apply(entity), parentId));
+            }
             return newEntities;
         }
         Set<Long> newIds = newEntities != null ?
@@ -54,7 +70,12 @@ public class RepositoryEasyModelHelper<E> {
         Set<Long> existIds = entities.stream().map(getIdFunction).collect(Collectors.toSet());
 
         Set<Long> idsForDelete = existIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        idsForDelete.forEach(id -> updateIdFunction.accept(id, null));
+        if (updateIdFunction != null) {
+            idsForDelete.forEach(id -> updateIdFunction.accept(id, null));
+        }
+        if (deleteIdFunction != null) {
+            idsForDelete.forEach(deleteIdFunction);
+        }
 
         List<E> result = entities.stream()
                 .filter(entity -> !idsForDelete.contains(getIdFunction.apply(entity)))
@@ -63,7 +84,9 @@ public class RepositoryEasyModelHelper<E> {
             newEntities.stream()
                     .filter(entity -> newIds.contains(getIdFunction.apply(entity)) && !existIds.contains(getIdFunction.apply(entity)))
                     .forEach(entity -> {
-                        updateIdFunction.accept(getIdFunction.apply(entity), parentId);
+                        if (updateIdFunction != null) {
+                            updateIdFunction.accept(getIdFunction.apply(entity), parentId);
+                        }
                         result.add(entity);
                     });
         }
@@ -74,7 +97,7 @@ public class RepositoryEasyModelHelper<E> {
     public Optional<E> updateEntity(Long parentId, E entity, E newEntity, Function<E, Long> getIdFunction,
                                     JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
         if (newEntity != null) {
-            newEntity = saveEntityIfNotExist(newEntity, getIdFunction.apply(newEntity), repository);
+            newEntity = saveEntityIfNotExist(newEntity, getIdFunction, repository);
         }
         Long newId = newEntity != null ? getIdFunction.apply(newEntity) : null;
         Long existId = entity != null ? getIdFunction.apply(entity) : null;
@@ -87,9 +110,7 @@ public class RepositoryEasyModelHelper<E> {
                 updateIdFunction.accept(newId, parentId);
             }
         }
-
-        E result = newEntity != null ? newEntity : entity;
-        return result != null ? Optional.of(result) : Optional.empty();
+        return newEntity != null ? Optional.of(newEntity) : Optional.empty();
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

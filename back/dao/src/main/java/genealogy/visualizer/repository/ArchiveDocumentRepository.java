@@ -33,12 +33,13 @@ public interface ArchiveDocumentRepository extends JpaRepository<ArchiveDocument
     @Query(value = "update archive_document set archive_id = :newArchiveId where id = :archiveDocumentId", nativeQuery = true)
     void updateArchiveIdById(@Param("archiveDocumentId") Long archiveDocumentId, @Param("newArchiveId") Long newArchiveId);
 
+    @Modifying
     @Query(value = "update archive_document a set " +
             "type = :#{#entity.type?.name}, name = :#{#entity.name}, abbreviation = :#{#entity.abbreviation}, " +
             "year = :#{#entity.year}, fund = :#{#entity.fund}, catalog = :#{#entity.catalog}, instance = :#{#entity.instance}, " +
             "bunch = :#{#entity.bunch}, next_revision_id = :#{#entity.nextRevision?.id}, archive_id = :#{#entity.archive?.id} " +
-            "where id = :#{#entity.id} returning *", nativeQuery = true)
-    ArchiveDocument update(@Param("entity") ArchiveDocument entity);
+            "where id = :#{#entity.id}", nativeQuery = true)
+    Optional<Integer> update(@Param("entity") ArchiveDocument entity);
 
     @Query("select ad from ArchiveDocument ad where ad.id = :id")
     @EntityGraph(value = "ArchiveDocument.withArchiveAndNextRevisionAndPreviousRevisions", type = EntityGraph.EntityGraphType.LOAD)

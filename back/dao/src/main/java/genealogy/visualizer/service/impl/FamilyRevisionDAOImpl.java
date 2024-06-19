@@ -54,14 +54,16 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id) {
+    public void delete(Long id) throws IllegalArgumentException {
+        if (id == null)
+            throw new IllegalArgumentException("Cannot delete family revision without id");
         familyRevisionRepository.updatePartnerId(id, null);
         familyRevisionRepository.deleteById(id);
     }
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public FamilyRevision save(FamilyRevision familyRevision) {
+    public FamilyRevision save(FamilyRevision familyRevision) throws IllegalArgumentException, EmptyResultDataAccessException {
         if (familyRevision.getId() != null)
             throw new IllegalArgumentException("Cannot save familyRevision with id");
         familyRevision = updateLinks(familyRevision);
@@ -78,33 +80,34 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public FamilyRevision update(FamilyRevision familyRevision) {
-        if (familyRevision.getId() == null)
+    public FamilyRevision update(FamilyRevision familyRevision) throws IllegalArgumentException, EmptyResultDataAccessException {
+        Long id = familyRevision.getId();
+        if (id == null)
             throw new IllegalArgumentException("Cannot update familyRevision without id");
+        FamilyRevision existInfo = this.findFullInfoById(id);
         familyRevision = updateLinks(familyRevision);
-        FamilyRevision updatedFamilyRevision = familyRevisionRepository.update(familyRevision);
-        if (updatedFamilyRevision == null)
-            throw new EmptyResultDataAccessException("Updating family revision failed", 1);
-        familyRevisionRepository.deleteAnotherNamesById(updatedFamilyRevision.getId());
+        familyRevisionRepository.update(familyRevision).orElseThrow(() -> new EmptyResultDataAccessException("Updating family revision failed", 1));
+        familyRevisionRepository.deleteAnotherNamesById(id);
         if (familyRevision.getAnotherNames() != null) {
-            familyRevision.getAnotherNames().forEach(an -> familyRevisionRepository.insertAnotherName(updatedFamilyRevision.getId(), an));
+            familyRevision.getAnotherNames()
+                    .forEach(an -> familyRevisionRepository.insertAnotherName(id, an));
         }
-        updateLinks(updatedFamilyRevision, familyRevision);
+        updateLinks(existInfo, familyRevision);
         entityManager.flush();
         entityManager.clear();
-        return this.findFullInfoById(updatedFamilyRevision.getId());
+        return this.findFullInfoById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FamilyRevision findFullInfoById(Long id) {
+    public FamilyRevision findFullInfoById(Long id) throws EmptyResultDataAccessException {
         return familyRevisionRepository.findFullInfoById(id)
                 .orElseThrow(() -> new EmptyResultDataAccessException(String.format("Family revision not found by id: %d", id), 1));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FamilyRevision> filter(FamilyRevisionFilterDTO filter) {
+    public List<FamilyRevision> filter(FamilyRevisionFilterDTO filter) throws EmptyResultDataAccessException {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<FamilyRevision> cq = cb.createQuery(FamilyRevision.class);
         Root<FamilyRevision> root = cq.from(FamilyRevision.class);
@@ -118,18 +121,17 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
             predicates.add(cb.isNull(root.get("person")));
         }
         cq.select(root).where(predicates.toArray(new Predicate[0]));
-        return getGraphsResult(filter.getGraphs(), cq, entityManager);
+        List<FamilyRevision> result = getGraphsResult(filter.getGraphs(), cq, entityManager);
+        if (result == null || result.isEmpty()) {
+            throw new EmptyResultDataAccessException(String.format("Family revisions not found filter: %s", filter), 1);
+        }
+        return result;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected FamilyRevision updateLinks(FamilyRevision info) {
-        info.setArchiveDocument(info.getArchiveDocument() != null ?
-                archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), info.getArchiveDocument().getId(), archiveDocumentRepository) :
-                null);
-
-        info.setPerson(info.getPerson() != null ?
-                personHelper.saveEntityIfNotExist(info.getPerson(), info.getPerson().getId(), personRepository) :
-                null);
+        info.setArchiveDocument(archiveDocumentHelper.saveEntityIfNotExist(info.getArchiveDocument(), ArchiveDocument::getId, archiveDocumentRepository));
+        info.setPerson(personHelper.saveEntityIfNotExist(info.getPerson(), Person::getId, personRepository));
         return info;
     }
 

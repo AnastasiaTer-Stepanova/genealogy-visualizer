@@ -10,6 +10,7 @@ import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
 import genealogy.visualizer.service.PersonDAO;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,9 +32,11 @@ public class GenealogyVisualizeServiceImpl implements GenealogyVisualizeService 
             //TODO После добавления фильтрации изменить реализацию
             throw new BadRequestException("Фильтрация сейчас невозможна");
         }
-        List<Person> entities = personDAO.filter(new PersonFilterDTO(List.of("Person.withPartners", "Person.withChildren", "Person.withParents")));
-        if (entities == null) {
-            throw new NotFoundException();
+        List<Person> entities;
+        try {
+            entities = personDAO.filter(new PersonFilterDTO(List.of("Person.withPartners", "Person.withChildren", "Person.withParents")));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Family members not found");
         }
         Set<EasyPerson> easyPersonSet = easyPersonMapper.toSetDTOs(entities);
         return new GenealogyVisualizeGraph().persons(easyPersonSet).links(graphLinksSet(entities));
