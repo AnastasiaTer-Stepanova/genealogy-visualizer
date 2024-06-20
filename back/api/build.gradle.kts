@@ -28,10 +28,12 @@ val generateJavaOpenApiTasks = yamlFiles?.map { file ->
                 "interfaceOnly" to "true",
             )
         )
-        typeMappings.set(mapOf(
-            "double" to "java.math.BigDecimal",
-            "float" to "java.math.BigDecimal"
-        ))
+        typeMappings.set(
+            mapOf(
+                "double" to "java.math.BigDecimal",
+                "float" to "java.math.BigDecimal"
+            )
+        )
         configOptions.set(
             mapOf(
                 "library" to "spring-boot",
@@ -61,11 +63,12 @@ sourceSets {
         }
     }
 }
-dependencies{
+dependencies {
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
     implementation("org.springframework.boot:spring-boot-starter-validation:3.2.5")
     implementation("org.springframework:spring-web:6.1.5")
 }
