@@ -69,7 +69,7 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void delete(Long id)throws IllegalArgumentException {
+    public void delete(Long id) throws IllegalArgumentException {
         if (id == null)
             throw new IllegalArgumentException("Cannot delete archive document without id");
         archiveDocumentRepository.updateNextRevisionId(id, null);
@@ -239,7 +239,10 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void updateLinks(ArchiveDocument existInfo, ArchiveDocument newInfo) {
-
+        if (newInfo.getFamilyRevisions() != null) {
+            newInfo.setFamilyRevisions(newInfo.getFamilyRevisions().stream()
+                    .peek(entity -> entity.setArchiveDocument(existInfo)).toList());
+        }
         familyRevisionHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getFamilyRevisions(),
@@ -248,6 +251,10 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 familyRevisionRepository,
                 familyRevisionRepository::updateArchiveDocumentIdById);
 
+        if (newInfo.getChristenings() != null) {
+            newInfo.setChristenings(newInfo.getChristenings().stream()
+                    .peek(entity -> entity.setArchiveDocument(existInfo)).toList());
+        }
         christeningHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getChristenings(),
@@ -256,6 +263,10 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 christeningRepository,
                 christeningRepository::updateArchiveDocumentIdById);
 
+        if (newInfo.getMarriages() != null) {
+            newInfo.setMarriages(newInfo.getMarriages().stream()
+                    .peek(entity -> entity.setArchiveDocument(existInfo)).toList());
+        }
         marriageHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getMarriages(),
@@ -264,6 +275,10 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 marriageRepository,
                 marriageRepository::updateArchiveDocumentIdById);
 
+        if (newInfo.getDeaths() != null) {
+            newInfo.setDeaths(newInfo.getDeaths().stream()
+                    .peek(entity -> entity.setArchiveDocument(existInfo)).toList());
+        }
         deathHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getDeaths(),
@@ -272,6 +287,10 @@ public class ArchiveDocumentDAOImpl implements ArchiveDocumentDAO {
                 deathRepository,
                 deathRepository::updateArchiveDocumentIdById);
 
+        if (newInfo.getPreviousRevisions() != null) {
+            newInfo.setPreviousRevisions(newInfo.getPreviousRevisions().stream()
+                    .peek(entity -> entity.setNextRevision(existInfo)).toList());
+        }
         archiveDocumentHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getPreviousRevisions(),

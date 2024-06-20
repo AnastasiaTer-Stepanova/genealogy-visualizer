@@ -156,7 +156,10 @@ public class LocalityDAOImpl implements LocalityDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void updateLinks(Locality existInfo, Locality newInfo) {
-
+        if (newInfo.getChristenings() != null) {
+            newInfo.setChristenings(newInfo.getChristenings().stream()
+                    .peek(entity -> entity.setLocality(existInfo)).toList());
+        }
         christeningHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getChristenings(),
@@ -165,6 +168,10 @@ public class LocalityDAOImpl implements LocalityDAO {
                 christeningRepository,
                 christeningRepository::updateLocalityIdById);
 
+        if (newInfo.getDeaths() != null) {
+            newInfo.setDeaths(newInfo.getDeaths().stream()
+                    .peek(entity -> entity.setLocality(existInfo)).toList());
+        }
         deathHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getDeaths(),
@@ -173,6 +180,10 @@ public class LocalityDAOImpl implements LocalityDAO {
                 deathRepository,
                 deathRepository::updateLocalityIdById);
 
+        if (newInfo.getMarriagesWithWifeLocality() != null) {
+            newInfo.setMarriagesWithWifeLocality(newInfo.getMarriagesWithWifeLocality().stream()
+                    .peek(entity -> entity.setWifeLocality(existInfo)).toList());
+        }
         marriageHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getMarriagesWithWifeLocality(),
@@ -181,6 +192,10 @@ public class LocalityDAOImpl implements LocalityDAO {
                 marriageRepository,
                 marriageRepository::updateWifeLocalityIdById);
 
+        if (newInfo.getMarriagesWithHusbandLocality() != null) {
+            newInfo.setMarriagesWithHusbandLocality(newInfo.getMarriagesWithHusbandLocality().stream()
+                    .peek(entity -> entity.setHusbandLocality(existInfo)).toList());
+        }
         marriageHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getMarriagesWithHusbandLocality(),
@@ -189,6 +204,10 @@ public class LocalityDAOImpl implements LocalityDAO {
                 marriageRepository,
                 marriageRepository::updateHusbandLocalityIdById);
 
+        if (newInfo.getPersonsWithDeathLocality() != null) {
+            newInfo.setPersonsWithDeathLocality(newInfo.getPersonsWithDeathLocality().stream()
+                    .peek(entity -> entity.setDeathLocality(existInfo)).toList());
+        }
         personHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getPersonsWithDeathLocality(),
@@ -197,6 +216,10 @@ public class LocalityDAOImpl implements LocalityDAO {
                 personRepository,
                 personRepository::updateDeathLocalityIdById);
 
+        if (newInfo.getPersonsWithBirthLocality() != null) {
+            newInfo.setPersonsWithBirthLocality(newInfo.getPersonsWithBirthLocality().stream()
+                    .peek(entity -> entity.setBirthLocality(existInfo)).toList());
+        }
         personHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getPersonsWithBirthLocality(),

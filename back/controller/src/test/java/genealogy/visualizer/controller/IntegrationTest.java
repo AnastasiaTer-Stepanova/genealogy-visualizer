@@ -505,10 +505,8 @@ class IntegrationTest {
                     archDoc.setAbbreviation(stringRandomizer.getRandomValue() +
                             (generator.nextBoolean() ? archiveDocumentFilter.getAbbreviation() : archiveDocumentFilter.getAbbreviation().toLowerCase()) +
                             stringRandomizer.getRandomValue());
-                    if (generator.nextBoolean()) {
-                        archDoc.setType(ArchiveDocumentType.PR);
-                        archDoc.setYear(archiveDocumentFilter.getYear().shortValue());
-                    }
+                    archDoc.setType(ArchiveDocumentType.PR);
+                    archDoc.setYear(archiveDocumentFilter.getYear().shortValue());
                     archiveDocumentDAO.update(archDoc);
                 });
             }

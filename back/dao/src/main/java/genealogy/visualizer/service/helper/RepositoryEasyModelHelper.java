@@ -1,6 +1,7 @@
 package genealogy.visualizer.service.helper;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +24,18 @@ import java.util.stream.Collectors;
 public class RepositoryEasyModelHelper<E> {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public E saveEntityIfNotExist(E entity, Function<E, Long> getIdFunction, JpaRepository<E, Long> repository) {
+    public E saveEntityIfNotExist(E entity, @NonNull Function<E, Long> getIdFunction, @NonNull JpaRepository<E, Long> repository) {
         if (entity == null) {
             return null;
         }
         Long id = getIdFunction.apply(entity);
         return id != null ?
-                repository.findById(id).orElseThrow() :
+                entity :
                 repository.save(entity);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public List<E> saveEntitiesIfNotExist(List<E> entities, JpaRepository<E, Long> repository, Function<E, Long> getIdFunction) {
+    public List<E> saveEntitiesIfNotExist(List<E> entities, @NonNull JpaRepository<E, Long> repository, @NonNull Function<E, Long> getIdFunction) {
         if (entities == null || entities.isEmpty()) {
             return Collections.emptyList();
         }
@@ -46,77 +47,66 @@ public class RepositoryEasyModelHelper<E> {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public List<E> updateEntities(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
-                                  JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
+    public List<E> updateEntities(@NonNull Long parentId, List<E> entities, List<E> newEntities, @NonNull Function<E, Long> getIdFunction,
+                                  @NonNull JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
 
         return updateEntities(parentId, entities, newEntities, getIdFunction,
                 repository, updateIdFunction, null);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public List<E> updateEntities(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
-                                  JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction,
+    public List<E> updateEntities(@NonNull Long parentId, List<E> entities, List<E> newEntities, @NonNull Function<E, Long> getIdFunction,
+                                  @NonNull JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction,
                                   Consumer<Long> deleteIdFunction) {
+        if (updateIdFunction != null) {
+            newEntities.stream()
+                    .map(getIdFunction)
+                    .filter(Objects::nonNull)
+                    .forEach(id -> updateIdFunction.accept(id, parentId));
+        }
         newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
         if (entities == null || entities.isEmpty()) {
-            if (updateIdFunction != null) {
-                newEntities.forEach(entity -> updateIdFunction.accept(getIdFunction.apply(entity), parentId));
-            }
             return newEntities;
         }
-        Set<Long> newIds = newEntities != null ?
-                newEntities.stream().map(getIdFunction).collect(Collectors.toSet()) :
-                Collections.emptySet();
-        Set<Long> existIds = entities.stream().map(getIdFunction).collect(Collectors.toSet());
-
-        Set<Long> idsForDelete = existIds.stream().filter(id -> !newIds.contains(id)).collect(Collectors.toSet());
-        if (updateIdFunction != null) {
-            idsForDelete.forEach(id -> updateIdFunction.accept(id, null));
-        }
-        if (deleteIdFunction != null) {
-            idsForDelete.forEach(deleteIdFunction);
-        }
-
-        List<E> result = entities.stream()
-                .filter(entity -> !idsForDelete.contains(getIdFunction.apply(entity)))
-                .collect(Collectors.toList());
-        if (newEntities != null) {
-            newEntities.stream()
-                    .filter(entity -> newIds.contains(getIdFunction.apply(entity)) && !existIds.contains(getIdFunction.apply(entity)))
-                    .forEach(entity -> {
-                        if (updateIdFunction != null) {
-                            updateIdFunction.accept(getIdFunction.apply(entity), parentId);
-                        }
-                        result.add(entity);
-                    });
-        }
-        return result;
+        Set<Long> newIds = newEntities.stream()
+                .map(getIdFunction)
+                .collect(Collectors.toSet());
+        Set<Long> idsForDelete = entities.stream()
+                .map(getIdFunction)
+                .filter(id -> !newIds.contains(id))
+                .collect(Collectors.toSet());
+        idsForDelete.forEach(id -> {
+            if (deleteIdFunction != null) {
+                deleteIdFunction.accept(id);
+            } else if (updateIdFunction != null) {
+                updateIdFunction.accept(id, null);
+            }
+        });
+        return newEntities;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Optional<E> updateEntity(Long parentId, E entity, E newEntity, Function<E, Long> getIdFunction,
-                                    JpaRepository<E, Long> repository, BiConsumer<Long, Long> updateIdFunction) {
+    public Optional<E> updateEntity(E entity, E newEntity, @NonNull Function<E, Long> getIdFunction,
+                                    @NonNull JpaRepository<E, Long> repository, @NonNull BiConsumer<Long, Long> updateIdFunction) {
         if (newEntity != null) {
             newEntity = saveEntityIfNotExist(newEntity, getIdFunction, repository);
         }
         Long newId = newEntity != null ? getIdFunction.apply(newEntity) : null;
         Long existId = entity != null ? getIdFunction.apply(entity) : null;
 
-        if (!Objects.equals(existId, newId)) {
-            if (existId != null && updateIdFunction != null) {
-                updateIdFunction.accept(existId, null);
-            }
-            if (newId != null && updateIdFunction != null) {
-                updateIdFunction.accept(newId, parentId);
-            }
+        if (existId != null && !Objects.equals(existId, newId)) {
+            updateIdFunction.accept(existId, null);
         }
         return newEntity != null ? Optional.of(newEntity) : Optional.empty();
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Optional<List<E>> updateEntitiesWithLinkTable(Long parentId, List<E> entities, List<E> newEntities, Function<E, Long> getIdFunction,
-                                                         JpaRepository<E, Long> repository, BiConsumer<Long, Long> deleteLinkFunction,
-                                                         BiConsumer<Long, Long> insertLinkFunction) {
+    public Optional<List<E>> updateEntitiesWithLinkTable(@NonNull Long parentId,
+                                                         List<E> entities, List<E> newEntities,
+                                                         @NonNull Function<E, Long> getIdFunction,
+                                                         @NonNull JpaRepository<E, Long> repository,
+                                                         @NonNull BiConsumer<Long, Long> deleteLinkFunction,
+                                                         @NonNull BiConsumer<Long, Long> insertLinkFunction) {
         newEntities = saveEntitiesIfNotExist(newEntities, repository, getIdFunction);
         if (entities == null || entities.isEmpty()) {
             newEntities.forEach(entity -> insertLinkFunction.accept(getIdFunction.apply(entity), parentId));

@@ -103,6 +103,10 @@ public class ArchiveDAOImpl implements ArchiveDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void updateLinks(Archive existInfo, Archive newInfo) {
+        if (newInfo.getArchiveDocuments() != null) {
+            newInfo.setArchiveDocuments(newInfo.getArchiveDocuments().stream()
+                    .peek(entity -> entity.setArchive(existInfo)).toList());
+        }
         archiveDocumentHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getArchiveDocuments(),

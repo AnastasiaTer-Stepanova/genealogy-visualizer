@@ -186,23 +186,34 @@ public class PersonDAOImpl implements PersonDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void updateLinks(Person existInfo, Person newInfo) {
-
+        if (newInfo.getChristening() != null) {
+            Christening christening = newInfo.getChristening();
+            christening.setPerson(existInfo);
+            newInfo.setChristening(christening);
+        }
         christeningHelper.updateEntity(
-                existInfo.getId(),
                 existInfo.getChristening(),
                 newInfo.getChristening(),
                 Christening::getId,
                 christeningRepository,
                 christeningRepository::updatePersonIdById);
 
+        if (newInfo.getDeath() != null) {
+            Death death = newInfo.getDeath();
+            death.setPerson(existInfo);
+            newInfo.setDeath(death);
+        }
         deathHelper.updateEntity(
-                existInfo.getId(),
                 existInfo.getDeath(),
                 newInfo.getDeath(),
                 Death::getId,
                 deathRepository,
                 deathRepository::updatePersonIdById);
 
+        if (newInfo.getRevisions() != null) {
+            newInfo.setRevisions(newInfo.getRevisions().stream()
+                    .peek(entity -> entity.setPerson(existInfo)).toList());
+        }
         familyRevisionHelper.updateEntities(
                 existInfo.getId(),
                 existInfo.getRevisions(),

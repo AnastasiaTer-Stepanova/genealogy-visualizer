@@ -137,8 +137,12 @@ public class FamilyRevisionDAOImpl implements FamilyRevisionDAO {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     protected void updateLinks(FamilyRevision existInfo, FamilyRevision newInfo) {
+        if (newInfo.getPartner() != null) {
+            FamilyRevision partner = newInfo.getPartner();
+            partner.setPartner(existInfo);
+            newInfo.setPartner(partner);
+        }
         familyRevisionHelper.updateEntity(
-                        existInfo.getId(),
                         existInfo.getPartner(),
                         newInfo.getPartner(),
                         FamilyRevision::getId,
