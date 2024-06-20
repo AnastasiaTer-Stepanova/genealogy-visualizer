@@ -18,7 +18,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.12.5")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
-    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
     implementation("org.apache.commons:commons-compress:1.26.1")
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")

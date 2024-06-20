@@ -1,8 +1,10 @@
-package genealogy.visualizer.service.authorization;
+package genealogy.visualizer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import genealogy.visualizer.api.model.ErrorResponse;
 import genealogy.visualizer.api.model.User;
+import genealogy.visualizer.service.authorization.JwtService;
+import genealogy.visualizer.service.authorization.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

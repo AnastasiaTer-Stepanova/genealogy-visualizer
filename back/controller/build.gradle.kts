@@ -26,6 +26,8 @@ dependencies {
     implementation(project(":back:service"))
 
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20") // для избавлени от warning: unknown enum constant RequiredMode.NOT_REQUIRED
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.2.5")
     implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 
     testImplementation(project(":back:dao"))
