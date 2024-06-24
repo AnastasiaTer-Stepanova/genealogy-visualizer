@@ -7,68 +7,48 @@ import genealogy.visualizer.dto.FullNameFilterDTO;
 import genealogy.visualizer.dto.PersonFilterDTO;
 import genealogy.visualizer.mapper.EasyPersonMapper;
 import genealogy.visualizer.mapper.PersonMapper;
-import genealogy.visualizer.model.exception.BadRequestException;
 import genealogy.visualizer.model.exception.NotFoundException;
+import genealogy.visualizer.service.AbstractCommonOperationService;
 import genealogy.visualizer.service.PersonDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 
-public class PersonServiceImpl implements PersonService {
+public class PersonServiceImpl extends AbstractCommonOperationService<genealogy.visualizer.entity.Person, Person, PersonFilter, EasyPerson, PersonFilterDTO>
+        implements PersonService {
 
     private final PersonDAO personDAO;
-    private final PersonMapper personMapper;
     private final EasyPersonMapper easyPersonMapper;
 
     public PersonServiceImpl(PersonDAO personDAO, PersonMapper personMapper, EasyPersonMapper easyPersonMapper) {
+        super(personDAO, personDAO, personMapper, personMapper, easyPersonMapper);
         this.personDAO = personDAO;
-        this.personMapper = personMapper;
         this.easyPersonMapper = easyPersonMapper;
     }
 
     @Override
     public void delete(Long id) {
-        personDAO.delete(id);
+        super.delete(id);
     }
 
     @Override
     public Person getById(Long id) {
-        try {
-            return personMapper.toDTO(personDAO.findFullInfoById(id));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(e.getMessage());
-        }
+        return super.getById(id);
     }
 
     @Override
     public Person save(Person person) {
-        if (person == null || person.getId() != null) {
-            throw new BadRequestException("Person must not have an id");
-        }
-        return personMapper.toDTO(personDAO.save(personMapper.toEntity(person)));
+        return super.save(person);
     }
 
     @Override
     public Person update(Person person) {
-        if (person == null || person.getId() == null) {
-            throw new BadRequestException("Person must have an id");
-        }
-        genealogy.visualizer.entity.Person entity;
-        try {
-            entity = personDAO.update(personMapper.toEntity(person));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Person for update not found");
-        }
-        return personMapper.toDTO(entity);
+        return super.update(person);
     }
 
     @Override
     public List<EasyPerson> filter(PersonFilter filter) {
-        try {
-            return easyPersonMapper.toDTOs(personDAO.filter(personMapper.toFilter(filter)));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Persons by filter not found");
-        }
+        return super.filter(filter);
     }
 
     //TODO Планируется перейти на поиск в elasticSearch

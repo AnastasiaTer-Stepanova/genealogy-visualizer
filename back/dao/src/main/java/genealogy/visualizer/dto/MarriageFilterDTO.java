@@ -1,6 +1,6 @@
 package genealogy.visualizer.dto;
 
-public class MarriageFilterDTO {
+public class MarriageFilterDTO extends EntityFilter {
 
     private Long archiveDocumentId;
 

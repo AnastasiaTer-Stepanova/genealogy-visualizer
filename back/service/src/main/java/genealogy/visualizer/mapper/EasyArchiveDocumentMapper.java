@@ -1,6 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyArchiveDocument;
+import genealogy.visualizer.entity.ArchiveDocument;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,7 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR)
-public interface EasyArchiveDocumentMapper extends CommonMapper {
+public interface EasyArchiveDocumentMapper extends EasyCommonMapper<EasyArchiveDocument, ArchiveDocument> {
 
     @BeanMapping(ignoreUnmappedSourceProperties = {
             "familyRevisions",
@@ -21,9 +22,9 @@ public interface EasyArchiveDocumentMapper extends CommonMapper {
             "previousRevisions",
             "nextRevision",
             "archive"})
-    EasyArchiveDocument toDTO(genealogy.visualizer.entity.ArchiveDocument archiveDocument);
+    EasyArchiveDocument toDTO(ArchiveDocument archiveDocument);
 
-    List<EasyArchiveDocument> toDTOs(List<genealogy.visualizer.entity.ArchiveDocument> archiveDocument);
+    List<EasyArchiveDocument> toDTOs(List<ArchiveDocument> archiveDocument);
 
     @Mapping(target = "familyRevisions", ignore = true)
     @Mapping(target = "christenings", ignore = true)
@@ -32,6 +33,6 @@ public interface EasyArchiveDocumentMapper extends CommonMapper {
     @Mapping(target = "previousRevisions", ignore = true)
     @Mapping(target = "nextRevision", ignore = true)
     @Mapping(target = "archive", ignore = true)
-    genealogy.visualizer.entity.ArchiveDocument toEntity(EasyArchiveDocument easyArchiveDocument);
+    ArchiveDocument toEntity(EasyArchiveDocument easyArchiveDocument);
 
 }

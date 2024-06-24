@@ -2,7 +2,7 @@ package genealogy.visualizer.dto;
 
 import genealogy.visualizer.entity.enums.LocalityType;
 
-public class LocalityFilterDTO {
+public class LocalityFilterDTO extends EntityFilter {
 
     private String name;
 

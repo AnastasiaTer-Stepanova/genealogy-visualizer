@@ -10,7 +10,7 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {FullNameMapper.class, EasyLocalityMapper.class})
-public interface GodParentMapper extends CommonMapper {
+public interface GodParentMapper extends CommonMapper<GodParent, genealogy.visualizer.entity.GodParent> {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "christening", ignore = true)

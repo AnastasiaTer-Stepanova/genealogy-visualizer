@@ -1,6 +1,5 @@
 package genealogy.visualizer.mapper;
 
-
 import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveFilter;
 import genealogy.visualizer.dto.ArchiveFilterDTO;
@@ -11,11 +10,5 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {EasyArchiveDocumentMapper.class})
-public interface ArchiveMapper extends CommonMapper {
-
-    ArchiveFilterDTO toFilterDTO(ArchiveFilter filter);
-
-    genealogy.visualizer.entity.Archive toEntity(Archive archive);
-
-    Archive toDTO(genealogy.visualizer.entity.Archive archive);
+public interface ArchiveMapper extends CommonMapper<Archive, genealogy.visualizer.entity.Archive>, FilterMapper<ArchiveFilterDTO, ArchiveFilter> {
 }

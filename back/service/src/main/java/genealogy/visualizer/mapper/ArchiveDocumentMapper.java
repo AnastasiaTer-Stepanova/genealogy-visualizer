@@ -15,12 +15,6 @@ import org.mapstruct.ReportingPolicy;
                 EasyFamilyRevisionMapper.class,
                 EasyMarriageMapper.class,
                 EasyArchiveMapper.class})
-public interface ArchiveDocumentMapper extends CommonMapper {
-
-    genealogy.visualizer.entity.ArchiveDocument toEntity(ArchiveDocument archiveDocument);
-
-    ArchiveDocument toDTO(genealogy.visualizer.entity.ArchiveDocument archiveDocument);
-
-    ArchiveDocumentFilterDTO toFilterDTO(ArchiveDocumentFilter filter);
+public interface ArchiveDocumentMapper extends CommonMapper<ArchiveDocument, genealogy.visualizer.entity.ArchiveDocument>, FilterMapper<ArchiveDocumentFilterDTO, ArchiveDocumentFilter> {
 
 }

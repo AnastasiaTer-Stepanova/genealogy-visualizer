@@ -1,6 +1,6 @@
 package genealogy.visualizer.dto;
 
-public class DeathFilterDTO {
+public class DeathFilterDTO extends EntityFilter {
 
     private Long archiveDocumentId;
 

@@ -1,6 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyLocality;
+import genealogy.visualizer.entity.Locality;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,7 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR)
-public interface EasyLocalityMapper extends CommonMapper {
+public interface EasyLocalityMapper extends EasyCommonMapper<EasyLocality, Locality> {
 
     @Mapping(target = "christenings", ignore = true)
     @Mapping(target = "deaths", ignore = true)
@@ -21,14 +22,14 @@ public interface EasyLocalityMapper extends CommonMapper {
     @Mapping(target = "marriagesWithWifeLocality", ignore = true)
     @Mapping(target = "witnesses", ignore = true)
     @Mapping(target = "godParents", ignore = true)
-    genealogy.visualizer.entity.Locality toEntity(EasyLocality locality);
+    Locality toEntity(EasyLocality locality);
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"christenings", "deaths", "personsWithDeathLocality", "personsWithBirthLocality",
             "marriagesWithHusbandLocality", "marriagesWithWifeLocality", "witnesses", "godParents"})
-    EasyLocality toDTO(genealogy.visualizer.entity.Locality locality);
+    EasyLocality toDTO(Locality locality);
 
-    List<EasyLocality> toDTOs(List<genealogy.visualizer.entity.Locality> locality);
+    List<EasyLocality> toDTOs(List<Locality> locality);
 
-    List<genealogy.visualizer.entity.Locality> toEntities(List<EasyLocality> locality);
+    List<Locality> toEntities(List<EasyLocality> locality);
 
 }

@@ -1,6 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyPerson;
+import genealogy.visualizer.entity.Person;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +14,7 @@ import java.util.Set;
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         uses = {FullNameMapper.class})
-public interface EasyPersonMapper {
+public interface EasyPersonMapper extends EasyCommonMapper<EasyPerson, Person> {
 
     @Mapping(target = "birthLocality", ignore = true)
     @Mapping(target = "deathLocality", ignore = true)
@@ -24,14 +25,14 @@ public interface EasyPersonMapper {
     @Mapping(target = "death", ignore = true)
     @Mapping(target = "revisions", ignore = true)
     @Mapping(target = "marriages", ignore = true)
-    genealogy.visualizer.entity.Person toEntity(EasyPerson person);
+    Person toEntity(EasyPerson person);
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"birthLocality", "deathLocality", "partners", "children", "parents",
             "christening", "death", "revisions", "marriages"})
-    EasyPerson toDTO(genealogy.visualizer.entity.Person person);
+    EasyPerson toDTO(Person person);
 
-    Set<EasyPerson> toSetDTOs(List<genealogy.visualizer.entity.Person> person);
+    Set<EasyPerson> toSetDTOs(List<Person> person);
 
-    List<EasyPerson> toDTOs(List<genealogy.visualizer.entity.Person> person);
+    List<EasyPerson> toDTOs(List<Person> person);
 
 }

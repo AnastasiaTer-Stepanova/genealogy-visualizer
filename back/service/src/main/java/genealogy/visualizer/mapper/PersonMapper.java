@@ -16,11 +16,7 @@ import org.mapstruct.ReportingPolicy;
                 EasyPersonMapper.class,
                 FullNameMapper.class,
                 EasyLocalityMapper.class})
-public interface PersonMapper {
-
-    Person toDTO(genealogy.visualizer.entity.Person person);
-
-    genealogy.visualizer.entity.Person toEntity(Person person);
+public interface PersonMapper extends CommonMapper<Person, genealogy.visualizer.entity.Person>, FilterMapper<PersonFilterDTO, PersonFilter> {
 
     @Mapping(target = "graphs", ignore = true)
     PersonFilterDTO toFilter(PersonFilter filter);

@@ -2,7 +2,7 @@ package genealogy.visualizer.dto;
 
 import genealogy.visualizer.entity.enums.ArchiveDocumentType;
 
-public class ArchiveDocumentFilterDTO {
+public class ArchiveDocumentFilterDTO extends EntityFilter {
 
     private Long archiveId;
 

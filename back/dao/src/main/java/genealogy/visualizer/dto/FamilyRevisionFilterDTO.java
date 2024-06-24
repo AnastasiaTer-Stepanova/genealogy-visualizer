@@ -5,7 +5,7 @@ import genealogy.visualizer.entity.enums.Sex;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FamilyRevisionFilterDTO {
+public class FamilyRevisionFilterDTO extends EntityFilter {
 
     private Long archiveDocumentId;
 

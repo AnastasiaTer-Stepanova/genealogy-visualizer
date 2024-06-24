@@ -16,11 +16,7 @@ import org.mapstruct.ReportingPolicy;
                 FullNameMapper.class,
                 EasyLocalityMapper.class,
                 WitnessMapper.class})
-public interface MarriageMapper extends CommonMapper {
-
-    genealogy.visualizer.entity.Marriage toEntity(Marriage marriage);
-
-    Marriage toDTO(genealogy.visualizer.entity.Marriage marriage);
+public interface MarriageMapper extends CommonMapper<Marriage, genealogy.visualizer.entity.Marriage>, FilterMapper<MarriageFilterDTO, MarriageFilter> {
 
     @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
     MarriageFilterDTO toFilter(MarriageFilter filter);

@@ -13,7 +13,7 @@ import genealogy.visualizer.mapper.EasyArchiveDocumentMapper;
 import genealogy.visualizer.mapper.EasyFamilyRevisionMapper;
 import genealogy.visualizer.mapper.FamilyRevisionMapper;
 import genealogy.visualizer.model.exception.BadRequestException;
-import genealogy.visualizer.model.exception.NotFoundException;
+import genealogy.visualizer.service.AbstractCommonOperationService;
 import genealogy.visualizer.service.FamilyRevisionDAO;
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class FamilyRevisionServiceImpl implements FamilyRevisionService {
+public class FamilyRevisionServiceImpl extends AbstractCommonOperationService<FamilyRevision, FamilyMember, FamilyMemberFilter, EasyFamilyMember, FamilyRevisionFilterDTO>
+        implements FamilyRevisionService {
 
     private final FamilyRevisionDAO familyRevisionDAO;
-    private final FamilyRevisionMapper familyRevisionMapper;
     private final EasyFamilyRevisionMapper easyFamilyRevisionMapper;
     private final EasyArchiveDocumentMapper easyArchiveDocumentMapper;
 
@@ -34,55 +34,35 @@ public class FamilyRevisionServiceImpl implements FamilyRevisionService {
                                      FamilyRevisionMapper familyRevisionMapper,
                                      EasyFamilyRevisionMapper easyFamilyRevisionMapper,
                                      EasyArchiveDocumentMapper easyArchiveDocumentMapper) {
+        super(familyRevisionDAO, familyRevisionDAO, familyRevisionMapper, familyRevisionMapper, easyFamilyRevisionMapper);
         this.familyRevisionDAO = familyRevisionDAO;
-        this.familyRevisionMapper = familyRevisionMapper;
         this.easyFamilyRevisionMapper = easyFamilyRevisionMapper;
         this.easyArchiveDocumentMapper = easyArchiveDocumentMapper;
     }
 
     @Override
     public void delete(Long id) {
-        familyRevisionDAO.delete(id);
+        super.delete(id);
     }
 
     @Override
     public FamilyMember getById(Long id) {
-        try {
-            return familyRevisionMapper.toDTO(familyRevisionDAO.findFullInfoById(id));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(e.getMessage());
-        }
+        return super.getById(id);
     }
 
     @Override
     public FamilyMember save(FamilyMember familyMember) {
-        if (familyMember == null || familyMember.getId() != null) {
-            throw new BadRequestException("FamilyMember must not have an id");
-        }
-        return familyRevisionMapper.toDTO(familyRevisionDAO.save(familyRevisionMapper.toEntity(familyMember)));
+        return super.save(familyMember);
     }
 
     @Override
-    public FamilyMember update(FamilyMember familyRevision) {
-        if (familyRevision == null || familyRevision.getId() == null) {
-            throw new BadRequestException("FamilyMember must have an id");
-        }
-        genealogy.visualizer.entity.FamilyRevision entity;
-        try {
-            entity = familyRevisionDAO.update(familyRevisionMapper.toEntity(familyRevision));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Family revision for update not found");
-        }
-        return familyRevisionMapper.toDTO(entity);
+    public FamilyMember update(FamilyMember familyMember) {
+        return super.update(familyMember);
     }
 
     @Override
     public List<EasyFamilyMember> filter(FamilyMemberFilter filter) {
-        try {
-            return easyFamilyRevisionMapper.toDTOs(familyRevisionDAO.filter(familyRevisionMapper.toFilter(filter)));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Family members by filter not found");
-        }
+        return super.filter(filter);
     }
 
     @Override

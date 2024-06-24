@@ -3,71 +3,45 @@ package genealogy.visualizer.service.christening;
 import genealogy.visualizer.api.model.Christening;
 import genealogy.visualizer.api.model.ChristeningFilter;
 import genealogy.visualizer.api.model.EasyChristening;
+import genealogy.visualizer.dto.ChristeningFilterDTO;
 import genealogy.visualizer.mapper.ChristeningMapper;
 import genealogy.visualizer.mapper.EasyChristeningMapper;
-import genealogy.visualizer.model.exception.BadRequestException;
-import genealogy.visualizer.model.exception.NotFoundException;
+import genealogy.visualizer.service.AbstractCommonOperationService;
 import genealogy.visualizer.service.ChristeningDAO;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 
-public class ChristeningServiceImpl implements ChristeningService {
-
-    private final ChristeningDAO christeningDAO;
-    private final ChristeningMapper christeningMapper;
-    private final EasyChristeningMapper easyChristeningMapper;
+public class ChristeningServiceImpl extends AbstractCommonOperationService<genealogy.visualizer.entity.Christening, Christening, ChristeningFilter, EasyChristening, ChristeningFilterDTO>
+        implements ChristeningService {
 
     public ChristeningServiceImpl(ChristeningDAO christeningDAO,
                                   ChristeningMapper christeningMapper,
                                   EasyChristeningMapper easyChristeningMapper) {
-        this.christeningDAO = christeningDAO;
-        this.christeningMapper = christeningMapper;
-        this.easyChristeningMapper = easyChristeningMapper;
+        super(christeningDAO, christeningDAO, christeningMapper, christeningMapper, easyChristeningMapper);
     }
 
     @Override
     public void delete(Long id) {
-        christeningDAO.delete(id);
+        super.delete(id);
     }
 
     @Override
     public Christening getById(Long id) {
-        try {
-            return christeningMapper.toDTO(christeningDAO.findFullInfoById(id));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(e.getMessage());
-        }
+        return super.getById(id);
     }
 
     @Override
     public Christening save(Christening christening) {
-        if (christening == null || christening.getId() != null) {
-            throw new BadRequestException("Christening must not have an id");
-        }
-        return christeningMapper.toDTO(christeningDAO.save(christeningMapper.toEntity(christening)));
+        return super.save(christening);
     }
 
     @Override
     public Christening update(Christening christening) {
-        if (christening == null || christening.getId() == null) {
-            throw new BadRequestException("Christening must have an id");
-        }
-        genealogy.visualizer.entity.Christening entity;
-        try {
-            entity = christeningDAO.update(christeningMapper.toEntity(christening));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Christening for update not found");
-        }
-        return christeningMapper.toDTO(entity);
+        return super.update(christening);
     }
 
     @Override
     public List<EasyChristening> filter(ChristeningFilter filter) {
-        try {
-            return easyChristeningMapper.toDTOs(christeningDAO.filter(christeningMapper.toFilter(filter)));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Christenings by filter not found");
-        }
+        return super.filter(filter);
     }
 }

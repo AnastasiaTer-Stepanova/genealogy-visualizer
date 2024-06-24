@@ -10,7 +10,7 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {FullNameMapper.class, EasyLocalityMapper.class})
-public interface WitnessMapper extends CommonMapper {
+public interface WitnessMapper extends CommonMapper<Witness, genealogy.visualizer.entity.Witness> {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "marriage", ignore = true)

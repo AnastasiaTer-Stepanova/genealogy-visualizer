@@ -1,6 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyChristening;
+import genealogy.visualizer.entity.Christening;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,18 +13,18 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {FullNameMapper.class})
-public interface EasyChristeningMapper extends CommonMapper {
+public interface EasyChristeningMapper extends EasyCommonMapper<EasyChristening, Christening> {
 
     @Mapping(target = "locality", ignore = true)
     @Mapping(target = "godParents", ignore = true)
     @Mapping(target = "person", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
-    genealogy.visualizer.entity.Christening toEntity(EasyChristening christening);
+    Christening toEntity(EasyChristening christening);
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"locality", "godParents", "person", "archiveDocument"})
     EasyChristening toDTO(genealogy.visualizer.entity.Christening christening);
 
-    List<EasyChristening> toDTOs(List<genealogy.visualizer.entity.Christening> christening);
+    List<EasyChristening> toDTOs(List<Christening> christening);
 
-    List<genealogy.visualizer.entity.Christening> toEntities(List<EasyChristening> christening);
+    List<Christening> toEntities(List<EasyChristening> christening);
 }

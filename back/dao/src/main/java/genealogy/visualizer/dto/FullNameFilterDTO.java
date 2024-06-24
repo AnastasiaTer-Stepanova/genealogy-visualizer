@@ -1,6 +1,6 @@
 package genealogy.visualizer.dto;
 
-public class FullNameFilterDTO {
+public class FullNameFilterDTO extends EntityFilter {
 
     private String name;
 

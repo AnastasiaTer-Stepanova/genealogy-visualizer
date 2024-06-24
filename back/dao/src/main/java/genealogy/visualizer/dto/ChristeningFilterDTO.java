@@ -2,7 +2,7 @@ package genealogy.visualizer.dto;
 
 import genealogy.visualizer.entity.enums.Sex;
 
-public class ChristeningFilterDTO {
+public class ChristeningFilterDTO extends EntityFilter {
 
     private Long archiveDocumentId;
 

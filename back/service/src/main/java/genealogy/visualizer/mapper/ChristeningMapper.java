@@ -2,6 +2,7 @@ package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.Christening;
 import genealogy.visualizer.api.model.ChristeningFilter;
+import genealogy.visualizer.dto.ChristeningFilterDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -14,11 +15,7 @@ import org.mapstruct.ReportingPolicy;
                 EasyLocalityMapper.class,
                 FullNameMapper.class,
                 GodParentMapper.class})
-public interface ChristeningMapper extends CommonMapper {
-
-    genealogy.visualizer.entity.Christening toEntity(Christening christening);
-
-    Christening toDTO(genealogy.visualizer.entity.Christening christening);
+public interface ChristeningMapper extends CommonMapper<Christening, genealogy.visualizer.entity.Christening>, FilterMapper<ChristeningFilterDTO, ChristeningFilter> {
 
     @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
     genealogy.visualizer.dto.ChristeningFilterDTO toFilter(ChristeningFilter filter);

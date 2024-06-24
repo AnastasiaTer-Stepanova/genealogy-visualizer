@@ -2,6 +2,7 @@ package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.Locality;
 import genealogy.visualizer.api.model.LocalityFilter;
+import genealogy.visualizer.dto.LocalityFilterDTO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,7 +16,7 @@ import org.mapstruct.ReportingPolicy;
                 EasyFamilyRevisionMapper.class,
                 EasyMarriageMapper.class,
                 EasyPersonMapper.class})
-public interface LocalityMapper extends CommonMapper {
+public interface LocalityMapper extends CommonMapper<Locality, genealogy.visualizer.entity.Locality>, FilterMapper<LocalityFilterDTO, LocalityFilter> {
 
     @Mapping(target = "witnesses", ignore = true)
     @Mapping(target = "godParents", ignore = true)
@@ -23,7 +24,5 @@ public interface LocalityMapper extends CommonMapper {
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"witnesses", "godParents"})
     Locality toDTO(genealogy.visualizer.entity.Locality locality);
-
-    genealogy.visualizer.dto.LocalityFilterDTO toFilter(LocalityFilter filter);
 
 }

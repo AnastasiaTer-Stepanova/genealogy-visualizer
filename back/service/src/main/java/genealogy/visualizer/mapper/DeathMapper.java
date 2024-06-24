@@ -2,7 +2,7 @@ package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.Death;
 import genealogy.visualizer.api.model.DeathFilter;
-
+import genealogy.visualizer.dto.DeathFilterDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -14,13 +14,9 @@ import org.mapstruct.ReportingPolicy;
                 EasyPersonMapper.class,
                 EasyLocalityMapper.class,
                 FullNameMapper.class})
-public interface DeathMapper extends CommonMapper {
-
-    genealogy.visualizer.entity.Death toEntity(Death death);
-
-    Death toDTO(genealogy.visualizer.entity.Death death);
+public interface DeathMapper extends CommonMapper<Death, genealogy.visualizer.entity.Death>, FilterMapper<DeathFilterDTO, DeathFilter> {
 
     @Mapping(target = "findWithHavePerson", source = "isFindWithHavePerson")
-    genealogy.visualizer.dto.DeathFilterDTO toFilter(DeathFilter filter);
+    DeathFilterDTO toFilter(DeathFilter filter);
 
 }

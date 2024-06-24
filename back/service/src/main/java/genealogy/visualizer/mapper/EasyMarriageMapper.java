@@ -1,6 +1,7 @@
 package genealogy.visualizer.mapper;
 
 import genealogy.visualizer.api.model.EasyMarriage;
+import genealogy.visualizer.entity.Marriage;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,20 +14,20 @@ import java.util.List;
         unmappedSourcePolicy = ReportingPolicy.ERROR,
         uses = {AgeMapper.class,
                 FullNameMapper.class})
-public interface EasyMarriageMapper extends CommonMapper {
+public interface EasyMarriageMapper extends EasyCommonMapper<EasyMarriage, Marriage> {
 
     @Mapping(target = "witnesses", ignore = true)
     @Mapping(target = "wifeLocality", ignore = true)
     @Mapping(target = "husbandLocality", ignore = true)
     @Mapping(target = "archiveDocument", ignore = true)
     @Mapping(target = "persons", ignore = true)
-    genealogy.visualizer.entity.Marriage toEntity(EasyMarriage marriage);
+    Marriage toEntity(EasyMarriage marriage);
 
     @BeanMapping(ignoreUnmappedSourceProperties = {"witnesses", "wifeLocality", "husbandLocality", "archiveDocument", "persons"})
-    EasyMarriage toDTO(genealogy.visualizer.entity.Marriage marriage);
+    EasyMarriage toDTO(Marriage marriage);
 
-    List<EasyMarriage> toDTOs(List<genealogy.visualizer.entity.Marriage> marriage);
+    List<EasyMarriage> toDTOs(List<Marriage> marriage);
 
-    List<genealogy.visualizer.entity.Marriage> toEntities(List<EasyMarriage> christening);
+    List<Marriage> toEntities(List<EasyMarriage> christening);
 
 }

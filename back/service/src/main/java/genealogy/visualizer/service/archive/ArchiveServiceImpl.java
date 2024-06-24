@@ -3,69 +3,45 @@ package genealogy.visualizer.service.archive;
 import genealogy.visualizer.api.model.Archive;
 import genealogy.visualizer.api.model.ArchiveFilter;
 import genealogy.visualizer.api.model.EasyArchive;
+import genealogy.visualizer.dto.ArchiveFilterDTO;
 import genealogy.visualizer.mapper.ArchiveMapper;
 import genealogy.visualizer.mapper.EasyArchiveMapper;
-import genealogy.visualizer.model.exception.BadRequestException;
-import genealogy.visualizer.model.exception.NotFoundException;
+import genealogy.visualizer.service.AbstractCommonOperationService;
 import genealogy.visualizer.service.ArchiveDAO;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 
-public class ArchiveServiceImpl implements ArchiveService {
+public class ArchiveServiceImpl extends AbstractCommonOperationService<genealogy.visualizer.entity.Archive, Archive, ArchiveFilter, EasyArchive, ArchiveFilterDTO>
+        implements ArchiveService {
 
-    private final ArchiveDAO archiveDAO;
-    private final ArchiveMapper archiveMapper;
-    private final EasyArchiveMapper easyArchiveMapper;
-
-    public ArchiveServiceImpl(ArchiveDAO archiveDAO, ArchiveMapper archiveMapper, EasyArchiveMapper easyArchiveMapper) {
-        this.archiveDAO = archiveDAO;
-        this.archiveMapper = archiveMapper;
-        this.easyArchiveMapper = easyArchiveMapper;
+    public ArchiveServiceImpl(ArchiveDAO archiveDAO,
+                              ArchiveMapper archiveMapper,
+                              EasyArchiveMapper easyArchiveMapper) {
+        super(archiveDAO, archiveDAO, archiveMapper, archiveMapper, easyArchiveMapper);
     }
 
     @Override
     public void delete(Long id) {
-        archiveDAO.delete(id);
+        super.delete(id);
     }
 
     @Override
     public Archive getById(Long id) {
-        try {
-            return archiveMapper.toDTO(archiveDAO.findFullInfoById(id));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(e.getMessage());
-        }
+        return super.getById(id);
     }
 
     @Override
     public Archive save(Archive archive) {
-        if (archive == null || archive.getId() != null) {
-            throw new BadRequestException("Archive must not have an id");
-        }
-        return archiveMapper.toDTO(archiveDAO.save(archiveMapper.toEntity(archive)));
+        return super.save(archive);
     }
 
     @Override
     public Archive update(Archive archive) {
-        if (archive == null || archive.getId() == null) {
-            throw new BadRequestException("Archive must have an id");
-        }
-        genealogy.visualizer.entity.Archive entity;
-        try {
-            entity = archiveDAO.update(archiveMapper.toEntity(archive));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Archive for update not found");
-        }
-        return archiveMapper.toDTO(entity);
+        return super.update(archive);
     }
 
     @Override
     public List<EasyArchive> filter(ArchiveFilter filter) {
-        try {
-            return easyArchiveMapper.toDTOs(archiveDAO.filter(archiveMapper.toFilterDTO(filter)));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Archives by filter not found");
-        }
+        return super.filter(filter);
     }
 }
